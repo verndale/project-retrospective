@@ -2,7 +2,7 @@
 date: 2026-07-27
 topics: [graph-wiki-subsystem]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/7
 ---
 # Module edges, so navigation reaches the tooling
 

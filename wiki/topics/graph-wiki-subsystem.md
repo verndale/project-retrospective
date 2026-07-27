@@ -20,6 +20,7 @@ The deterministic graph, its skill-contract integrity gate, the vendored Sigma.j
 
 ## Decisions
 
+- 2026-07-27 — feat(project-retrospective): Enhance graph builder to include module ([PR #7](https://github.com/verndale/project-retrospective/pull/7))
 - 2026-07-27 — Added the `requires` edge and indexed all of `scripts/` rather than an allow-list of subdirectories. `pnpm graph:navigate` dead-ended on every tooling file, which fails open into exactly the broad context read the instruction to use it is meant to prevent. Also indexed `.md` under `scripts/` so `scripts/graph/README.md`, which defines the integrity gate, is no longer outside the graph it documents.
 - 2026-07-27 — chore(project-retrospective): merge main and rebuild graph ([PR #4](https://github.com/verndale/project-retrospective/pull/4))
 
