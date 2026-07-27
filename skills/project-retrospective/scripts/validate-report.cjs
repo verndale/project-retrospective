@@ -5,7 +5,8 @@
  * Checks an analyze run's output directory: required files present for the scope,
  * JSON shapes intact, the report's frozen headings present, one verdict per
  * candidate, one proposal file per Promote candidate in the correct per-type
- * shape, and — when present — well-formed component captures.
+ * shape, and two-way parity between the report's "## Captures" entries and
+ * `captures/`.
  *
  * This is the skill's own feedback loop (run it, fix what it reports, re-run) and
  * the shape the test suite asserts against. It checks structure, not judgment: it
@@ -34,6 +35,9 @@ const {
   isFile,
   listEntries,
   kebab,
+  sections,
+  fencedBlock,
+  parseCanonicalLine,
   usage,
 } = require('./lib/util.cjs');
 
@@ -50,7 +54,8 @@ const USAGE = [
 const SCOPES = ['full', 'inventory', 'candidates'];
 const PROPOSAL_TYPES = ['new-pattern', 'new-alias', 'guidance-edit'];
 // Captures target the component library rather than the catalog, so they live in
-// their own directory and have no Promote candidate to pair with.
+// their own directory and pair with the report's "## Captures" entries rather than
+// with a Promote candidate.
 const CAPTURE_TYPE = 'component-capture';
 
 const REQUIRED_SECTIONS = {
@@ -87,79 +92,6 @@ class Result {
   warn(check, detail) {
     this.warnings.push({ check, detail });
   }
-}
-
-/**
- * Split markdown into { heading, body } blocks at the given heading level.
- *
- * Fence-aware: a proposal's pattern draft is a fenced block whose content is
- * itself markdown with `##` headings, and those must not split the section that
- * contains them.
- */
-function sections(markdown, level) {
-  const marker = `${'#'.repeat(level)} `;
-  const lines = markdown.split('\n');
-  const out = [];
-  let current = null;
-  let fence = null;
-
-  for (const line of lines) {
-    const fenceMatch = line.match(/^\s*(`{3,}|~{3,})(.*)$/);
-    if (fenceMatch) {
-      const [, ticks, rest] = fenceMatch;
-      if (fence === null) {
-        fence = ticks;
-      } else if (ticks[0] === fence[0] && ticks.length >= fence.length && rest.trim() === '') {
-        fence = null;
-      }
-    } else if (fence === null && line.startsWith(marker)) {
-      if (current) out.push(current);
-      current = { heading: line.slice(marker.length).trim(), body: [] };
-      continue;
-    }
-    if (current) current.body.push(line);
-  }
-  if (current) out.push(current);
-  return out.map((s) => ({ heading: s.heading, body: s.body.join('\n') }));
-}
-
-/**
- * First fenced code block in `body`, optionally filtered by info string.
- *
- * Uses the same fence rules as `sections()` rather than a regex: tilde fences,
- * indented fences, and longer fences wrapping shorter ones all appear in these
- * templates, and a regex that mishandles them produces confident-but-wrong
- * "missing block" failures.
- */
-function fencedBlock(body, lang) {
-  const lines = body.split('\n');
-  let open = null;
-  let indent = 0;
-  const collected = [];
-
-  for (const line of lines) {
-    const match = line.match(/^(\s*)(`{3,}|~{3,})\s*(\S*)/);
-    if (match) {
-      const [, lead, ticks, info] = match;
-      if (open === null) {
-        if (lang && info.toLowerCase() !== lang.toLowerCase()) continue;
-        open = ticks;
-        indent = lead.length;
-        continue;
-      }
-      if (ticks[0] === open[0] && ticks.length >= open.length && !info) {
-        return collected.join('\n');
-      }
-    }
-    if (open !== null) {
-      // Strip only the opening fence's indentation so an indented block keeps its
-      // own internal structure.
-      collected.push(line.slice(0, indent).trim() === '' ? line.slice(indent) : line);
-    }
-  }
-
-  // An unclosed fence is malformed; report it as absent rather than guessing.
-  return null;
 }
 
 function checkInventory(dir, result) {
@@ -216,13 +148,13 @@ function checkReport(dir, scope, noBrain, result) {
   const text = isFile(file) ? readTextSafe(file) : null;
   if (text === null) {
     result.fail('report-present', 'report.md is missing or unreadable');
-    return { promoted: [], candidates: [] };
+    return { promoted: [], candidates: [], captured: [], capturesSectionPresent: false };
   }
 
   const required = ['Run', 'Summary', 'Inventory', 'Gaps'];
   if (scope !== 'inventory' && !noBrain) required.push('Resolution');
   if (scope !== 'inventory') required.push('Candidates', 'Next steps');
-  if (scope === 'full') required.push('Learnings');
+  if (scope === 'full') required.push('Learnings', 'Captures');
 
   // Headings are matched exactly, from the same fence-aware parse used to read the
   // sections. A substring test would accept "## Candidates (3 evaluated)" here and
@@ -235,10 +167,19 @@ function checkReport(dir, scope, noBrain, result) {
     }
   }
 
-  if (scope === 'inventory') return { promoted: [], candidates: [] };
+  if (scope === 'inventory') return { promoted: [], candidates: [], captured: [], capturesSectionPresent: false };
+
+  // Read Captures before the Candidates guard below. A report missing "## Candidates"
+  // is already failing `report-sections`; short-circuiting here too would stack a
+  // misleading "the report lists no captures" on top of the real failure.
+  const capturesSection = topLevel.find((s) => s.heading === 'Captures');
+  const captured = capturesSection
+    ? sections(capturesSection.body, 3).map((s) => ({ canonical: s.heading }))
+    : [];
+  const capturesSectionPresent = Boolean(capturesSection);
 
   const candidatesSection = topLevel.find((s) => s.heading === 'Candidates');
-  if (!candidatesSection) return { promoted: [], candidates: [] };
+  if (!candidatesSection) return { promoted: [], candidates: [], captured, capturesSectionPresent };
 
   const candidates = [];
   for (const candidate of sections(candidatesSection.body, 3)) {
@@ -258,7 +199,7 @@ function checkReport(dir, scope, noBrain, result) {
     candidates.push({ label: candidate.heading, verdict: verdicts[0] });
   }
 
-  return { promoted: candidates.filter((c) => c.verdict === 'promote'), candidates };
+  return { promoted: candidates.filter((c) => c.verdict === 'promote'), candidates, captured, capturesSectionPresent };
 }
 
 function checkProposalFile(file, manifestEntries, result, allowedTypes = PROPOSAL_TYPES) {
@@ -291,6 +232,31 @@ function checkProposalFile(file, manifestEntries, result, allowedTypes = PROPOSA
 
   if (EXCLUDED_RE.test(name)) {
     result.warn('proposal-exclusion', `${name} matches an excluded category — confirm it is reusable UI vocabulary, not a page or flow`);
+  }
+
+  if (type === CAPTURE_TYPE) {
+    // The required-heading loop above is a substring test, so "## Canonical name"
+    // satisfies it. Say which of the two is actually wrong rather than reporting a
+    // missing bolded line when the heading itself is the defect.
+    const canonicalSection = sections(text, 2).find((s) => s.heading === 'Canonical');
+    const parsed = canonicalSection ? parseCanonicalLine(canonicalSection.body) : null;
+    if (!parsed) {
+      result.fail(
+        'capture-canonical',
+        canonicalSection
+          ? `${name} does not open "## Canonical" with a "**Name** (\`slug\`)" line`
+          : `${name} has no "## Canonical" section (the heading must match exactly)`,
+      );
+    } else {
+      const expected = kebab(parsed.canonical);
+      const stem = path.basename(file, '.md');
+      if (parsed.slug !== expected || stem !== expected) {
+        result.fail(
+          'capture-canonical',
+          `${name} declares canonical "${parsed.canonical}" (kebab: "${expected}") but its slug is "${parsed.slug}" and its filename is "${stem}.md" — all three must agree`,
+        );
+      }
+    }
   }
 
   if (type !== 'new-pattern') return;
@@ -413,16 +379,64 @@ function checkProposals(dir, promoted, manifestEntries, result) {
   }
 }
 
-/** Captures are optional; when present each must be a well-formed capture file. */
-function checkCaptures(dir, result) {
+/**
+ * Two-way parity between the report's "## Captures" entries and `captures/`, plus
+ * the per-file shape check.
+ *
+ * Mirrors `checkProposals`. A capture the report does not list is how a component
+ * reaches ui-design-library with no evidence behind it, and a listed capture with no
+ * file is a claim the run cannot support — both are failures, in both directions.
+ */
+function checkCaptures(dir, captured, capturesSectionPresent, result) {
   const capturesDir = path.join(dir, 'captures');
-  if (!isDir(capturesDir)) return;
+  const files = isDir(capturesDir)
+    ? listEntries(capturesDir).filter((e) => !e.dir && e.name.endsWith('.md'))
+    : [];
 
-  const files = listEntries(capturesDir).filter((e) => !e.dir && e.name.endsWith('.md'));
-  if (files.length === 0) {
+  if (isDir(capturesDir) && files.length === 0) {
+    // Warn, then continue: a report claiming three captures against an empty
+    // directory should name all three, not stop at "the directory is empty".
     result.warn('capture-empty', 'captures/ exists but contains no capture files');
+  }
+
+  if (captured.length === 0) {
+    // A missing "## Captures" heading already failed `report-sections`. Reporting
+    // parity against a section that is not there stacks a second failure on one
+    // cause — the same stacking the Candidates path deliberately avoids.
+    if (files.length > 0 && capturesSectionPresent) {
+      result.fail('capture-parity', `captures/ has ${files.length} file(s) but the report's "## Captures" section lists none`);
+    }
     return;
   }
+
+  if (!isDir(capturesDir)) {
+    result.fail('capture-parity', `report lists ${captured.length} capture(s) but there is no captures/ directory`);
+    return;
+  }
+
+  const byName = new Map(files.map((f) => [f.name, f.path]));
+  // Track what each entry claimed separately from what is left unclaimed. Deleting
+  // straight out of `byName` would make a second "### Badge" report its file as
+  // missing while the file sits right there, sending the reader to fix the wrong
+  // thing and never naming the duplicate.
+  const claimed = new Set();
+  for (const entry of captured) {
+    const expected = `${kebab(entry.canonical)}.md`;
+    if (claimed.has(expected)) {
+      result.fail('capture-parity', `"## Captures" lists more than one entry resolving to captures/${expected} (last was "${entry.canonical}")`);
+      continue;
+    }
+    if (!byName.has(expected)) {
+      result.fail('capture-parity', `capture "${entry.canonical}" has no captures/${expected}`);
+      continue;
+    }
+    claimed.add(expected);
+    byName.delete(expected);
+  }
+  for (const orphan of byName.keys()) {
+    result.fail('capture-parity', `captures/${orphan} has no matching entry under "## Captures" in report.md`);
+  }
+
   for (const file of files) {
     checkProposalFile(file.path, null, result, [CAPTURE_TYPE]);
   }
@@ -480,11 +494,11 @@ function main() {
   checkInventory(dir, result);
   if (scope !== 'inventory' && !noBrain) checkResolution(dir, result);
 
-  const { promoted } = checkReport(dir, scope, noBrain, result);
+  const { promoted, captured, capturesSectionPresent } = checkReport(dir, scope, noBrain, result);
 
   if (scope === 'full') {
     checkProposals(dir, promoted, manifestEntries, result);
-    checkCaptures(dir, result);
+    checkCaptures(dir, captured, capturesSectionPresent, result);
     checkOrchestrationDrafts(dir, result);
   }
 

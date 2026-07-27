@@ -237,46 +237,178 @@ test('an invalid --scope exits 2', () => {
   assert.match(result.stderr, /--scope must be one of/);
 });
 
+/** A minimal well-formed capture body, for tests that need a second one. */
+function captureFile(canonical, slug) {
+  return [
+    `# Capture: ${canonical}`,
+    '',
+    '## Proposal type',
+    '',
+    'component-capture',
+    '',
+    '## Canonical',
+    '',
+    `**${canonical}** (\`${slug}\`) — resolved via name.`,
+    '',
+    '## Source',
+    '',
+    `- Entry: \`src/components/ui/${slug}/${canonical}.tsx\``,
+    '',
+    '## Reuse evidence',
+    '',
+    '- Colocated unit tests cover every variant.',
+    '',
+    '## De-client work',
+    '',
+    '- Strip the CMS field types.',
+    '',
+    '## Proposed library entry',
+    '',
+    `Path: \`components/${slug}/\``,
+    '',
+    '## Suggested commit',
+    '',
+    `\`feat(${slug}): Add ${canonical} captured from fake-project\``,
+    '',
+  ].join('\n');
+}
+
+/** Append a "### <Canonical>" entry to the report's Captures section. */
+function addCaptureEntry(dir, canonical) {
+  const report = readFile(dir, 'report.md').replace(
+    '## Learnings',
+    `### ${canonical}\n\n\`captures/${canonical.toLowerCase()}.md\` — from \`src/components/ui/${canonical.toLowerCase()}\`.\n\n- Synthetic fixture entry.\n\n## Learnings`,
+  );
+  writeFile(dir, 'report.md', report);
+}
+
 test('a well-formed component capture passes', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'captures/link.md', captureFile('Link', 'link'));
+  addCaptureEntry(dir, 'Link');
+  const result = validate(dir);
+  assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
+test('a "## Captures" entry with no capture file fails parity', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'captures/modal.md'));
+  assertFails(dir, 'capture-parity');
+});
+
+test('a capture file with no "## Captures" entry fails parity', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'captures/link.md', captureFile('Link', 'link'));
+  assertFails(dir, 'capture-parity');
+});
+
+test('a report listing captures with no captures/ directory fails parity', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'captures'), { recursive: true });
+  assertFails(dir, 'capture-parity');
+});
+
+test('"## Captures" is required at full scope', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'report.md', readFile(dir, 'report.md').replace('## Captures', '## Captured work'));
+  assertFails(dir, 'report-sections');
+});
+
+test('a missing "## Captures" heading reports one cause, not two', () => {
+  // report-sections already names it. Stacking capture-parity on top would send the
+  // reader to look at captures/, which is fine.
+  const dir = tempOutput();
+  writeFile(dir, 'report.md', readFile(dir, 'report.md').replace('## Captures', '## Captured work'));
+  const result = validate(dir, ['--json']);
+  const checks = result.json.failures.map((f) => f.check);
+  assert.ok(checks.includes('report-sections'));
+  assert.ok(!checks.includes('capture-parity'), `expected no capture-parity, got: ${JSON.stringify(result.json.failures, null, 2)}`);
+});
+
+test('two "## Captures" entries resolving to one file name the duplicate', () => {
+  const dir = tempOutput();
+  addCaptureEntry(dir, 'Modal');
+  const result = validate(dir, ['--json']);
+  assert.equal(result.status, 1);
+  const details = result.json.failures.filter((f) => f.check === 'capture-parity').map((f) => f.detail);
+  assert.equal(details.length, 1, `expected exactly one parity failure, got: ${JSON.stringify(details, null, 2)}`);
+  assert.match(details[0], /more than one entry resolving to captures\/modal\.md/);
+});
+
+test('a capture whose "## Canonical" heading is wrong says so', () => {
+  // The required-heading check is a substring test, so "## Canonical name" passes
+  // it; the message must point at the heading, not at a missing bolded line.
+  const dir = tempOutput();
+  writeFile(dir, 'captures/modal.md', readFile(dir, 'captures/modal.md').replace('## Canonical\n', '## Canonical name\n'));
+  const result = validate(dir, ['--json']);
+  const failure = result.json.failures.find((f) => f.check === 'capture-canonical');
+  assert.ok(failure, `expected capture-canonical, got: ${JSON.stringify(result.json.failures, null, 2)}`);
+  assert.match(failure.detail, /has no "## Canonical" section/);
+});
+
+test('a bolded alias on the canonical line is not mistaken for the canonical', () => {
   const dir = tempOutput();
   writeFile(
     dir,
-    'captures/card.md',
-    [
-      '# Capture: Card',
-      '',
-      '## Proposal type',
-      '',
-      'component-capture',
-      '',
-      '## Canonical',
-      '',
-      '**Card** (`card`) — resolved via name.',
-      '',
-      '## Source',
-      '',
-      '- Entry: `src/components/ui/card/Card.tsx`',
-      '',
-      '## Reuse evidence',
-      '',
-      '- Colocated unit tests cover every variant.',
-      '',
-      '## De-client work',
-      '',
-      '- Strip the CMS field types.',
-      '',
-      '## Proposed library entry',
-      '',
-      'Path: `components/card/`',
-      '',
-      '## Suggested commit',
-      '',
-      '`feat(library): Add Card from fake-project`',
-      '',
-    ].join('\n'),
+    'captures/modal.md',
+    readFile(dir, 'captures/modal.md').replace(
+      '**Modal** (`modal`) — resolved via name.',
+      'Modal (`modal`) — resolved via alias **Dialog** (`dialog`).',
+    ),
+  );
+  const result = validate(dir, ['--json']);
+  const failure = result.json.failures.find((f) => f.check === 'capture-canonical');
+  assert.ok(failure, `expected capture-canonical, got: ${JSON.stringify(result.json.failures, null, 2)}`);
+  assert.doesNotMatch(failure.detail, /Dialog/, 'the alias must not be reported as the canonical');
+});
+
+test('a run that captured nothing passes with the section still present', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'captures'), { recursive: true });
+  writeFile(
+    dir,
+    'report.md',
+    readFile(dir, 'report.md').replace(
+      /## Captures\n[\s\S]*?\n## Learnings/,
+      '## Captures\n\nNo implementation in this project met the capture bar.\n\n## Learnings',
+    ),
   );
   const result = validate(dir);
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
+test('an empty captures/ directory warns but does not fail', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'captures/modal.md'));
+  writeFile(
+    dir,
+    'report.md',
+    readFile(dir, 'report.md').replace(
+      /## Captures\n[\s\S]*?\n## Learnings/,
+      '## Captures\n\nNo implementation in this project met the capture bar.\n\n## Learnings',
+    ),
+  );
+  const result = validate(dir, ['--json']);
+  assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+  assert.ok(result.json.warnings.some((w) => w.check === 'capture-empty'));
+});
+
+test('--scope candidates does not require the Captures section', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'captures'), { recursive: true });
+  writeFile(dir, 'report.md', readFile(dir, 'report.md').replace('## Captures', '## Captured work'));
+  const result = validate(dir, ['--scope', 'candidates']);
+  assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
+test('a capture whose canonical does not kebab to its filename fails', () => {
+  // The real defect: a capture of a project's `Tag` component whose canonical is
+  // Badge, but named and slugged after the project's label. The report entry and
+  // the filename agree, so parity passes and only this check catches it.
+  const dir = tempOutput();
+  writeFile(dir, 'captures/tag.md', captureFile('Badge', 'tag'));
+  addCaptureEntry(dir, 'Tag');
+  assertFails(dir, 'capture-canonical');
 });
 
 test('a capture missing a required section fails', () => {

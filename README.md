@@ -24,7 +24,7 @@ a run in the `ui-design-evidence` repo:
 report.md · inventory.json · resolution.json · proposals/ · captures/ · orchestration-drafts.md
         │  human review
         ├── proposals/  → Action: promote → ui-design-brain working tree → verify → stop
-        ├── captures/   → `ui-design-library` (a human executes the rewrite)
+        ├── captures/   → Action: capture → ui-design-library working tree → verify → stop
         └── orchestration-drafts.md → ai-orchestration, via its own contribution flow
                             │
                             ▼
@@ -55,7 +55,7 @@ skills/project-retrospective/
 ├── SKILL.md        # skill entry point (frontmatter + phased workflow)
 ├── README.md       # operator docs — install, invocation, inputs/outputs
 ├── references/     # templates + rubrics, one hop from SKILL.md
-└── scripts/        # zero-dependency inventory / resolve / validate
+└── scripts/        # zero-dependency inventory / resolve / validate / capture-preflight
 ```
 
 Skill-authoring templates live alongside in `skills/_meta/` — authoring-only, never loaded at runtime or installed. Everything outside `skills/` is repo tooling (tests, commit/release automation, CI).
@@ -89,13 +89,15 @@ Brain: /path/to/ui-design-brain
 | Parameter | Required | Meaning |
 |---|---|---|
 | `Project:` | yes | Absolute path to the completed project repository. |
-| `Brain:` | for resolution and promote | Absolute path to a local `ui-design-brain` checkout. Without it, resolution is skipped and the report says so. |
+| `Brain:` | for resolution, promote, and capture | Absolute path to a local `ui-design-brain` checkout. Without it, resolution is skipped and the report says so. |
 | `Data:` | no | Absolute path to the private `ui-design-evidence` repo. When given, runs land under `<Data>/runs/`. |
 | `Output:` | no | Where run output is written. Never inside `Project`. |
 | `Scope:` | no | `full` (default), `inventory`, or `candidates`. |
 | `PriorReports:` | no | Comma-separated paths to earlier `report.md` files. A candidate that recurs across projects is elevated from Watch to Promote. |
-| `Action:` | no | `analyze` (default) or `promote`. |
+| `Action:` | no | `analyze` (default), `promote`, or `capture`. |
 | `Proposal:` | for promote | Path to the approved proposal file to apply. |
+| `Captures:` | for capture | Path to a run's `captures/` directory. Applied as a set. |
+| `Library:` | for capture | Absolute path to a local `ui-design-library` checkout. |
 
 Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, and `orchestration-drafts.md`. Full parameter and output detail: [`skills/project-retrospective/README.md`](skills/project-retrospective/README.md).
 

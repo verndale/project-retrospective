@@ -10,7 +10,7 @@ The run's human-readable output. The `##` headings inside the template are **fro
 
 ## Scope waivers
 
-`Scope: inventory` emits only Run, Summary, Inventory, Gaps. `Scope: candidates` adds Resolution, Candidates, Next steps. A run with no `Brain:` omits Resolution and says so under Gaps.
+`Scope: inventory` emits only Run, Summary, Inventory, Gaps. `Scope: candidates` adds Resolution, Candidates, Next steps. `Scope: full` adds Captures and Learnings. A run with no `Brain:` omits Resolution and says so under Gaps.
 
 ## Template
 
@@ -84,6 +84,17 @@ Verdict: Reject
 
 - <The rule that applied — exclusion, child part, thin wrapper, one-off — and the canonical that already covers it, if any.>
 
+## Captures
+
+Implementations the next project should start from rather than rebuild. Drafted in `captures/`, executed into ui-design-library by `Action: capture`.
+
+### <Canonical Name>
+
+`captures/<slug>.md` — from `<component directory in the analyzed project>`.
+
+- <Why this implementation, not just the concept, is worth keeping — cite a path.>
+- <The de-clienting headline: the largest thing the rewrite must strip.>
+
 ## Learnings
 
 Pipeline-shaped findings that belong in ai-orchestration rather than the catalog. Drafted in `orchestration-drafts.md`.
@@ -102,8 +113,10 @@ What this run could not see. Script warnings verbatim, then anything the mode it
 1. Review the proposals in `proposals/`.
 2. Apply an approved one:
    `/project-retrospective` with `Action: promote`, `Proposal: <path>`, `Brain: <path>`
-3. Carry the drafts in `orchestration-drafts.md` into ai-orchestration through its own contribution flow.
-4. Keep this report — pass it as `PriorReports:` on the next project so Watch candidates can be elevated.
+3. Review the captures in `captures/`, then apply the set:
+   `/project-retrospective` with `Action: capture`, `Captures: <path>`, `Library: <path>`, `Brain: <path>`
+4. Carry the drafts in `orchestration-drafts.md` into ai-orchestration through its own contribution flow.
+5. Keep this report — pass it as `PriorReports:` on the next project so Watch candidates can be elevated.
 ```
 
 ## Rules
@@ -112,5 +125,8 @@ What this run could not see. Script warnings verbatim, then anything the mode it
 - **Headings are matched exactly.** `## Candidates (3 evaluated)` is not `## Candidates` and fails validation — keep the frozen headings bare and put counts in the Summary table.
 - **Every `### <Label>` under `## Candidates` needs one.** A label with no verdict fails validation.
 - **Promote candidates need a matching proposal file** at `proposals/<kebab-label>.md`.
+- **Every `### <Canonical Name>` under `## Captures` needs a matching file** at `captures/<kebab-canonical>.md`, and every file needs an entry. Validation fails in both directions — a capture the report does not list is how a component reaches the library with no evidence behind it.
+- **Capture entries carry no `Verdict:` line.** There is no triage axis: the entry's presence is the assertion. *Verdict* stays reserved for Candidates.
+- **`## Captures` is required at `full` scope even when nothing qualified.** Keep the heading and say so in a sentence, with no `### ` entries under it.
 - **No numeric scores** — evidence and a verdict, nothing in between.
 - Write for a reviewer who was not on the project: name paths, not impressions.

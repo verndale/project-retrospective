@@ -171,6 +171,97 @@ function kebab(input) {
   return normalizeLabel(input);
 }
 
+/**
+ * Split markdown into { heading, body } blocks at the given heading level.
+ *
+ * Fence-aware: a proposal's pattern draft is a fenced block whose content is
+ * itself markdown with `##` headings, and those must not split the section that
+ * contains them.
+ */
+function sections(markdown, level) {
+  const marker = `${'#'.repeat(level)} `;
+  const lines = markdown.split('\n');
+  const out = [];
+  let current = null;
+  let fence = null;
+
+  for (const line of lines) {
+    const fenceMatch = line.match(/^\s*(`{3,}|~{3,})(.*)$/);
+    if (fenceMatch) {
+      const [, ticks, rest] = fenceMatch;
+      if (fence === null) {
+        fence = ticks;
+      } else if (ticks[0] === fence[0] && ticks.length >= fence.length && rest.trim() === '') {
+        fence = null;
+      }
+    } else if (fence === null && line.startsWith(marker)) {
+      if (current) out.push(current);
+      current = { heading: line.slice(marker.length).trim(), body: [] };
+      continue;
+    }
+    if (current) current.body.push(line);
+  }
+  if (current) out.push(current);
+  return out.map((s) => ({ heading: s.heading, body: s.body.join('\n') }));
+}
+
+/**
+ * The canonical name and slug a capture declares, e.g. "**Badge** (`badge`)".
+ *
+ * Anchored to the section's first non-blank line, not searched across the whole
+ * body. A capture whose canonical line is unbolded but whose alias is bolded —
+ * "Modal (`modal`) — resolved via alias **Dialog** (`dialog`)" — would otherwise
+ * report the alias, sending the author to fix the wrong thing.
+ *
+ * Returns null when the line is absent or malformed; both callers treat that as a
+ * missing canonical rather than guessing.
+ */
+function parseCanonicalLine(body) {
+  const first = body.split('\n').map((line) => line.trim()).find(Boolean);
+  if (!first) return null;
+  const match = first.match(/^\*\*([^*]+)\*\*\s*\(`([^`]+)`\)/);
+  return match ? { canonical: match[1].trim(), slug: match[2].trim() } : null;
+}
+
+/**
+ * First fenced code block in `body`, optionally filtered by info string.
+ *
+ * Uses the same fence rules as `sections()` rather than a regex: tilde fences,
+ * indented fences, and longer fences wrapping shorter ones all appear in these
+ * templates, and a regex that mishandles them produces confident-but-wrong
+ * "missing block" failures.
+ */
+function fencedBlock(body, lang) {
+  const lines = body.split('\n');
+  let open = null;
+  let indent = 0;
+  const collected = [];
+
+  for (const line of lines) {
+    const match = line.match(/^(\s*)(`{3,}|~{3,})\s*(\S*)/);
+    if (match) {
+      const [, lead, ticks, info] = match;
+      if (open === null) {
+        if (lang && info.toLowerCase() !== lang.toLowerCase()) continue;
+        open = ticks;
+        indent = lead.length;
+        continue;
+      }
+      if (ticks[0] === open[0] && ticks.length >= open.length && !info) {
+        return collected.join('\n');
+      }
+    }
+    if (open !== null) {
+      // Strip only the opening fence's indentation so an indented block keeps its
+      // own internal structure.
+      collected.push(line.slice(0, indent).trim() === '' ? line.slice(indent) : line);
+    }
+  }
+
+  // An unclosed fence is malformed; report it as absent rather than guessing.
+  return null;
+}
+
 /** Collects { code, message } warnings so scripts degrade instead of crashing. */
 class Warnings {
   constructor() {
@@ -234,6 +325,9 @@ module.exports = {
   listEntries,
   normalizeLabel,
   kebab,
+  sections,
+  fencedBlock,
+  parseCanonicalLine,
   Warnings,
   writeOut,
   usage,

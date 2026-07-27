@@ -1,6 +1,6 @@
 ---
 name: project-retrospective
-description: Analyzes a completed frontend project repository and mines it for promotable architectural knowledge. Inventories the components that were built (from pipeline artifacts — build packs, component index, fingerprints, project memory — or a degraded code scan), resolves every component label against the ui-design-brain patterns manifest, triages unresolved labels into Promote, Watch, or Reject candidates with cited evidence, and drafts catalog-format pattern and alias proposals plus paste-ready ai-orchestration rule drafts. With Action promote, applies one approved proposal to a local ui-design-brain checkout following the catalog-integrity checklist and stops before committing. Use when a project wraps and the user wants a retrospective, pattern harvest, component inventory, catalog gap analysis, alias audit, or to promote a pattern or alias into ui-design-brain.
+description: Analyzes a completed frontend project repository and mines it for promotable architectural knowledge. Inventories the components that were built (from pipeline artifacts — build packs, component index, fingerprints, project memory — or a degraded code scan), resolves every component label against the ui-design-brain patterns manifest, triages unresolved labels into Promote, Watch, or Reject candidates with cited evidence, and drafts catalog-format pattern and alias proposals plus paste-ready ai-orchestration rule drafts. With Action promote, applies one approved proposal to a local ui-design-brain checkout following the catalog-integrity checklist. With Action capture, applies a run's component captures to a local ui-design-library checkout. Both stop before committing. Use when a project wraps and the user wants a retrospective, pattern harvest, component inventory, catalog gap analysis, alias audit, to promote a pattern or alias into ui-design-brain, or to apply captures into ui-design-library.
 ---
 
 # Skill: project-retrospective
@@ -24,6 +24,7 @@ Operator docs: [README.md](README.md).
 - The user wants to know which components a project built that the catalog does not name.
 - The user wants an alias audit — labels the project used for concepts the catalog already covers.
 - The user has an approved proposal file and wants it applied to a local ui-design-brain checkout (`Action: promote`).
+- The user has a run's `captures/` directory and wants those components applied to a local ui-design-library checkout (`Action: capture`).
 - Use the `ui-design-brain` skill instead when the task is resolving one label while authoring or building. This skill is for mining a whole repository.
 
 ## First-hop references
@@ -34,7 +35,8 @@ Operator docs: [README.md](README.md).
 4. [`references/proposal-component-capture-template.md`](references/proposal-component-capture-template.md) — capturing a mature implementation for `ui-design-library`.
 5. [`references/orchestration-draft-template.md`](references/orchestration-draft-template.md) — drafts for pipeline-shaped findings.
 6. [`references/brain-integrity-checklist.md`](references/brain-integrity-checklist.md) — the ordered promote procedure. Read only for `Action: promote`.
-7. [`references/code-scan-mode.md`](references/code-scan-mode.md) — degraded-mode procedure. Read only when the inventory reports `mode: code-scan`.
+7. [`references/library-integrity-checklist.md`](references/library-integrity-checklist.md) — the ordered capture procedure. Read only for `Action: capture`.
+8. [`references/code-scan-mode.md`](references/code-scan-mode.md) — degraded-mode procedure. Read only when the inventory reports `mode: code-scan`.
 
 ## Workflow
 
@@ -100,6 +102,24 @@ For any entry with `ambiguous: true`, the manifest scopes that label to more tha
 
 **4. Stop and hand back** in the shape the checklist specifies: edited files, verification result, suggested commit. Do not commit.
 
+### Action: capture
+
+Requires `Captures`, `Library`, and `Brain`. Applies a run's component captures to a local ui-design-library working tree, one component at a time. Without `Brain` the preflight cannot check a canonical against the catalog and nothing downstream will — that repo's contracts compare a component against its own directory name, not against the manifest.
+
+**1. Verify preconditions** from [`references/library-integrity-checklist.md`](references/library-integrity-checklist.md). Run:
+
+```bash
+node <skill>/scripts/capture-preflight.cjs --captures <Captures> --library <Library> --brain <Brain> --pretty
+```
+
+Report `orphanedByRun` verbatim — a library component claiming this run with no capture file is the defect this action exists to prevent. Do not start while any capture is `blocked`.
+
+**2. Apply** one capture at a time, in the checklist's order: implementation, then stories, then `component.json` — never the reverse, because a component directory holding only a `component.json` fails that repo's contracts. Executing a capture is a rewrite, not a copy: the `.tsx`, the token mapping, and the stories are yours to write. Paste the preflight's `componentJson` verbatim and fill `declienting` from what you actually removed.
+
+**3. Verify** each component before starting the next, from the `Library` root: `pnpm contracts`, then `pnpm test` (exit 0 required).
+
+**4. Stop and hand back** in the shape the checklist specifies: components added, verification result, suggested commits. Do not commit.
+
 ## Inputs and outputs
 
 Invoked with a parameter block:
@@ -113,17 +133,21 @@ Brain: /abs/path/to/ui-design-brain
 | Parameter | Required | Default | Meaning |
 |---|---|---|---|
 | `Project` | yes | — | Absolute path to the completed project repository. Read-only. |
-| `Brain` | for resolution and promote | — | Absolute path to a local ui-design-brain checkout. |
+| `Brain` | for resolution, promote, and capture | — | Absolute path to a local ui-design-brain checkout. |
 | `Data` | no | — | Absolute path to the private `ui-design-evidence` repo. When given, runs land under `<Data>/runs/`. |
 | `Output` | no | see step 0 | Where run output is written. Never inside `Project`. |
 | `Scope` | no | `full` | `full`, `inventory`, or `candidates`. |
 | `PriorReports` | no | — | Comma-separated paths to earlier `report.md` files. |
-| `Action` | no | `analyze` | `analyze` or `promote`. |
+| `Action` | no | `analyze` | `analyze`, `promote`, or `capture`. |
 | `Proposal` | for promote | — | Path to the approved proposal file to apply. |
+| `Captures` | for capture | — | Path to a run's `captures/` directory. Applied as a set. |
+| `Library` | for capture | — | Absolute path to a local ui-design-library checkout. |
 
 **Outputs (analyze)** — all inside `Output`: `inventory.json`, `resolution.json`, `report.md`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, `orchestration-drafts.md`.
 
 **Side effects (promote)** — edits the ui-design-brain working tree, and regenerates that repo's committed graph artifacts as a by-product of verification. Nothing is committed anywhere.
+
+**Side effects (capture)** — adds `components/<slug>/` directories to the ui-design-library working tree, three files each, and may add a semantic token to that repo's `src/tokens/semantic.css` when a client token has no semantic home. Nothing is committed anywhere.
 
 ## Validation loops
 
@@ -137,18 +161,23 @@ Fix and re-run. **Cap: 3 attempts.** After the third failure, stop and report th
 
 Promote uses the brain's own `node scripts/graph/build-graph.cjs`, run from the `Brain` root, as its validator — this repo has a file at the same path, and it validates this repo, not the catalog. Same 3-attempt cap; on exhaustion, revert the brain edits and report.
 
+Capture uses the library's own checks, run from the `Library` root: `pnpm contracts` for the fast structural pass, then `pnpm test` for typecheck, stories, and motion. Same 3-attempt cap; on exhaustion, revert the component directory you were writing and report. `pnpm test` renders every story in a real Chromium — a missing browser (`pnpm exec playwright install chromium`, once per machine) is an environment failure, not a failing component, and does not consume an attempt.
+
 ## Guardrails
 
-Normative rubric: [`references/evidence-rubric.md`](references/evidence-rubric.md). Promote procedure: [`references/brain-integrity-checklist.md`](references/brain-integrity-checklist.md).
+Normative rubric: [`references/evidence-rubric.md`](references/evidence-rubric.md). Promote procedure: [`references/brain-integrity-checklist.md`](references/brain-integrity-checklist.md). Capture procedure: [`references/library-integrity-checklist.md`](references/library-integrity-checklist.md).
 
-- MUST NOT run `git commit`, `push`, `merge`, `tag`, or open a pull request — in the analyzed project, in the catalog, or anywhere else. Promote ends at the handback.
+- MUST NOT run `git commit`, `push`, `merge`, `tag`, or open a pull request — in the analyzed project, in the catalog, in the component library, or anywhere else. Promote and capture end at the handback.
 - MUST NOT fuzzy-match a label. Resolution is exact after normalization; anything else is novel. Never report a "closest match" or "probably X" — guessing is the failure the catalog exists to prevent.
 - MUST NOT propose a child-part name (Tab, Slide, Accordion item) as an alias or a pattern.
 - MUST NOT propose an alias without consumer evidence — a label an analyzed project actually used for that canonical.
 - MUST NOT introduce a context-scoped alias without its counterpart. Plain string is the default; object form only for a demonstrated two-canonical collision, and then both canonicals and both index rows move together (see the rubric for the same-named-canonical exception).
 - MUST NOT promote a hard exclusion: pages, business logic, authentication, checkout, search APIs, commerce flows, routing, client-specific workflows, or client branding.
 - MUST NOT edit ai-orchestration. Pipeline findings are drafts the maintainer carries over.
-- MUST treat `Project` as read-only. Analyze output goes only inside `Output`, which MUST NOT be inside `Project`; promote edits go only inside the `Brain` working tree. A retrospective never leaves artifacts in the repository it analyzed.
+- MUST NOT create a component directory the library cannot validate: implementation and stories before `component.json`, and never leave a `components/<slug>/` partially written.
+- MUST NOT copy a component out of the analyzed project. Executing a capture is a rewrite — client tokens map to semantic tokens, client copy and assets come out, and every removal is recorded in `declienting`.
+- MUST NOT set a captured component's `maturity` to anything but `candidate`. Promotion to `supported` is a human decision made in that repo.
+- MUST treat `Project` as read-only. Analyze output goes only inside `Output`, which MUST NOT be inside `Project`; promote edits go only inside the `Brain` working tree; capture edits go only inside the `Library` working tree — under `components/<slug>/`, plus `src/tokens/semantic.css` when a mapping needs a token that does not exist. A retrospective never leaves artifacts in the repository it analyzed.
 - MUST report script warnings verbatim rather than silently proceeding. A missing `build.config.json` degrades to code-scan mode; it is not a reason to stop.
 - MUST NOT emit numeric scores, confidence percentages, or rankings. Evidence and a verdict.
 - Client-derived output stays with the client: it belongs in the project or a private data repo, never in this skill's own repository.

@@ -1,0 +1,16 @@
+{
+  "canonical": "Badge",
+  "slug": "badge",
+  "framework": "react",
+  "styling": "tailwind",
+  "slots": ["children"],
+  "variants": ["default"],
+  "tokens": ["color-surface-raised"],
+  "provenance": {
+    "project": "fake-project",
+    "run": "runs/fake-project/2026-01-01/",
+    "source": "src/components/ui/badge/Badge.tsx"
+  },
+  "declienting": ["Mapped the project's chip background onto the surface-raised semantic token."],
+  "maturity": "candidate"
+}

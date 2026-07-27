@@ -1,0 +1,16 @@
+{
+  "canonical": "Link",
+  "slug": "link",
+  "framework": "react",
+  "styling": "tailwind",
+  "slots": ["children"],
+  "variants": ["default"],
+  "tokens": ["color-text-primary"],
+  "provenance": {
+    "project": "other-project",
+    "run": "runs/other-project/2025-12-01/",
+    "source": "src/components/ui/text-link/TextLink.tsx"
+  },
+  "declienting": ["Dropped the client's underline-offset override."],
+  "maturity": "candidate"
+}
