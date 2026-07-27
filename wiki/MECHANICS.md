@@ -76,6 +76,7 @@ topics: [<topic-slug>]              # topic slugs touched, or []
 plan: plans/YYYY-MM-DD-<slug>.md    # or none
 pr: https://github.com/verndale/project-retrospective/pull/NNN   # or pending
 follow_up_pr: https://github.com/verndale/project-retrospective/pull/NNN   # optional; or pending
+issue: https://github.com/verndale/project-retrospective/issues/NNN   # optional; filled by merge sync from "Closes #N"
 ---
 # <Title>
 
@@ -121,14 +122,18 @@ Prepended to the verbatim plan text (written by `pnpm wiki:archive-plan`):
 
 ```markdown
 ---
-status: implemented | partial | not-implemented | superseded | out-of-scope
+status: implemented | partial | not-implemented | superseded | out-of-scope | not-verified
 executed: YYYY-MM-DD            # or n/a
+date: YYYY-MM-DD                # archive date
 evidence: ["PR #N", "commit <sha>", ...]
 source_tool: claude | codex | file
 source: <original path on disk or codex-session:<session>#<line>:<block>:<plan>:<digest>>
 topics: [<topic-slug>]
+audit_note: <where the plan and reality diverged>   # optional
 ---
 ```
+
+`not-verified` is what `pnpm wiki:find-plans --archive` files a recovered candidate as; it means nobody has checked yet whether it shipped. Archived plans are exempt from the `## Contents` rule above — `archive-plan.cjs` copies the plan body verbatim and cannot insert one.
 
 ### plans/INDEX.md row
 

@@ -14,6 +14,7 @@ Every agent plan executed for this repo, gathered from Claude plan stores and Co
 - **superseded** — replaced by a later plan before shipping as written.
 - **not-implemented** — nothing shipped; may still be actionable.
 - **out-of-scope** — targets another repo/product.
+- **not-verified** — recovered by `pnpm wiki:find-plans --archive`; nobody has checked yet whether it shipped.
 
 Totals: 2 implemented (2 plans).
 

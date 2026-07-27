@@ -148,6 +148,33 @@ test('the tests extractor reads helper calls, not every filename it can see', ()
   assert.deepEqual(extractTestTargets("assert.equal(label, 'gamma.cjs')"), []);
 });
 
+test('only the suite that lints the real skill claims SKILL.md as a surface', () => {
+  // Regression: a bare 'SKILL.md' literal also matched this file, which joins its own
+  // fixture root with the same name — inventing an edge saying the graph builder's tests
+  // cover the skill contract.
+  const graph = build();
+  const claimants = edgesOf(graph, 'tests').filter((e) => e.target === `${SKILL}/SKILL.md`).map((e) => e.source);
+  assert.deepEqual(claimants, ['scripts/tests/skill-conformance.test.cjs']);
+});
+
+test('link titles and anchors are stripped from declared references', () => {
+  assert.deepEqual(extractSkillReferences('[x](references/foo.md "Title")'), [`${SKILL}/references/foo.md`]);
+  assert.deepEqual(extractSkillReferences('[x](references/foo.md#anchor)'), [`${SKILL}/references/foo.md`]);
+});
+
+test('the plan sentinels are not treated as paths', () => {
+  // `pending` is what the merge automation writes; treating it as a path would dangle
+  // the build forever, and it sits next to `pr: pending` in the same frontmatter block.
+  for (const sentinel of ['none', 'pending']) {
+    const graph = brokenCopy((dir) => {
+      const p = path.join(dir, 'wiki/journal/2026-01-01-entry.md');
+      fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace('plans/2026-01-01-plan.md', sentinel));
+    });
+    assert.deepEqual(edgesOf(graph, 'plan'), [], `plan: ${sentinel} must emit no edge`);
+    assert.deepEqual(danglingEdges(graph), [], `plan: ${sentinel} must not dangle`);
+  }
+});
+
 test('topic and plan edges resolve from wiki frontmatter', () => {
   const graph = build({ repoRoot: FIXTURE });
   assert.deepEqual(

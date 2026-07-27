@@ -89,9 +89,12 @@ const SKILL_SCRIPT_RE = /scripts\/([a-z-]+\.cjs)/g;
 // filename in an assertion (as the graph builder's own tests do) invented edges to files
 // that never existed.
 const TEST_RUN_RE = /\b(?:run|runJson)\(\s*['"]([A-Za-z0-9._-]+\.cjs)['"]/g;
-// The conformance suite lints SKILL.md itself rather than spawning a CLI, so the one
-// markdown surface under test is recognised by its literal.
-const TEST_SKILL_RE = /['"]SKILL\.md['"]/;
+// The conformance suite lints SKILL.md itself rather than spawning a CLI, so it is
+// recognised by the constant it reads the real skill through. Matching a bare 'SKILL.md'
+// literal was tried and was wrong for the same reason the bare-filename rule was: the
+// graph builder's own suite joins SKILL_DIR with 'SKILL.md' to reach its *fixture*, and
+// that invented an edge claiming it tests the skill contract.
+const TEST_SKILL_RE = /\bSKILL_DIR\b[^\n]*['"]SKILL\.md['"]/;
 
 // NUL joins the (source, target) halves of an internal edge key so a node id that ever
 // contained a space could never mis-split it (matches routing.cjs's edgeKey separator).
@@ -214,7 +217,9 @@ function extractSkillReferences(text) {
   SKILL_REFERENCE_RE.lastIndex = 0;
   let m;
   while ((m = SKILL_REFERENCE_RE.exec(text)) !== null) {
-    const id = `${SKILL_ROOT}/${m[1].split("#")[0].trim()}`;
+    // Strip an anchor and a CommonMark link title — `[x](references/a.md "Title")` is
+    // legal and would otherwise become a target with the title glued on, dangling forever.
+    const id = `${SKILL_ROOT}/${m[1].split("#")[0].split(/\s/)[0].trim()}`;
     if (!out.includes(id)) out.push(id);
   }
   return out;
@@ -363,10 +368,14 @@ function build({ repoRoot = REPO_ROOT } = {}) {
       if (target !== id) pushWiki(id, target, "topic");
     }
     const planField = frontmatter.readField(text, "plan");
-    if (planField && planField !== "none") {
+    // `none` and `pending` are the documented sentinels — `pending` is what the merge
+    // automation fills in, and treating either as a path would dangle the build forever.
+    if (planField && planField !== "none" && planField !== "pending") {
       // Journal `plan:` is written wiki-relative (plans/...) or repo-relative (wiki/plans/...).
-      const candidate = planField.startsWith("wiki/") ? planField : `wiki/${planField.replace(/^\.?\//, "")}`;
-      if (candidate !== id) pushWiki(id, candidate, "plan");
+      const raw = planField.startsWith("wiki/") ? planField : `wiki/${planField.replace(/^\.?\//, "")}`;
+      const candidate = path.posix.normalize(raw);
+      // Anything that normalizes out of wiki/plans/ is a malformed field, not a target.
+      if (candidate !== id && candidate.startsWith("wiki/plans/")) pushWiki(id, candidate, "plan");
     }
     if (nodes.get(id)?.type === "wiki-topic") {
       for (const target of frontmatter.readList(text, "covers")) pushWiki(id, target, "covers");
