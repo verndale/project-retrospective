@@ -33,6 +33,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-07-27 — [Module edges, so navigation reaches the tooling](journal/2026-07-27-graph-module-edges.md) — added a `requires` edge and indexed all of `scripts/`; isolated nodes went from 18 to 1 and `pnpm graph:navigate` no longer dead-ends on tooling.
 - 2026-07-27 — [chore(project-retrospective): merge main and rebuild graph](journal/2026-07-27-chore-project-retrospective-merge-main-and-rebuild-graph.md) — AI-drafted, revise
 - 2026-07-26 — [Knowledge graph + context wiki subsystem](journal/2026-07-26-knowledge-graph-wiki-subsystem.md) — ported the deterministic graph and the context wiki from ui-design-brain, with the skill's own contract as the integrity gate in place of a catalog manifest.
 - 2026-07-26 — [Building the project-retrospective skill](journal/2026-07-26-build-project-retrospective-skill.md) — what was rejected from the original proposal and why: no subagent fan-out, no 27-field artifact model, no numeric scores, no component taxonomy.

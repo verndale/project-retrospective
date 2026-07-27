@@ -33,7 +33,8 @@ The viewer serves on **4175**. `ui-design-brain` owns 4173 and `ui-design-eviden
 | `skill-reference` | each `references/*.md` the skill ships |
 | `skill-script` | each `scripts/**/*.cjs` the skill ships, including `lib/util.cjs` |
 | `authoring-spec` | `skills/_meta/_sections.md`, the authority for `SKILL.md`'s structure |
-| `repo-script` | repo tooling under `scripts/{graph,wiki,evals,commit-pr}/` |
+| `repo-script` | every `.cjs` under `scripts/` that is not a test |
+| `tooling-doc` | every `.md` under `scripts/`, including this file |
 | `test` | each suite and helper under `scripts/tests/` |
 | `root-doc` | `AGENTS.md`, `README.md`, `CONTRIBUTING.md`, `CLAUDE.md` |
 | `wiki-index` | `wiki/INDEX.md`, `wiki/MECHANICS.md`, `wiki/plans/INDEX.md` |
@@ -41,11 +42,14 @@ The viewer serves on **4175**. `ui-design-brain` owns 4173 and `ui-design-eviden
 
 `CHANGELOG.md` is excluded — semantic-release rewrites it every release, which would churn the graph for no signal. `skills/_meta/` is not walked (authoring-only), so `_sections.md` is added explicitly. `scripts/tests/fixtures/` is excluded: synthetic inputs are data, not knowledge, and that exclusion is what makes it safe to test the graph builder against a fixture repo.
 
+All of `scripts/` is walked rather than an allow-list of subdirectories, so a new `scripts/<dir>/` is indexed instead of being silently invisible.
+
 ## Edge types
 
 | Type | Relationship | Emission |
 |---|---|---|
 | `contracts` | `SKILL.md` → every reference it links and every script it names | **unconditional — the gate** |
+| `requires` | a `.cjs` → a `.cjs` it requires by relative path (the module graph) | **unconditional — the gate** |
 | `covers` | a wiki topic → the surfaces its `covers:` frontmatter claims | **unconditional — the gate** |
 | `topic` | a wiki page → `topics/<slug>.md` from its `topics:` frontmatter | **unconditional — the gate** |
 | `plan` | a journal entry → its archived plan, from `plan:` | **unconditional — the gate** |

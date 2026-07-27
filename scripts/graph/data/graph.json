@@ -1,10 +1,11 @@
 {
   "counts": {
-    "nodes": 55,
-    "edges": 88,
+    "nodes": 57,
+    "edges": 121,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
+      "tooling-doc": 1,
       "test": 6,
       "authoring-spec": 1,
       "skill-readme": 1,
@@ -12,17 +13,18 @@
       "skill-script": 4,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 3,
+      "wiki-journal": 4,
       "wiki-plan": 2,
       "wiki-topic": 4
     },
     "byEdgeType": {
       "contracts": 12,
-      "covers": 10,
-      "links-to": 49,
+      "covers": 13,
+      "links-to": 54,
       "plan": 2,
+      "requires": 24,
       "tests": 5,
-      "topic": 10
+      "topic": 11
     }
   },
   "nodes": [
@@ -36,7 +38,7 @@
       "prs": [],
       "issues": [],
       "bytes": 7535,
-      "degree": 5
+      "degree": 6
     },
     {
       "id": "CLAUDE.md",
@@ -72,7 +74,7 @@
       "prs": [],
       "issues": [],
       "bytes": 10955,
-      "degree": 7
+      "degree": 8
     },
     {
       "id": "scripts/commit-pr/semantic-release-structured-notes.cjs",
@@ -96,7 +98,7 @@
       "prs": [],
       "issues": [],
       "bytes": 4963,
-      "degree": 1
+      "degree": 3
     },
     {
       "id": "scripts/graph/build-graph.cjs",
@@ -107,8 +109,20 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 27541,
-      "degree": 2
+      "bytes": 30669,
+      "degree": 8
+    },
+    {
+      "id": "scripts/graph/README.md",
+      "label": "Knowledge graph",
+      "type": "tooling-doc",
+      "dir": "scripts/graph",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 6705,
+      "degree": 5
     },
     {
       "id": "scripts/graph/routing.cjs",
@@ -120,7 +134,7 @@
       "prs": [],
       "issues": [],
       "bytes": 11971,
-      "degree": 0
+      "degree": 2
     },
     {
       "id": "scripts/graph/serve.cjs",
@@ -132,7 +146,7 @@
       "prs": [],
       "issues": [],
       "bytes": 2443,
-      "degree": 0
+      "degree": 1
     },
     {
       "id": "scripts/tests/build-graph.test.cjs",
@@ -143,8 +157,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 11634,
-      "degree": 0
+      "bytes": 14732,
+      "degree": 2
     },
     {
       "id": "scripts/tests/helpers.cjs",
@@ -156,7 +170,7 @@
       "prs": [],
       "issues": [],
       "bytes": 1750,
-      "degree": 0
+      "degree": 4
     },
     {
       "id": "scripts/tests/inventory.test.cjs",
@@ -168,7 +182,7 @@
       "prs": [],
       "issues": [],
       "bytes": 4542,
-      "degree": 1
+      "degree": 2
     },
     {
       "id": "scripts/tests/resolve.test.cjs",
@@ -180,7 +194,7 @@
       "prs": [],
       "issues": [],
       "bytes": 5946,
-      "degree": 2
+      "degree": 3
     },
     {
       "id": "scripts/tests/skill-conformance.test.cjs",
@@ -191,8 +205,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 6509,
-      "degree": 1
+      "bytes": 6821,
+      "degree": 3
     },
     {
       "id": "scripts/tests/validate-report.test.cjs",
@@ -204,7 +218,7 @@
       "prs": [],
       "issues": [],
       "bytes": 11162,
-      "degree": 1
+      "degree": 2
     },
     {
       "id": "scripts/wiki/archive-plan.cjs",
@@ -216,7 +230,7 @@
       "prs": [],
       "issues": [],
       "bytes": 7293,
-      "degree": 0
+      "degree": 3
     },
     {
       "id": "scripts/wiki/ci-journal-warn.cjs",
@@ -228,7 +242,7 @@
       "prs": [],
       "issues": [],
       "bytes": 1593,
-      "degree": 0
+      "degree": 1
     },
     {
       "id": "scripts/wiki/find-unarchived-plans.cjs",
@@ -240,7 +254,7 @@
       "prs": [],
       "issues": [],
       "bytes": 5417,
-      "degree": 0
+      "degree": 2
     },
     {
       "id": "scripts/wiki/lib/ai.cjs",
@@ -252,7 +266,7 @@
       "prs": [],
       "issues": [],
       "bytes": 5227,
-      "degree": 0
+      "degree": 1
     },
     {
       "id": "scripts/wiki/lib/codex-plans.cjs",
@@ -264,7 +278,7 @@
       "prs": [],
       "issues": [],
       "bytes": 5117,
-      "degree": 0
+      "degree": 2
     },
     {
       "id": "scripts/wiki/lib/frontmatter.cjs",
@@ -276,7 +290,7 @@
       "prs": [],
       "issues": [],
       "bytes": 3801,
-      "degree": 0
+      "degree": 2
     },
     {
       "id": "scripts/wiki/lib/substantive.cjs",
@@ -288,7 +302,7 @@
       "prs": [],
       "issues": [],
       "bytes": 3030,
-      "degree": 0
+      "degree": 3
     },
     {
       "id": "scripts/wiki/lib/wiki-io.cjs",
@@ -300,7 +314,7 @@
       "prs": [],
       "issues": [],
       "bytes": 4987,
-      "degree": 0
+      "degree": 2
     },
     {
       "id": "scripts/wiki/navigate.cjs",
@@ -312,7 +326,7 @@
       "prs": [],
       "issues": [],
       "bytes": 1292,
-      "degree": 0
+      "degree": 2
     },
     {
       "id": "scripts/wiki/on-merge-sync.cjs",
@@ -324,7 +338,7 @@
       "prs": [],
       "issues": [],
       "bytes": 10348,
-      "degree": 0
+      "degree": 4
     },
     {
       "id": "scripts/wiki/pre-commit-journal.cjs",
@@ -336,7 +350,7 @@
       "prs": [],
       "issues": [],
       "bytes": 3639,
-      "degree": 0
+      "degree": 1
     },
     {
       "id": "scripts/wiki/refresh-issue-state.cjs",
@@ -348,7 +362,7 @@
       "prs": [],
       "issues": [],
       "bytes": 3510,
-      "degree": 0
+      "degree": 1
     },
     {
       "id": "skills/_meta/_sections.md",
@@ -492,7 +506,7 @@
       "prs": [],
       "issues": [],
       "bytes": 17387,
-      "degree": 4
+      "degree": 5
     },
     {
       "id": "skills/project-retrospective/scripts/lib/util.cjs",
@@ -504,7 +518,7 @@
       "prs": [],
       "issues": [],
       "bytes": 6786,
-      "degree": 0
+      "degree": 3
     },
     {
       "id": "skills/project-retrospective/scripts/resolve.cjs",
@@ -516,7 +530,7 @@
       "prs": [],
       "issues": [],
       "bytes": 10904,
-      "degree": 3
+      "degree": 4
     },
     {
       "id": "skills/project-retrospective/scripts/validate-report.cjs",
@@ -528,7 +542,7 @@
       "prs": [],
       "issues": [],
       "bytes": 20153,
-      "degree": 3
+      "degree": 4
     },
     {
       "id": "skills/project-retrospective/SKILL.md",
@@ -551,8 +565,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 3589,
-      "degree": 12
+      "bytes": 3848,
+      "degree": 13
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -603,6 +617,20 @@
       ],
       "issues": [],
       "bytes": 1219,
+      "degree": 2
+    },
+    {
+      "id": "wiki/journal/2026-07-27-graph-module-edges.md",
+      "label": "Module edges, so navigation reaches the tooling",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 2771,
       "degree": 2
     },
     {
@@ -706,8 +734,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 3519,
-      "degree": 10
+      "bytes": 4300,
+      "degree": 14
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -828,6 +856,21 @@
     },
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "scripts/graph/README.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "scripts/graph/serve.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "scripts/wiki/refresh-issue-state.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/MECHANICS.md",
       "type": "covers"
     },
@@ -860,6 +903,13 @@
       "source": "wiki/topics/skill-authoring.md",
       "target": "skills/_meta/_sections.md",
       "type": "covers"
+    },
+    {
+      "source": "AGENTS.md",
+      "target": "scripts/graph/README.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
     },
     {
       "source": "AGENTS.md",
@@ -926,6 +976,13 @@
     },
     {
       "source": "README.md",
+      "target": "scripts/graph/README.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "README.md",
       "target": "skills/_meta/_sections.md",
       "type": "links-to",
       "count": 1,
@@ -943,6 +1000,20 @@
       "target": "wiki/INDEX.md",
       "type": "links-to",
       "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "scripts/graph/README.md",
+      "target": "scripts/graph/build-graph.cjs",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "scripts/graph/README.md",
+      "target": "scripts/tests/build-graph.test.cjs",
+      "type": "links-to",
+      "count": 1,
       "anchors": []
     },
     {
@@ -1046,6 +1117,13 @@
     {
       "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-07-27-chore-project-retrospective-merge-main-and-rebuild-graph.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-07-27-graph-module-edges.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -1215,6 +1293,126 @@
       "type": "plan"
     },
     {
+      "source": "scripts/evals/graph-check.cjs",
+      "target": "scripts/graph/build-graph.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/evals/graph-check.cjs",
+      "target": "scripts/graph/routing.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/graph/build-graph.cjs",
+      "target": "scripts/wiki/lib/frontmatter.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/build-graph.test.cjs",
+      "target": "scripts/graph/build-graph.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/inventory.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/resolve.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/skill-conformance.test.cjs",
+      "target": "scripts/graph/build-graph.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/skill-conformance.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/validate-report.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/archive-plan.cjs",
+      "target": "scripts/wiki/lib/codex-plans.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/archive-plan.cjs",
+      "target": "scripts/wiki/lib/wiki-io.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/ci-journal-warn.cjs",
+      "target": "scripts/wiki/lib/substantive.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/find-unarchived-plans.cjs",
+      "target": "scripts/wiki/archive-plan.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/find-unarchived-plans.cjs",
+      "target": "scripts/wiki/lib/codex-plans.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/navigate.cjs",
+      "target": "scripts/graph/build-graph.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/navigate.cjs",
+      "target": "scripts/graph/routing.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/on-merge-sync.cjs",
+      "target": "scripts/wiki/lib/ai.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/on-merge-sync.cjs",
+      "target": "scripts/wiki/lib/frontmatter.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/on-merge-sync.cjs",
+      "target": "scripts/wiki/lib/substantive.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/on-merge-sync.cjs",
+      "target": "scripts/wiki/lib/wiki-io.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/pre-commit-journal.cjs",
+      "target": "scripts/wiki/lib/substantive.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "skills/project-retrospective/scripts/inventory.cjs",
+      "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "skills/project-retrospective/scripts/resolve.cjs",
+      "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "skills/project-retrospective/scripts/validate-report.cjs",
+      "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
       "source": "scripts/tests/inventory.test.cjs",
       "target": "skills/project-retrospective/scripts/inventory.cjs",
       "type": "tests"
@@ -1266,6 +1464,11 @@
     },
     {
       "source": "wiki/journal/2026-07-27-chore-project-retrospective-merge-main-and-rebuild-graph.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-07-27-graph-module-edges.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
     },

@@ -10,6 +10,7 @@
 //          repo tooling, the tests, and the context-wiki pages.
 // Edges  = relationships already latent in the content:
 //   contracts  SKILL.md -> every references/*.md it links and every scripts/*.cjs it names
+//   requires   a .cjs -> a .cjs it requires by relative path (the module graph)
 //   tests      a test file -> the script (or SKILL.md) it exercises
 //   links-to   relative markdown link between two node files (count = weight)
 //   topic      a wiki page -> topics/<slug>.md (from frontmatter `topics:`)
@@ -20,8 +21,9 @@
 // against the pattern files it lists; this repo has no catalog, so the equivalent
 // declaration is the skill's own contract. Those edges are emitted whether or not the
 // target exists, so a renamed reference or a script named in SKILL.md that is not on disk
-// becomes a dangling edge and fails the build. `tests`, `topic`, `plan`, and `covers`
-// are emitted the same way, for the same reason.
+// becomes a dangling edge and fails the build. `requires`, `topic`, `plan`, and `covers`
+// are emitted the same way, for the same reason. `tests` is the one resolve-only pass —
+// see the comment on that pass for why.
 //
 // Everything is derived deterministically from the files — no guessing, no LLM.
 // Output is timestamp-free so a rebuild only diffs when the content graph changes.
@@ -45,9 +47,12 @@ const SKILL_ID = `${SKILL_ROOT}/SKILL.md`;
 // authority for SKILL.md's structure, which makes it worth navigating to.
 const AUTHORING_SPEC_ID = "skills/_meta/_sections.md";
 
-// Repo tooling and its tests. Fixtures are synthetic inputs, not knowledge: indexing them
-// would add a dozen nodes and turn their markdown into phantom links-to edges.
-const TOOLING_DIRS = ["scripts/graph", "scripts/wiki", "scripts/evals", "scripts/commit-pr"];
+// Repo tooling and its tests. All of scripts/ is walked rather than an allow-list of
+// subdirectories, so a new scripts/<dir>/ is indexed instead of being silently invisible.
+// Fixtures are the one exclusion: they are synthetic inputs, not knowledge, and indexing
+// them would turn their markdown into phantom links-to edges and their .cjs into phantom
+// modules. That exclusion is also what makes it safe to test the builder with a fixture repo.
+const SCRIPTS_DIR = "scripts";
 const TESTS_DIR = "scripts/tests";
 const FIXTURES_PREFIX = `${TESTS_DIR}/fixtures/`;
 
@@ -76,11 +81,19 @@ const ISSUE_RE = /github\.com\/[^/]+\/[^/]+\/issues\/(\d+)/g;
 // them:
 //   - SKILL.md names its scripts as `<skill>/scripts/inventory.cjs` inside fenced bash
 //     blocks, so any fence-aware or angle-bracket-rejecting extractor finds nothing.
-//   - SKILL.md also cites the catalog repo's `scripts/graph/build-graph.cjs`. `[a-z-]+`
-//     cannot cross the `/` in `graph/build-graph.cjs`, so that path is correctly ignored
-//     instead of being mistaken for a local skill script that will never exist.
-const SKILL_REFERENCE_RE = /\]\((references\/[^)]+)\)/g;
-const SKILL_SCRIPT_RE = /scripts\/([a-z-]+\.cjs)/g;
+//   - SKILL.md also cites the catalog repo's `scripts/graph/build-graph.cjs`. The character
+//     class cannot cross the `/` in `graph/build-graph.cjs`, so that path is correctly
+//     ignored instead of being mistaken for a local skill script that will never exist.
+//     Widening it to include `/` would emit an edge that can never resolve. Digits and
+//     dots are safe and are included, so a script named `resolve2.cjs` stays gated.
+// scripts/tests/skill-conformance.test.cjs imports both of these rather than re-declaring
+// them, so the lint gate and the graph gate cannot drift apart.
+const SKILL_REFERENCE_RE = /\]\((?:\.\/)?(references\/[^)]+)\)/g;
+const SKILL_SCRIPT_RE = /scripts\/([a-z0-9._-]+\.cjs)/g;
+
+// Relative CommonJS requires between indexed .cjs files — the module graph. Bare
+// specifiers (`node:fs`, a package) cannot match, because a relative path is required.
+const REQUIRE_RE = /\brequire\(\s*['"](\.\.?\/[^'"]+\.cjs)['"]\s*\)/g;
 
 // The scripts a suite actually spawns. Anchored on the helper call rather than on any
 // quoted filename: scripts/tests/helpers.cjs resolves run()'s first argument against
@@ -155,7 +168,14 @@ function typeOf(r) {
 
   if (r.startsWith(FIXTURES_PREFIX)) return null;
   if (r.startsWith(`${TESTS_DIR}/`) && r.endsWith(".cjs")) return "test";
-  if (TOOLING_DIRS.some((d) => r.startsWith(`${d}/`)) && r.endsWith(".cjs")) return "repo-script";
+  if (r.startsWith(`${SCRIPTS_DIR}/`)) {
+    if (r.endsWith(".cjs")) return "repo-script";
+    // Tooling docs are indexed so a topic can declare one covered and so links into them
+    // from the root docs resolve — scripts/graph/README.md defines the integrity gate and
+    // had been sitting outside the graph it documents.
+    if (r.endsWith(".md")) return "tooling-doc";
+    return null;
+  }
 
   if (r.startsWith("wiki/")) {
     if (!r.endsWith(".md")) return null;
@@ -248,6 +268,19 @@ function extractTestTargets(text) {
   return out;
 }
 
+// Relative .cjs requires in a module's source, as repo-relative ids.
+function extractRequires(id, text) {
+  const out = [];
+  const dir = path.posix.dirname(id);
+  REQUIRE_RE.lastIndex = 0;
+  let m;
+  while ((m = REQUIRE_RE.exec(text)) !== null) {
+    const target = path.posix.normalize(path.posix.join(dir, m[1]));
+    if (!out.includes(target)) out.push(target);
+  }
+  return out;
+}
+
 function uniqueMatches(text, re) {
   const out = [];
   let m;
@@ -260,8 +293,7 @@ function build({ repoRoot = REPO_ROOT } = {}) {
   const roots = [
     path.join(repoRoot, "skills"),
     path.join(repoRoot, "wiki"),
-    ...TOOLING_DIRS.map((d) => path.join(repoRoot, d)),
-    path.join(repoRoot, TESTS_DIR),
+    path.join(repoRoot, SCRIPTS_DIR),
     ...[...ROOT_DOCS].map((d) => path.join(repoRoot, d)),
   ];
   const walked = roots.flatMap((rt) => walk(rt, [".md", ".cjs"]));
@@ -329,7 +361,25 @@ function build({ repoRoot = REPO_ROOT } = {}) {
     }
   }
 
-  // 3. links-to — relative markdown links between two known node files.
+  // 3. requires — the module graph: an indexed .cjs -> the .cjs it requires by relative
+  //    path. Unconditional, because a require that does not resolve to an indexed module
+  //    is a broken require: every .cjs under scripts/ and the skill is a node, and the one
+  //    unindexed region (test fixtures) is required by nothing. This is what keeps the
+  //    tooling reachable — without it, `pnpm graph:navigate` dead-ends on any script and
+  //    the "navigate before a broad read" instruction fails open into a broad read.
+  const requireSeen = new Set();
+  for (const [id, text] of fileText) {
+    if (!id.endsWith(".cjs")) continue;
+    for (const target of extractRequires(id, text)) {
+      if (target === id) continue;
+      const key = `${id}${EDGE_KEY_SEP}${target}`;
+      if (requireSeen.has(key)) continue;
+      requireSeen.add(key);
+      edges.push({ source: id, target, type: "requires" });
+    }
+  }
+
+  // 4. links-to — relative markdown links between two known node files.
   const linkCounts = new Map(); // `${src} ${tgt}` -> {count, anchors:Set}
   for (const [id, text] of fileText) {
     if (!id.endsWith(".md")) continue;
@@ -350,7 +400,7 @@ function build({ repoRoot = REPO_ROOT } = {}) {
     edges.push({ source, target, type: "links-to", count, anchors: [...anchors] });
   }
 
-  // 4. topic / 5. plan / 6. covers — wiki frontmatter relations, all preserving unresolved
+  // 5. topic / 6. plan / 7. covers — wiki frontmatter relations, all preserving unresolved
   //    targets so a stale topic slug, a moved plan, or a topic pointing at a surface that
   //    no longer exists fails loudly instead of being silently dropped. topics/covers are
   //    list-valued, so dedup identical (type, source, target) the way the passes above do.
@@ -467,7 +517,7 @@ function renderConnections(graph) {
   const coverage = () => {
     const out = head(
       "Coverage",
-      "Which script each suite exercises, and which surfaces each wiki topic explains. Together these are the \"four surfaces move together\" rule, made visible.",
+      "Which script each suite exercises, how the modules depend on one another, and which surfaces each wiki topic explains. Together these are the \"four surfaces move together\" rule, made visible.",
     );
     const testEdges = edgesOf("tests").sort(bySource);
     out.push("## Test → script", "");
@@ -478,6 +528,15 @@ function renderConnections(graph) {
         out.push(`- ${link(s)} → ${targets.map(link).join(", ")}`);
       }
     } else out.push("_No test coverage recorded yet._");
+    const requireEdges = edgesOf("requires").sort(bySource);
+    out.push("", "## Module → module", "");
+    if (requireEdges.length) {
+      const sources = [...new Set(requireEdges.map((e) => e.source))].sort();
+      for (const s of sources) {
+        const targets = requireEdges.filter((e) => e.source === s).map((e) => e.target).sort();
+        out.push(`- ${link(s)} → ${targets.map(link).join(", ")}`);
+      }
+    } else out.push("_No module requires recorded yet._");
     const coversEdges = edgesOf("covers").sort(bySource);
     out.push("", "## Topic → covered surface", "");
     if (coversEdges.length) {
@@ -602,6 +661,9 @@ module.exports = {
   extractSkillReferences,
   extractSkillScripts,
   extractTestTargets,
+  extractRequires,
+  SKILL_REFERENCE_RE,
+  SKILL_SCRIPT_RE,
   OUT_FILE,
   REPO_ROOT,
   CONNECTIONS_INDEX_ID,
