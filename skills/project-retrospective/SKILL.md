@@ -31,7 +31,7 @@ Operator docs: [README.md](README.md).
 1. [`references/evidence-rubric.md`](references/evidence-rubric.md) — the Promote / Watch / Reject bar, hard exclusions, alias and variant rules. Normative for triage.
 2. [`references/report-template.md`](references/report-template.md) — `report.md` structure; its `##` headings are frozen.
 3. [`references/proposal-new-pattern-template.md`](references/proposal-new-pattern-template.md), [`references/proposal-new-alias-template.md`](references/proposal-new-alias-template.md), [`references/proposal-guidance-edit-template.md`](references/proposal-guidance-edit-template.md) — one per catalog proposal type.
-4. [`references/proposal-component-capture-template.md`](references/proposal-component-capture-template.md) — capturing a mature implementation for the component library.
+4. [`references/proposal-component-capture-template.md`](references/proposal-component-capture-template.md) — capturing a mature implementation for `ui-design-library`.
 5. [`references/orchestration-draft-template.md`](references/orchestration-draft-template.md) — drafts for pipeline-shaped findings.
 6. [`references/brain-integrity-checklist.md`](references/brain-integrity-checklist.md) — the ordered promote procedure. Read only for `Action: promote`.
 7. [`references/code-scan-mode.md`](references/code-scan-mode.md) — degraded-mode procedure. Read only when the inventory reports `mode: code-scan`.
@@ -54,7 +54,7 @@ Retrospective progress:
 **0. Resolve inputs.** Require `Project`. Resolve `Output` in this order — **never inside `Project`**, which is read-only for this skill:
 
 1. `Output` if given.
-2. `<Data>/runs/<project-slug>/<YYYY-MM-DD>/` when `Data` names the platform-intelligence repo.
+2. `<Data>/runs/<project-slug>/<YYYY-MM-DD>/` when `Data` names the `ui-design-evidence` checkout.
 3. `~/project-retrospective/runs/<project-slug>/<YYYY-MM-DD>/` otherwise — say so, and note that `Data` is where runs belong.
 
 Create the directory and state the resolved paths before running anything. If any resolved path falls inside `Project`, stop and ask for an `Output` outside it.
@@ -114,7 +114,7 @@ Brain: /abs/path/to/ui-design-brain
 |---|---|---|---|
 | `Project` | yes | — | Absolute path to the completed project repository. Read-only. |
 | `Brain` | for resolution and promote | — | Absolute path to a local ui-design-brain checkout. |
-| `Data` | no | — | Absolute path to the private platform-intelligence repo. When given, runs land under `<Data>/runs/`. |
+| `Data` | no | — | Absolute path to the private `ui-design-evidence` repo. When given, runs land under `<Data>/runs/`. |
 | `Output` | no | see step 0 | Where run output is written. Never inside `Project`. |
 | `Scope` | no | `full` | `full`, `inventory`, or `candidates`. |
 | `PriorReports` | no | — | Comma-separated paths to earlier `report.md` files. |

@@ -20,11 +20,11 @@ It is an **architectural advisor, not an autonomous editor.** Every change to th
 completed project  (read-only — the retrospective never writes here)
         │  /project-retrospective  Action: analyze
         ▼
-a run in the platform-intelligence repo:
+a run in the `ui-design-evidence` repo:
 report.md · inventory.json · resolution.json · proposals/ · captures/ · orchestration-drafts.md
         │  human review
         ├── proposals/  → Action: promote → ui-design-brain working tree → verify → stop
-        ├── captures/   → the component library (a human executes the de-clienting rewrite)
+        ├── captures/   → `ui-design-library` (a human executes the rewrite)
         └── orchestration-drafts.md → ai-orchestration, via its own contribution flow
                             │
                             ▼
@@ -39,8 +39,8 @@ The skill plugs into the **front** of the existing delivery chain and replaces n
 | Destination | What lands there | Who consumes it |
 |---|---|---|
 | [`ui-design-brain`](https://github.com/verndale/ui-design-brain) | Canonical vocabulary: patterns, aliases, guidance. | Every AI tool, via the `skills` CLI. |
-| Component library (private) | Implementations keyed by canonical slug, with Storybook. | Client projects, so a Card is not rebuilt each time. |
-| Platform intelligence (private) | Retrospective runs, evidence, cross-project history. | Nothing downstream — humans and this skill only. |
+| [`ui-design-library`](https://github.com/verndale/ui-design-library) (private) | Implementations keyed by canonical slug, with Storybook. | Client projects, so a Card is not rebuilt each time. |
+| [`ui-design-evidence`](https://github.com/verndale/ui-design-evidence) (private) | Retrospective runs, evidence, cross-project history. | Nothing downstream — humans and this skill only. |
 
 The library and the evidence store are **separate repos on purpose.** The library is pulled into client projects; the evidence store aggregates across clients. Keeping them apart means one client's build can never contain another client's retrospective data.
 

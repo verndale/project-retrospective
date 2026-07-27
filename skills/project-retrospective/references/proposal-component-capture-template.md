@@ -11,7 +11,7 @@
 
 The catalog says what a **Card** is. A capture says "this project's Card implementation is good enough that the next project should start from it rather than rebuild it."
 
-Captures target the private component library, not ui-design-brain, and they are **drafts a human executes**. A component lifted straight out of a client project carries CMS types, client token names, and client copy; turning it into a library component is a rewrite, not a copy. The capture's job is to identify the candidate, prove it is worth the rewrite, and enumerate exactly what the rewrite has to strip.
+Captures target the private `ui-design-library` repo, not `ui-design-brain`, and they are **drafts a human executes**. A component lifted straight out of a client project carries CMS types, client token names, and client copy; turning it into a library component is a rewrite, not a copy. The capture's job is to identify the candidate, prove it is worth the rewrite, and enumerate exactly what the rewrite has to strip.
 
 Write one file per candidate at `captures/<kebab-canonical>.md` — a separate directory from `proposals/`, because a capture is not a catalog change and has no Promote candidate to pair with.
 

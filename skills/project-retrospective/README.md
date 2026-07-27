@@ -46,13 +46,14 @@ Project: /Users/you/Projects/some-client-site
 Scope: inventory
 ```
 
-With cross-project history:
+Writing into the evidence repo, with cross-project history:
 
 ```text
 /project-retrospective
 Project: /Users/you/Projects/site-b
 Brain: /Users/you/Projects/ui-design-brain
-PriorReports: /Users/you/Projects/site-a/artifacts/retrospective/2026-05-02/report.md
+Data: /Users/you/Projects/ui-design-evidence
+PriorReports: /Users/you/Projects/ui-design-evidence/runs/site-a/2026-05-02/report.md
 ```
 
 ## Parameters
@@ -61,7 +62,7 @@ PriorReports: /Users/you/Projects/site-a/artifacts/retrospective/2026-05-02/repo
 |---|---|---|---|
 | `Project` | yes | — | Absolute path to the completed project repository. **Read-only** — the retrospective never writes here. |
 | `Brain` | for resolution and promote | — | Absolute path to a local ui-design-brain checkout. Without it, resolution is skipped and the report records the gap. |
-| `Data` | no | — | Absolute path to the private platform-intelligence repo. When given, runs land under `<Data>/runs/<project-slug>/<date>/`. |
+| `Data` | no | — | Absolute path to the private `ui-design-evidence` repo. When given, runs land under `<Data>/runs/<project-slug>/<date>/`. |
 | `Output` | no | `<Data>/runs/…`, else `~/project-retrospective/runs/…` | Where run output is written. Never inside `Project`. |
 | `Scope` | no | `full` | `inventory` (what was built), `candidates` (adds resolution and verdicts), `full` (adds proposals and drafts). |
 | `PriorReports` | no | — | Comma-separated paths to earlier `report.md` files. A Watch candidate that recurs is elevated to Promote. |
@@ -78,10 +79,10 @@ Written to `Output`, never into this skill's repository:
 | `inventory.json` | Every component found, with its evidence sources, build pack, and fingerprint. |
 | `resolution.json` | Resolved labels with how they resolved; unresolved labels with occurrences and locations. |
 | `proposals/<slug>.md` | One per Promote candidate — a ready-to-apply catalog change with its evidence. |
-| `captures/<slug>.md` | Implementations mature enough to seed the shared component library, with the de-clienting work each needs. Often drawn from components whose labels already resolve. |
+| `captures/<slug>.md` | Implementations mature enough to seed `ui-design-library`, with the de-clienting work each needs. Often drawn from components whose labels already resolve. |
 | `orchestration-drafts.md` | Pipeline-shaped findings as paste-ready drafts for ai-orchestration. |
 
-**The analyzed project is never written to.** Runs land in the private platform-intelligence repo (`Data`) or, failing that, a user-level directory — never in the client repo. That keeps a retrospective from leaving artifacts a project team has to review, and keeps cross-project evidence out of any single client's tree.
+**The analyzed project is never written to.** Runs land in the private `ui-design-evidence` repo (`Data`) or, failing that, a user-level directory — never in the client repo. That keeps a retrospective from leaving artifacts a project team has to review, and keeps cross-project evidence out of any single client's tree.
 
 **Two modes.** A project that went through the build pipeline has normalized evidence (build packs, component index, fingerprints, project memory) — that is `artifacts` mode. A project without it degrades to `code-scan`: directory walking only, which yields names but no contract, so verdicts cap at Watch. The report says which mode ran, in the Run and Gaps sections.
 
@@ -110,7 +111,7 @@ Review `proposals/`, then apply one:
 ```text
 /project-retrospective
 Action: promote
-Proposal: /path/to/output/proposals/promo-strip.md
+Proposal: /Users/you/Projects/ui-design-evidence/runs/site-b/2026-06-14/proposals/promo-strip.md
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
