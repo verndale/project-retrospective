@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 54,
-    "edges": 86,
+    "nodes": 55,
+    "edges": 88,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -12,17 +12,17 @@
       "skill-script": 4,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 2,
+      "wiki-journal": 3,
       "wiki-plan": 2,
       "wiki-topic": 4
     },
     "byEdgeType": {
       "contracts": 12,
       "covers": 10,
-      "links-to": 48,
+      "links-to": 49,
       "plan": 2,
       "tests": 5,
-      "topic": 9
+      "topic": 10
     }
   },
   "nodes": [
@@ -551,8 +551,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 3408,
-      "degree": 11
+      "bytes": 3589,
+      "degree": 12
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -588,6 +588,22 @@
       "issues": [],
       "bytes": 3611,
       "degree": 6
+    },
+    {
+      "id": "wiki/journal/2026-07-27-chore-project-retrospective-merge-main-and-rebuild-graph.md",
+      "label": "chore(project-retrospective): merge main and rebuild graph",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [
+        "4"
+      ],
+      "issues": [],
+      "bytes": 1219,
+      "degree": 2
     },
     {
       "id": "wiki/MECHANICS.md",
@@ -686,11 +702,12 @@
         "graph freshness"
       ],
       "prs": [
+        "4",
         "1"
       ],
       "issues": [],
-      "bytes": 3375,
-      "degree": 9
+      "bytes": 3519,
+      "degree": 10
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -1028,6 +1045,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-07-27-chore-project-retrospective-merge-main-and-rebuild-graph.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -1238,6 +1262,11 @@
     {
       "source": "wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md",
       "target": "wiki/topics/skill-authoring.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-07-27-chore-project-retrospective-merge-main-and-rebuild-graph.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
     },
     {
