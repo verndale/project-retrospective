@@ -1,0 +1,1246 @@
+{
+  "counts": {
+    "nodes": 54,
+    "edges": 86,
+    "byType": {
+      "root-doc": 4,
+      "repo-script": 17,
+      "test": 6,
+      "authoring-spec": 1,
+      "skill-readme": 1,
+      "skill-reference": 9,
+      "skill-script": 4,
+      "skill": 1,
+      "wiki-index": 3,
+      "wiki-journal": 2,
+      "wiki-plan": 2,
+      "wiki-topic": 4
+    },
+    "byEdgeType": {
+      "contracts": 12,
+      "covers": 10,
+      "links-to": 47,
+      "plan": 2,
+      "tests": 6,
+      "topic": 9
+    }
+  },
+  "nodes": [
+    {
+      "id": "AGENTS.md",
+      "label": "Project Retrospective — agent guide",
+      "type": "root-doc",
+      "dir": ".",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 7535,
+      "degree": 5
+    },
+    {
+      "id": "CLAUDE.md",
+      "label": "CLAUDE.md",
+      "type": "root-doc",
+      "dir": ".",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 310,
+      "degree": 0
+    },
+    {
+      "id": "CONTRIBUTING.md",
+      "label": "Contributing",
+      "type": "root-doc",
+      "dir": ".",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 6630,
+      "degree": 5
+    },
+    {
+      "id": "README.md",
+      "label": "Project Retrospective",
+      "type": "root-doc",
+      "dir": ".",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 10570,
+      "degree": 7
+    },
+    {
+      "id": "scripts/commit-pr/semantic-release-structured-notes.cjs",
+      "label": "commit-pr/semantic-release-structured-notes.cjs",
+      "type": "repo-script",
+      "dir": "scripts/commit-pr",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 7434,
+      "degree": 2
+    },
+    {
+      "id": "scripts/evals/graph-check.cjs",
+      "label": "evals/graph-check.cjs",
+      "type": "repo-script",
+      "dir": "scripts/evals",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 4963,
+      "degree": 1
+    },
+    {
+      "id": "scripts/graph/build-graph.cjs",
+      "label": "graph/build-graph.cjs",
+      "type": "repo-script",
+      "dir": "scripts/graph",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 26681,
+      "degree": 2
+    },
+    {
+      "id": "scripts/graph/routing.cjs",
+      "label": "graph/routing.cjs",
+      "type": "repo-script",
+      "dir": "scripts/graph",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 11971,
+      "degree": 0
+    },
+    {
+      "id": "scripts/graph/serve.cjs",
+      "label": "graph/serve.cjs",
+      "type": "repo-script",
+      "dir": "scripts/graph",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 2086,
+      "degree": 0
+    },
+    {
+      "id": "scripts/tests/build-graph.test.cjs",
+      "label": "build-graph.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 10131,
+      "degree": 1
+    },
+    {
+      "id": "scripts/tests/helpers.cjs",
+      "label": "helpers.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 1750,
+      "degree": 0
+    },
+    {
+      "id": "scripts/tests/inventory.test.cjs",
+      "label": "inventory.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 4542,
+      "degree": 1
+    },
+    {
+      "id": "scripts/tests/resolve.test.cjs",
+      "label": "resolve.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 5946,
+      "degree": 2
+    },
+    {
+      "id": "scripts/tests/skill-conformance.test.cjs",
+      "label": "skill-conformance.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 6509,
+      "degree": 1
+    },
+    {
+      "id": "scripts/tests/validate-report.test.cjs",
+      "label": "validate-report.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 11162,
+      "degree": 1
+    },
+    {
+      "id": "scripts/wiki/archive-plan.cjs",
+      "label": "wiki/archive-plan.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 7293,
+      "degree": 0
+    },
+    {
+      "id": "scripts/wiki/ci-journal-warn.cjs",
+      "label": "wiki/ci-journal-warn.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 1593,
+      "degree": 0
+    },
+    {
+      "id": "scripts/wiki/find-unarchived-plans.cjs",
+      "label": "wiki/find-unarchived-plans.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 5417,
+      "degree": 0
+    },
+    {
+      "id": "scripts/wiki/lib/ai.cjs",
+      "label": "wiki/lib/ai.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki/lib",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 5227,
+      "degree": 0
+    },
+    {
+      "id": "scripts/wiki/lib/codex-plans.cjs",
+      "label": "wiki/lib/codex-plans.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki/lib",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 5117,
+      "degree": 0
+    },
+    {
+      "id": "scripts/wiki/lib/frontmatter.cjs",
+      "label": "wiki/lib/frontmatter.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki/lib",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3801,
+      "degree": 0
+    },
+    {
+      "id": "scripts/wiki/lib/substantive.cjs",
+      "label": "wiki/lib/substantive.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki/lib",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 2946,
+      "degree": 0
+    },
+    {
+      "id": "scripts/wiki/lib/wiki-io.cjs",
+      "label": "wiki/lib/wiki-io.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki/lib",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 4987,
+      "degree": 0
+    },
+    {
+      "id": "scripts/wiki/navigate.cjs",
+      "label": "wiki/navigate.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 1292,
+      "degree": 0
+    },
+    {
+      "id": "scripts/wiki/on-merge-sync.cjs",
+      "label": "wiki/on-merge-sync.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 10348,
+      "degree": 0
+    },
+    {
+      "id": "scripts/wiki/pre-commit-journal.cjs",
+      "label": "wiki/pre-commit-journal.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3639,
+      "degree": 0
+    },
+    {
+      "id": "scripts/wiki/refresh-issue-state.cjs",
+      "label": "wiki/refresh-issue-state.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3510,
+      "degree": 0
+    },
+    {
+      "id": "skills/_meta/_sections.md",
+      "label": "Skill file structure — section reference",
+      "type": "authoring-spec",
+      "dir": "skills/_meta",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 7436,
+      "degree": 3
+    },
+    {
+      "id": "skills/project-retrospective/README.md",
+      "label": "project-retrospective — operator docs",
+      "type": "skill-readme",
+      "dir": "skills/project-retrospective",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 8171,
+      "degree": 3
+    },
+    {
+      "id": "skills/project-retrospective/references/brain-integrity-checklist.md",
+      "label": "Brain integrity checklist",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 7950,
+      "degree": 3
+    },
+    {
+      "id": "skills/project-retrospective/references/code-scan-mode.md",
+      "label": "Code-scan mode",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3529,
+      "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/references/evidence-rubric.md",
+      "label": "Evidence rubric",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 7356,
+      "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/references/orchestration-draft-template.md",
+      "label": "orchestration-drafts.md template",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3610,
+      "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/references/proposal-component-capture-template.md",
+      "label": "Proposal template — component capture",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 5449,
+      "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/references/proposal-guidance-edit-template.md",
+      "label": "Proposal template — guidance edit",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 2885,
+      "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/references/proposal-new-alias-template.md",
+      "label": "Proposal template — new alias",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3151,
+      "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/references/proposal-new-pattern-template.md",
+      "label": "Proposal template — new pattern",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3427,
+      "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/references/report-template.md",
+      "label": "report.md template",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3739,
+      "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/scripts/inventory.cjs",
+      "label": "inventory.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 17387,
+      "degree": 4
+    },
+    {
+      "id": "skills/project-retrospective/scripts/lib/util.cjs",
+      "label": "util.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts/lib",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 6786,
+      "degree": 0
+    },
+    {
+      "id": "skills/project-retrospective/scripts/resolve.cjs",
+      "label": "resolve.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 10904,
+      "degree": 3
+    },
+    {
+      "id": "skills/project-retrospective/scripts/validate-report.cjs",
+      "label": "validate-report.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 20153,
+      "degree": 3
+    },
+    {
+      "id": "skills/project-retrospective/SKILL.md",
+      "label": "project-retrospective",
+      "type": "skill",
+      "dir": "skills/project-retrospective",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 11686,
+      "degree": 26
+    },
+    {
+      "id": "wiki/INDEX.md",
+      "label": "Context Wiki",
+      "type": "wiki-index",
+      "dir": "wiki",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3408,
+      "degree": 10
+    },
+    {
+      "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
+      "label": "Building the project-retrospective skill",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "skill-authoring",
+        "retrospective-workflow",
+        "brain-promotion"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3138,
+      "degree": 9
+    },
+    {
+      "id": "wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md",
+      "label": "Knowledge graph + context wiki subsystem",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "graph-wiki-subsystem",
+        "skill-authoring"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3562,
+      "degree": 6
+    },
+    {
+      "id": "wiki/MECHANICS.md",
+      "label": "Wiki Mechanics",
+      "type": "wiki-index",
+      "dir": "wiki",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 7876,
+      "degree": 7
+    },
+    {
+      "id": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
+      "label": "Port the knowledge-graph + context-wiki subsystem into project-retrospective",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 24957,
+      "degree": 5
+    },
+    {
+      "id": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
+      "label": "project-retrospective — critique + build plan",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "skill-authoring",
+        "retrospective-workflow",
+        "brain-promotion"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 24333,
+      "degree": 8
+    },
+    {
+      "id": "wiki/plans/INDEX.md",
+      "label": "Plan Audit",
+      "type": "wiki-index",
+      "dir": "wiki/plans",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 1286,
+      "degree": 4
+    },
+    {
+      "id": "wiki/topics/brain-promotion.md",
+      "label": "Brain promotion — Design History",
+      "type": "wiki-topic",
+      "dir": "wiki/topics",
+      "topics": [],
+      "aliases": [
+        "promote action",
+        "catalog integrity checklist",
+        "manifest edit",
+        "alias proposal",
+        "pattern proposal",
+        "handback"
+      ],
+      "prs": [],
+      "issues": [],
+      "bytes": 2333,
+      "degree": 6
+    },
+    {
+      "id": "wiki/topics/graph-wiki-subsystem.md",
+      "label": "Knowledge graph & context wiki — Design History",
+      "type": "wiki-topic",
+      "dir": "wiki/topics",
+      "topics": [],
+      "aliases": [
+        "knowledge graph",
+        "context wiki",
+        "skill contract gate",
+        "sigma.js viewer",
+        "plan capture",
+        "connections pages",
+        "graph freshness"
+      ],
+      "prs": [],
+      "issues": [],
+      "bytes": 3234,
+      "degree": 9
+    },
+    {
+      "id": "wiki/topics/retrospective-workflow.md",
+      "label": "Retrospective workflow — Design History",
+      "type": "wiki-topic",
+      "dir": "wiki/topics",
+      "topics": [],
+      "aliases": [
+        "analyze path",
+        "retrospective run",
+        "component inventory",
+        "label resolution",
+        "evidence triage",
+        "promote watch reject"
+      ],
+      "prs": [],
+      "issues": [],
+      "bytes": 2433,
+      "degree": 9
+    },
+    {
+      "id": "wiki/topics/skill-authoring.md",
+      "label": "Skill authoring — Design History",
+      "type": "wiki-topic",
+      "dir": "wiki/topics",
+      "topics": [],
+      "aliases": [
+        "skill authoring",
+        "section spine",
+        "SKILL.md structure",
+        "four surfaces",
+        "conformance test",
+        "authoring standard"
+      ],
+      "prs": [],
+      "issues": [],
+      "bytes": 2465,
+      "degree": 10
+    }
+  ],
+  "edges": [
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/brain-integrity-checklist.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/code-scan-mode.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/evidence-rubric.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/orchestration-draft-template.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/proposal-component-capture-template.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/proposal-guidance-edit-template.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/proposal-new-alias-template.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/proposal-new-pattern-template.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/report-template.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/scripts/inventory.cjs",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/scripts/resolve.cjs",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/scripts/validate-report.cjs",
+      "type": "contracts"
+    },
+    {
+      "source": "wiki/topics/brain-promotion.md",
+      "target": "skills/project-retrospective/references/brain-integrity-checklist.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "scripts/evals/graph-check.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "scripts/graph/build-graph.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/MECHANICS.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/scripts/inventory.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/scripts/resolve.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/scripts/validate-report.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/SKILL.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/skill-authoring.md",
+      "target": "CONTRIBUTING.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/skill-authoring.md",
+      "target": "skills/_meta/_sections.md",
+      "type": "covers"
+    },
+    {
+      "source": "AGENTS.md",
+      "target": "wiki/INDEX.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "AGENTS.md",
+      "target": "wiki/MECHANICS.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "CONTRIBUTING.md",
+      "target": "README.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "CONTRIBUTING.md",
+      "target": "scripts/commit-pr/semantic-release-structured-notes.cjs",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "CONTRIBUTING.md",
+      "target": "wiki/MECHANICS.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "README.md",
+      "target": "AGENTS.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "README.md",
+      "target": "CONTRIBUTING.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "README.md",
+      "target": "scripts/commit-pr/semantic-release-structured-notes.cjs",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "README.md",
+      "target": "skills/_meta/_sections.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "README.md",
+      "target": "skills/project-retrospective/README.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "README.md",
+      "target": "wiki/INDEX.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "skills/_meta/_sections.md",
+      "target": "AGENTS.md",
+      "type": "links-to",
+      "count": 3,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/README.md",
+      "target": "skills/project-retrospective/SKILL.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/README.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/brain-integrity-checklist.md",
+      "type": "links-to",
+      "count": 3,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/code-scan-mode.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/evidence-rubric.md",
+      "type": "links-to",
+      "count": 3,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/orchestration-draft-template.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/proposal-component-capture-template.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/proposal-guidance-edit-template.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/proposal-new-alias-template.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/proposal-new-pattern-template.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/report-template.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/plans/INDEX.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/topics/brain-promotion.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/topics/skill-authoring.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/MECHANICS.md",
+      "target": "AGENTS.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/MECHANICS.md",
+      "target": "scripts/graph/build-graph.cjs",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/MECHANICS.md",
+      "target": "wiki/INDEX.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "wiki/MECHANICS.md",
+      "target": "wiki/plans/INDEX.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/brain-promotion.md",
+      "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/brain-promotion.md",
+      "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/skill-authoring.md",
+      "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/skill-authoring.md",
+      "target": "wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/skill-authoring.md",
+      "target": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/skill-authoring.md",
+      "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
+      "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
+      "type": "plan"
+    },
+    {
+      "source": "wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md",
+      "target": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
+      "type": "plan"
+    },
+    {
+      "source": "scripts/tests/build-graph.test.cjs",
+      "target": "skills/project-retrospective/SKILL.md",
+      "type": "tests"
+    },
+    {
+      "source": "scripts/tests/inventory.test.cjs",
+      "target": "skills/project-retrospective/scripts/inventory.cjs",
+      "type": "tests"
+    },
+    {
+      "source": "scripts/tests/resolve.test.cjs",
+      "target": "skills/project-retrospective/scripts/inventory.cjs",
+      "type": "tests"
+    },
+    {
+      "source": "scripts/tests/resolve.test.cjs",
+      "target": "skills/project-retrospective/scripts/resolve.cjs",
+      "type": "tests"
+    },
+    {
+      "source": "scripts/tests/skill-conformance.test.cjs",
+      "target": "skills/project-retrospective/SKILL.md",
+      "type": "tests"
+    },
+    {
+      "source": "scripts/tests/validate-report.test.cjs",
+      "target": "skills/project-retrospective/scripts/validate-report.cjs",
+      "type": "tests"
+    },
+    {
+      "source": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
+      "target": "wiki/topics/brain-promotion.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
+      "target": "wiki/topics/skill-authoring.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md",
+      "target": "wiki/topics/skill-authoring.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
+      "target": "wiki/topics/brain-promotion.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
+      "target": "wiki/topics/skill-authoring.md",
+      "type": "topic"
+    }
+  ]
+}

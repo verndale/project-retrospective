@@ -1,0 +1,35 @@
+# Connections — Document links
+
+Relative markdown links between indexed documents, and which of them cross between the skill, the wiki, the tooling, and the root docs.
+
+Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm evals:graph`.
+
+## All document links
+
+- [Project Retrospective — agent guide](../../AGENTS.md) → [Context Wiki](../../wiki/INDEX.md), [Wiki Mechanics](../../wiki/MECHANICS.md)
+- [Contributing](../../CONTRIBUTING.md) → [Project Retrospective](../../README.md), [commit-pr/semantic-release-structured-notes.cjs](../../scripts/commit-pr/semantic-release-structured-notes.cjs), [Wiki Mechanics](../../wiki/MECHANICS.md)
+- [Project Retrospective](../../README.md) → [Project Retrospective — agent guide](../../AGENTS.md), [Contributing](../../CONTRIBUTING.md) (×2), [commit-pr/semantic-release-structured-notes.cjs](../../scripts/commit-pr/semantic-release-structured-notes.cjs), [Skill file structure — section reference](../../skills/_meta/_sections.md), [project-retrospective — operator docs](../../skills/project-retrospective/README.md), [Context Wiki](../../wiki/INDEX.md) (×2)
+- [Skill file structure — section reference](../../skills/_meta/_sections.md) → [Project Retrospective — agent guide](../../AGENTS.md) (×3)
+- [project-retrospective — operator docs](../../skills/project-retrospective/README.md) → [project-retrospective](../../skills/project-retrospective/SKILL.md)
+- [project-retrospective](../../skills/project-retrospective/SKILL.md) → [project-retrospective — operator docs](../../skills/project-retrospective/README.md), [Brain integrity checklist](../../skills/project-retrospective/references/brain-integrity-checklist.md) (×3), [Code-scan mode](../../skills/project-retrospective/references/code-scan-mode.md) (×2), [Evidence rubric](../../skills/project-retrospective/references/evidence-rubric.md) (×3), [orchestration-drafts.md template](../../skills/project-retrospective/references/orchestration-draft-template.md) (×2), [Proposal template — component capture](../../skills/project-retrospective/references/proposal-component-capture-template.md) (×2), [Proposal template — guidance edit](../../skills/project-retrospective/references/proposal-guidance-edit-template.md), [Proposal template — new alias](../../skills/project-retrospective/references/proposal-new-alias-template.md), [Proposal template — new pattern](../../skills/project-retrospective/references/proposal-new-pattern-template.md), [report.md template](../../skills/project-retrospective/references/report-template.md) (×2)
+- [Context Wiki](../../wiki/INDEX.md) → [Building the project-retrospective skill](../../wiki/journal/2026-07-26-build-project-retrospective-skill.md), [Knowledge graph + context wiki subsystem](../../wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md), [Plan Audit](../../wiki/plans/INDEX.md) (×2), [Brain promotion — Design History](../../wiki/topics/brain-promotion.md), [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md), [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md), [Skill authoring — Design History](../../wiki/topics/skill-authoring.md)
+- [Wiki Mechanics](../../wiki/MECHANICS.md) → [Project Retrospective — agent guide](../../AGENTS.md), [graph/build-graph.cjs](../../scripts/graph/build-graph.cjs), [Context Wiki](../../wiki/INDEX.md) (×2), [Plan Audit](../../wiki/plans/INDEX.md)
+- [Plan Audit](../../wiki/plans/INDEX.md) → [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md), [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md)
+- [Brain promotion — Design History](../../wiki/topics/brain-promotion.md) → [Building the project-retrospective skill](../../wiki/journal/2026-07-26-build-project-retrospective-skill.md), [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) (×2)
+- [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md) → [Building the project-retrospective skill](../../wiki/journal/2026-07-26-build-project-retrospective-skill.md), [Knowledge graph + context wiki subsystem](../../wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md) (×2), [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) (×2)
+- [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md) → [Building the project-retrospective skill](../../wiki/journal/2026-07-26-build-project-retrospective-skill.md), [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) (×2)
+- [Skill authoring — Design History](../../wiki/topics/skill-authoring.md) → [Building the project-retrospective skill](../../wiki/journal/2026-07-26-build-project-retrospective-skill.md), [Knowledge graph + context wiki subsystem](../../wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md), [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md), [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md)
+
+## Cross-area links (seams)
+
+- [Project Retrospective — agent guide](../../AGENTS.md) → [Context Wiki](../../wiki/INDEX.md)
+- [Project Retrospective — agent guide](../../AGENTS.md) → [Wiki Mechanics](../../wiki/MECHANICS.md)
+- [Contributing](../../CONTRIBUTING.md) → [commit-pr/semantic-release-structured-notes.cjs](../../scripts/commit-pr/semantic-release-structured-notes.cjs)
+- [Contributing](../../CONTRIBUTING.md) → [Wiki Mechanics](../../wiki/MECHANICS.md)
+- [Project Retrospective](../../README.md) → [commit-pr/semantic-release-structured-notes.cjs](../../scripts/commit-pr/semantic-release-structured-notes.cjs)
+- [Project Retrospective](../../README.md) → [Skill file structure — section reference](../../skills/_meta/_sections.md)
+- [Project Retrospective](../../README.md) → [project-retrospective — operator docs](../../skills/project-retrospective/README.md)
+- [Project Retrospective](../../README.md) → [Context Wiki](../../wiki/INDEX.md) (×2)
+- [Skill file structure — section reference](../../skills/_meta/_sections.md) → [Project Retrospective — agent guide](../../AGENTS.md) (×3)
+- [Wiki Mechanics](../../wiki/MECHANICS.md) → [Project Retrospective — agent guide](../../AGENTS.md)
+- [Wiki Mechanics](../../wiki/MECHANICS.md) → [graph/build-graph.cjs](../../scripts/graph/build-graph.cjs)

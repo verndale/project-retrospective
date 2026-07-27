@@ -96,7 +96,7 @@ For any entry with `ambiguous: true`, the manifest scopes that label to more tha
 
 **2. Apply** the ordered edits for that proposal type — new-pattern, new-alias, or guidance-edit — to the brain working tree only.
 
-**3. Verify** with `node scripts/graph/build-graph.cjs` from the brain root (exit 0 required).
+**3. Verify** by running the brain's own graph build — `node scripts/graph/build-graph.cjs` from the `Brain` root, not this repo's copy of that path (exit 0 required).
 
 **4. Stop and hand back** in the shape the checklist specifies: edited files, verification result, suggested commit. Do not commit.
 
@@ -135,7 +135,7 @@ Exit 0 is the pass; `FAIL [check] detail` lines name what to fix. Pass `--no-bra
 
 Fix and re-run. **Cap: 3 attempts.** After the third failure, stop and report the remaining failures verbatim rather than reshaping output to satisfy the validator.
 
-Promote uses the brain's own `node scripts/graph/build-graph.cjs` as its validator, under the same 3-attempt cap; on exhaustion, revert the brain edits and report.
+Promote uses the brain's own `node scripts/graph/build-graph.cjs`, run from the `Brain` root, as its validator — this repo has a file at the same path, and it validates this repo, not the catalog. Same 3-attempt cap; on exhaustion, revert the brain edits and report.
 
 ## Guardrails
 

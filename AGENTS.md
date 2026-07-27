@@ -19,7 +19,7 @@ Skill-authoring templates live in `skills/_meta/` (sibling of the skill) — aut
 
 ## Environment
 
-Node 24+ and pnpm 10+ (via Corepack); `pnpm install`. Skill scripts are zero-dependency CommonJS and run on plain `node` — they must keep working when vendored into a repo with no `node_modules`. `pnpm test` (`node --test scripts/tests/`) is the quality gate. The commit/release tooling is the maintainer's job (see below).
+Node 24+ and pnpm 10+ (via Corepack); `pnpm install`. Skill scripts are zero-dependency CommonJS and run on plain `node` — they must keep working when vendored into a repo with no `node_modules`. `pnpm test` is the quality gate: it runs the suites under `scripts/tests/` and then `pnpm evals:graph`. The commit/release tooling is the maintainer's job (see below).
 
 ## Editing this skill
 
@@ -45,14 +45,27 @@ The skill's workflow, its references, its scripts, and its tests are one unit. A
 
 `skills/project-retrospective/scripts/validate-report.cjs` is the sanctioned validator for skill output — it is both the skill's own feedback loop and what the tests assert against. Don't add a second bespoke validator unless the maintainer asks.
 
+## Knowledge graph & context wiki
+
+`wiki/` records **why** this repo is the way it is — executed plans, decisions, and change history. Read [`wiki/INDEX.md`](wiki/INDEX.md) first and open only what it routes to; never load the whole wiki. The write-side protocol, including when to capture and the page templates, is [`wiki/MECHANICS.md`](wiki/MECHANICS.md). Before a broad context read, prefer `pnpm graph:navigate --intent why|wiring|impact --query <term>`, which returns a minimal deterministic itinerary.
+
+`scripts/graph/` derives a typed node/edge graph from the repo and renders it (`pnpm graph:view`, port 4175). Details in [`scripts/graph/README.md`](scripts/graph/README.md).
+
+- **The graph is derived, never authoritative.** If the graph and a file disagree, the file is right and the graph is stale. Run `pnpm graph:build`.
+- **The gate is the skill's own contract.** `SKILL.md` → every reference it links and every script it names, emitted whether or not the target exists. Rename a reference without updating `SKILL.md` and the build fails. The same applies to a topic's `covers:`, a page's `topics:`, and a journal entry's `plan:`.
+- **`data/graph.json` and `wiki/connections*` are generated and committed.** Never hand-edit them; `.husky/pre-commit` rebuilds and stages them, and `pnpm evals:graph` fails on drift.
+- **The graph's four surfaces move together**: `build-graph.cjs`, the viewer's type tables, `routing-policy.json`, and `scripts/tests/build-graph.test.cjs`. Changing the node or edge model means changing all four and the README table.
+- Slack ingestion is intentionally **not** part of this subsystem.
+
 ## Data boundary (this repo is public)
 
 Retrospective runs read client repositories and produce client-derived output. None of it belongs here.
 
 - **Never commit** run outputs, component inventories, resolution results, reports, proposals, memory excerpts, client names, or client repo paths.
-- Run output goes to the analyzed project (default `<Project>/<artifactsRoot>/retrospective/<date>/`) or wherever `Output:` points — never inside this repo.
+- Run output goes wherever `Data:` or `Output:` points — never inside this repo, and never inside the analyzed project, which the skill treats as strictly read-only.
 - **Test fixtures are synthetic.** Invent component names; never copy a real project's inventory into `scripts/tests/fixtures/`.
 - Examples in docs use placeholder paths, not real client checkouts.
+- **The wiki is covered by this rule too.** A journal entry or archived plan may name what was learned, never who it was learned from; plans are redacted on archive.
 
 ## Downstream repos are read-mostly
 
@@ -60,6 +73,6 @@ The skill's `promote` action edits a **local `ui-design-brain` working tree** an
 
 ## Commits & release — the maintainer's job, not the agent's
 
-**Permission boundary:** edit files under `skills/` and `scripts/tests/` freely without asking — that's the autonomous zone. Everything in this section is the maintainer's.
+**Permission boundary:** edit files under `skills/`, `scripts/`, and `wiki/` freely without asking — that's the autonomous zone, and capturing a substantive change in `wiki/` is expected rather than optional. Everything in this section is the maintainer's.
 
 **Do not commit, push, merge, tag, or release** — in this repo or in any repo the skill touches. Make the requested edits, then stop and hand back for review. The maintainer commits with `pnpm commit` (Conventional Commits, required scope) and pushes; `semantic-release` then runs on `main`.

@@ -26,10 +26,17 @@
     "pr:create": "ai-pr",
     "lint:commits:last": "commitlint --config node_modules/@verndale/ai-commit/lib/commitlint-preset.cjs --last",
     "release:dry": "semantic-release --dry-run",
-    "test": "node --test \"scripts/tests/**/*.test.cjs\"",
+    "test": "node --test \"scripts/tests/*.test.cjs\" && pnpm evals:graph",
     "retro:inventory": "node skills/project-retrospective/scripts/inventory.cjs",
     "retro:resolve": "node skills/project-retrospective/scripts/resolve.cjs",
-    "retro:validate": "node skills/project-retrospective/scripts/validate-report.cjs"
+    "retro:validate": "node skills/project-retrospective/scripts/validate-report.cjs",
+    "graph:build": "node scripts/graph/build-graph.cjs",
+    "graph:view": "node scripts/graph/serve.cjs",
+    "graph:navigate": "node scripts/wiki/navigate.cjs",
+    "evals:graph": "node scripts/evals/graph-check.cjs",
+    "wiki:archive-plan": "node scripts/wiki/archive-plan.cjs",
+    "wiki:find-plans": "node scripts/wiki/find-unarchived-plans.cjs",
+    "wiki:issue-sync": "node scripts/wiki/refresh-issue-state.cjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
