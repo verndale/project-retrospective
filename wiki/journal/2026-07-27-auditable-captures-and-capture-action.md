@@ -2,7 +2,7 @@
 date: 2026-07-27
 topics: [library-capture, retrospective-workflow]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/10
 issue: https://github.com/verndale/project-retrospective/issues/9
 ---
 # Auditable captures, and a capture action for the library

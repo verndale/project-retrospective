@@ -18,6 +18,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-07-27 — feat(project-retrospective): Enhance capture functionality in project ([PR #10](https://github.com/verndale/project-retrospective/pull/10))
 - 2026-07-27 — `## Captures` is required at `full` scope only, alongside Learnings, because it pairs with an artifact the drafting step produces and `Scope: candidates` waives that step. A run that captured nothing keeps the heading and says so in prose; nothing regexes that sentence ([journal](../journal/2026-07-27-auditable-captures-and-capture-action.md)).
 - 2026-07-27 — `sections()` and `fencedBlock()` moved from `validate-report.cjs` into `scripts/lib/util.cjs` rather than being copied into the new preflight script. Two fence-aware parsers diverge silently the first time one is fixed ([journal](../journal/2026-07-27-auditable-captures-and-capture-action.md)).
 - 2026-07-27 — feat(project-retrospective): Enhance graph builder to include module ([PR #7](https://github.com/verndale/project-retrospective/pull/7))
