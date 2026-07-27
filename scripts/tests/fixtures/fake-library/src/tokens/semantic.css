@@ -1,0 +1,15 @@
+/**
+ * Synthetic semantic tokens for the preflight tests.
+ *
+ * Only needs to be shaped like the real library's file: a flat set of custom
+ * properties the harvester can read. `--color-surface-scrim` is deliberately
+ * absent so a test can assert the `token-undefined` warning.
+ */
+
+@theme {
+  --color-surface-base: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-text-primary: #1d2025;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --duration-base: 200ms;
+}

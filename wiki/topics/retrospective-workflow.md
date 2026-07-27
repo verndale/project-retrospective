@@ -13,10 +13,13 @@ The analyze path: what a completed project is read for, how its labels are resol
 - A label that maps to two canonicals through a context-scoped alias is reported `ambiguous` with its candidates; the script never picks. The model confirms from usage evidence or demotes the label to unresolved.
 - The model's only job is judgment: triage into Promote / Watch / Reject with cited evidence, then draft prose. Verdicts carry evidence paths, never numeric scores.
 - The validator runs under a stated cap of three attempts. On the third failure the run stops and reports the remaining failures verbatim rather than reshaping output to satisfy the validator.
-- Captures are a separate track from proposals: the best component-library candidates are labels that already resolve cleanly, not novel ones.
+- Captures are a separate track from proposals: the best component-library candidates are labels that already resolve cleanly, not novel ones. They are enumerated in the report's `## Captures` section and held in two-way parity with `captures/` — see [library capture](library-capture.md).
+- The report's three downstream sections each pair with one artifact and one repo: `## Candidates` with `proposals/` for ui-design-brain, `## Captures` with `captures/` for ui-design-library, `## Learnings` with `orchestration-drafts.md` for ai-orchestration.
 
 ## Decisions
 
+- 2026-07-27 — `## Captures` is required at `full` scope only, alongside Learnings, because it pairs with an artifact the drafting step produces and `Scope: candidates` waives that step. A run that captured nothing keeps the heading and says so in prose; nothing regexes that sentence ([journal](../journal/2026-07-27-auditable-captures-and-capture-action.md)).
+- 2026-07-27 — `sections()` and `fencedBlock()` moved from `validate-report.cjs` into `scripts/lib/util.cjs` rather than being copied into the new preflight script. Two fence-aware parsers diverge silently the first time one is fixed ([journal](../journal/2026-07-27-auditable-captures-and-capture-action.md)).
 - 2026-07-27 — feat(project-retrospective): Enhance graph builder to include module ([PR #7](https://github.com/verndale/project-retrospective/pull/7))
 - 2026-07-27 — chore(ci): Add workflows for wiki issue synchronization ([PR #1](https://github.com/verndale/project-retrospective/pull/1))
 - 2026-07-26 — Rejected the original proposal's 20-subagent fan-out and its numeric promotion, architectural, and confidence scores. Discovery, resolution, and validation are deterministic scripts; uncalibrated numbers are noise ([journal](../journal/2026-07-26-build-project-retrospective-skill.md), [plan](../plans/2026-07-26-project-retrospective-critique-build-plan.md)).

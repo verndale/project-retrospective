@@ -67,6 +67,17 @@ Verdict: Reject
 
 - Checkout is a hard exclusion — commerce flow, not reusable UI vocabulary.
 
+## Captures
+
+Implementations the next project should start from rather than rebuild. Drafted in `captures/`, executed into ui-design-library by `Action: capture`.
+
+### Modal
+
+`captures/modal.md` — from `src/components/ui/modal`.
+
+- The only component in the run carrying a build pack, a `fingerprint.json`, and a resolved canonical at once.
+- De-clienting headline: the overlay reads its surface colour from a project token that has no semantic home yet.
+
 ## Learnings
 
 Pipeline-shaped findings that belong in ai-orchestration rather than the catalog. Drafted in `orchestration-drafts.md`.
@@ -83,5 +94,7 @@ Pipeline-shaped findings that belong in ai-orchestration rather than the catalog
 1. Review the proposals in `proposals/`.
 2. Apply an approved one:
    `/project-retrospective` with `Action: promote`, `Proposal: proposals/logo-ribbon.md`, `Brain: /tmp/fake-brain`
-3. Carry the drafts in `orchestration-drafts.md` into ai-orchestration through its own contribution flow.
-4. Keep this report — pass it as `PriorReports:` on the next project so Watch candidates can be elevated.
+3. Review the captures in `captures/`, then apply the set:
+   `/project-retrospective` with `Action: capture`, `Captures: captures/`, `Library: /tmp/fake-library`, `Brain: /tmp/fake-brain`
+4. Carry the drafts in `orchestration-drafts.md` into ai-orchestration through its own contribution flow.
+5. Keep this report — pass it as `PriorReports:` on the next project so Watch candidates can be elevated.

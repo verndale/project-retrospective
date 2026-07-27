@@ -30,11 +30,16 @@ function runJson(script, args = []) {
   return { ...result, json };
 }
 
+/** Copy a golden fixture tree into a temp dir so a test can mutate it. */
+function tempFixture(name) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-test-'));
+  fs.cpSync(path.join(FIXTURES, name), dir, { recursive: true });
+  return dir;
+}
+
 /** Copy the golden output fixture into a temp dir so a test can mutate it. */
 function tempOutput() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-test-'));
-  fs.cpSync(path.join(FIXTURES, 'fake-output'), dir, { recursive: true });
-  return dir;
+  return tempFixture('fake-output');
 }
 
 function readFile(dir, rel) {
@@ -53,6 +58,7 @@ module.exports = {
   FIXTURES,
   run,
   runJson,
+  tempFixture,
   tempOutput,
   readFile,
   writeFile,

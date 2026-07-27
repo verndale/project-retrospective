@@ -11,9 +11,9 @@
 
 The catalog says what a **Card** is. A capture says "this project's Card implementation is good enough that the next project should start from it rather than rebuild it."
 
-Captures target the private `ui-design-library` repo, not `ui-design-brain`, and they are **drafts a human executes**. A component lifted straight out of a client project carries CMS types, client token names, and client copy; turning it into a library component is a rewrite, not a copy. The capture's job is to identify the candidate, prove it is worth the rewrite, and enumerate exactly what the rewrite has to strip.
+Captures target the private `ui-design-library` repo, not `ui-design-brain`, and they are **drafts executed by `Action: capture`**, or by a human following the same procedure. A component lifted straight out of a client project carries CMS types, client token names, and client copy; turning it into a library component is a rewrite, not a copy. The capture's job is to identify the candidate, prove it is worth the rewrite, and enumerate exactly what the rewrite has to strip.
 
-Write one file per candidate at `captures/<kebab-canonical>.md` — a separate directory from `proposals/`, because a capture is not a catalog change and has no Promote candidate to pair with.
+Write one file per candidate at `captures/<kebab-canonical>.md` — a separate directory from `proposals/`, because a capture is a library change, not a catalog change. Each file pairs with a `### <Canonical Name>` entry under `## Captures` in `report.md`; `validate-report.cjs` fails when either half is missing.
 
 ## Choosing what to capture
 
@@ -85,9 +85,12 @@ Path: `components/<slug>/`
     "run": "runs/<project-slug>/<YYYY-MM-DD>/",
     "source": "<path in the analyzed project>"
   },
+  "declienting": ["<one entry per removal — what came out, and what replaced it>"],
   "maturity": "candidate"
 }
 ```
+
+At capture time `declienting` mirrors `## De-client work`. At execution time it is rewritten to record what was **actually** removed. `ui-design-library` mandates the field but does not check it, so it is the one entry in this block nothing but the author enforces — "minor cleanup" is not an entry.
 
 Story plan — one story per meaningful state, since the story file is the library's API contract:
 
@@ -95,15 +98,20 @@ Story plan — one story per meaningful state, since the story file is the libra
 - `<Variant>` — <what it demonstrates>
 - `<Edge state>` — <empty, long content, missing optional slot>
 
+The story meta carries `title: '<Canonical Name>'` and `tags: ['maturity:candidate']`. That repo's `pnpm contracts` fails when the tag and `component.json`'s `maturity` disagree — the sidebar badge renders from the tag, so two sources for one fact drift silently.
+
 ## Suggested commit
 
-`feat(library): Add <Canonical Name> from <project slug>`
+`feat(<slug>): Add <Canonical Name> captured from <project slug>`
+
+The scope is the component slug, not `library` — `ui-design-library` owns that convention; see its `CONTRIBUTING.md`.
 ````
 
 ## Rules
 
-- **Captures never write into the analyzed project, the catalog, or ai-orchestration.** They are drafts for the library repo.
+- **Captures never write into the analyzed project, the catalog, or ai-orchestration.** A capture is executed into `ui-design-library` by `Action: capture`, and that action writes nowhere else.
 - **Key on the canonical slug.** The library is only deterministically usable if its keys are the same vocabulary the catalog resolves to. A capture with no canonical is not ready.
+- **Name the file after the canonical, not the project's label.** A capture of a project's `Tag` component whose canonical is **Badge** is `captures/badge.md`, and the parenthetical on its `## Canonical` line is `` `badge` ``. The report's `### Badge` entry, the filename, and that parenthetical must all agree — the library keys its component directories on the canonical slug, so a capture named after the label leads to a mis-slugged component.
 - **`maturity: "candidate"`** on every capture. Promoting a candidate to a supported library component is a human decision made in that repo, after the rewrite and the story exist.
 - **The de-client list is the deliverable.** A capture that says "minor cleanup needed" is useless; the value is in naming every coupling so the rewrite can be estimated and nothing client-specific leaks into shared code.
 - **No client names, copy, or asset URLs in the capture body** beyond the provenance paths needed to find the source. The capture travels to a repo other projects read.

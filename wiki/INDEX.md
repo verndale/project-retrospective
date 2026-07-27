@@ -26,6 +26,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 - [Brain promotion](topics/brain-promotion.md) — how an approved proposal is applied to a local ui-design-brain checkout, and why the skill stops before committing.
 - [Knowledge graph & context wiki](topics/graph-wiki-subsystem.md) — the deterministic graph, its skill-contract integrity gate, the Sigma.js viewer, and the context wiki.
+- [Library capture](topics/library-capture.md) — how a run's component captures reach a local ui-design-library checkout, and why the script that gates them writes nothing.
 - [Retrospective workflow](topics/retrospective-workflow.md) — the analyze path: inventory, resolution, triage, and the validator that gates the output.
 - [Skill authoring](topics/skill-authoring.md) — the frozen section spine for `SKILL.md`, the four-surfaces rule, and the conventions the conformance test enforces.
 
@@ -33,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-07-27 — [Auditable captures, and a capture action for the library](journal/2026-07-27-auditable-captures-and-capture-action.md) — a component reached the library claiming a run that produced no capture for it; captures now hold two-way parity with the report, and `Action: capture` gives the library leg the shape the catalog leg has.
 - 2026-07-27 — [Module edges, so navigation reaches the tooling](journal/2026-07-27-graph-module-edges.md) — added a `requires` edge and indexed all of `scripts/`; isolated nodes went from 18 to 1 and `pnpm graph:navigate` no longer dead-ends on tooling.
 - 2026-07-27 — [chore(project-retrospective): merge main and rebuild graph](journal/2026-07-27-chore-project-retrospective-merge-main-and-rebuild-graph.md) — AI-drafted, revise
 - 2026-07-26 — [Knowledge graph + context wiki subsystem](journal/2026-07-26-knowledge-graph-wiki-subsystem.md) — ported the deterministic graph and the context wiki from ui-design-brain, with the skill's own contract as the integrity gate in place of a catalog manifest.
