@@ -18,6 +18,7 @@ The deterministic graph, its skill-contract integrity gate, the vendored Sigma.j
 
 ## Decisions
 
+- 2026-07-27 — chore(project-retrospective): merge main and rebuild graph ([PR #4](https://github.com/verndale/project-retrospective/pull/4))
 - 2026-07-27 — chore(ci): Add workflows for wiki issue synchronization ([PR #1](https://github.com/verndale/project-retrospective/pull/1))
 - 2026-07-26 — Made the skill contract the integrity edge instead of porting the donor's `catalogs` manifest edge, which has no analogue here. Dropped the donor's `see-also` pass entirely: it models a pattern cross-reference mesh that the "references are one hop deep" rule actively forbids ([journal](../journal/2026-07-26-knowledge-graph-wiki-subsystem.md), [plan](../plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md)).
 - 2026-07-26 — Reused the conformance test's two extraction regexes verbatim rather than the donor's backtick and markdown-link extractors, which find nothing here: `SKILL.md` names its scripts inside fenced bash blocks and the donor's extractors are fence-aware and reject angle brackets ([journal](../journal/2026-07-26-knowledge-graph-wiki-subsystem.md)).
