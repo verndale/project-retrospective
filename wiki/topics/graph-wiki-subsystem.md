@@ -21,6 +21,7 @@ The deterministic graph, its skill-contract integrity gate, the vendored Sigma.j
 ## Decisions
 
 - 2026-07-27 — Added the `requires` edge and indexed all of `scripts/` rather than an allow-list of subdirectories. `pnpm graph:navigate` dead-ended on every tooling file, which fails open into exactly the broad context read the instruction to use it is meant to prevent. Also indexed `.md` under `scripts/` so `scripts/graph/README.md`, which defines the integrity gate, is no longer outside the graph it documents.
+- 2026-07-27 — chore(project-retrospective): merge main and rebuild graph ([PR #4](https://github.com/verndale/project-retrospective/pull/4))
 
 - 2026-07-27 — chore(ci): Add workflows for wiki issue synchronization ([PR #1](https://github.com/verndale/project-retrospective/pull/1))
 - 2026-07-26 — Made the skill contract the integrity edge instead of porting the donor's `catalogs` manifest edge, which has no analogue here. Dropped the donor's `see-also` pass entirely: it models a pattern cross-reference mesh that the "references are one hop deep" rule actively forbids ([journal](../journal/2026-07-26-knowledge-graph-wiki-subsystem.md), [plan](../plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md)).

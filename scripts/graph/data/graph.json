@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 56,
-    "edges": 119,
+    "nodes": 57,
+    "edges": 121,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 4,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 3,
+      "wiki-journal": 4,
       "wiki-plan": 2,
       "wiki-topic": 4
     },
     "byEdgeType": {
       "contracts": 12,
       "covers": 13,
-      "links-to": 53,
+      "links-to": 54,
       "plan": 2,
       "requires": 24,
       "tests": 5,
-      "topic": 10
+      "topic": 11
     }
   },
   "nodes": [
@@ -565,8 +565,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 3667,
-      "degree": 12
+      "bytes": 3848,
+      "degree": 13
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -602,6 +602,22 @@
       "issues": [],
       "bytes": 3611,
       "degree": 6
+    },
+    {
+      "id": "wiki/journal/2026-07-27-chore-project-retrospective-merge-main-and-rebuild-graph.md",
+      "label": "chore(project-retrospective): merge main and rebuild graph",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [
+        "4"
+      ],
+      "issues": [],
+      "bytes": 1219,
+      "degree": 2
     },
     {
       "id": "wiki/journal/2026-07-27-graph-module-edges.md",
@@ -714,11 +730,12 @@
         "graph freshness"
       ],
       "prs": [
+        "4",
         "1"
       ],
       "issues": [],
-      "bytes": 4156,
-      "degree": 13
+      "bytes": 4300,
+      "degree": 14
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -1099,6 +1116,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-07-27-chore-project-retrospective-merge-main-and-rebuild-graph.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-07-27-graph-module-edges.md",
       "type": "links-to",
       "count": 1,
@@ -1436,6 +1460,11 @@
     {
       "source": "wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md",
       "target": "wiki/topics/skill-authoring.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-07-27-chore-project-retrospective-merge-main-and-rebuild-graph.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
     },
     {
