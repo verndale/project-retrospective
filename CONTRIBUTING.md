@@ -29,6 +29,16 @@ Plus repo tooling: `scripts/tests/` (node:test suites + synthetic fixtures), `sc
 
 A change to the skill usually touches four things at once: the `SKILL.md` workflow step, the `references/*.md` it names, the script it invokes, and the test that covers it. `scripts/tests/` is the gate — run `pnpm test` before you push. `validate-report.cjs` is the sanctioned output validator; don't add a second one.
 
+Two of those four are now enforced structurally: the knowledge graph emits an edge from `SKILL.md` to every reference it links and every script it names, and fails the build when one does not resolve. `pnpm test` ends in `pnpm evals:graph`, so a stale committed graph fails the suite.
+
+**Run `pnpm graph:build` and commit the result** whenever you change anything the graph indexes — which includes the tests themselves. The `pre-commit` hook does this for you and stages `scripts/graph/data/graph.json` and `wiki/connections*`; if you commit with `--no-verify`, rebuild by hand. Never hand-edit those files.
+
+## Capture the why
+
+A substantive change — an executed plan, or a change to the skill, its tests, or the graph/wiki tooling — gets a `wiki/journal/` entry in the same delivery. [`wiki/MECHANICS.md`](wiki/MECHANICS.md) has the trigger, the four steps, and the templates. Record what was ruled out and why; `git log` already covers what changed.
+
+The data boundary below applies to the wiki as much as to anything else: name what was learned, never who it was learned from.
+
 ## Data boundary — this repo is public
 
 Retrospective runs read client repositories. Their output never lands here.

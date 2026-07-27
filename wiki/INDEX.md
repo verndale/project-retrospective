@@ -1,0 +1,45 @@
+# Context Wiki
+
+Why this repo is the way it is: executed plans, decisions, and change history. Read this index first; open only the pages it routes to.
+
+## Contents
+
+- How to navigate
+- Topics
+- Journal
+- Plans
+- Connections
+
+## How to navigate
+
+1. "Why is X like this / what's the design of X" → match X in Topics below; open that one page.
+2. "What changed when / history of X" → scan the Journal lines below; open only matching entries.
+3. "Was plan X implemented / what plans exist" → [plans/INDEX.md](plans/INDEX.md) is the audit table; archived plan files sit next to it.
+4. Full plan detail behind a change → follow the plan link inside the journal entry or topic page.
+5. "How does X wire to the rest of the skill/wiki" → [connections.md](connections.md), a small index over the generated map; open the section your question needs: [skill contract](connections/contract.md), [coverage](connections/coverage.md), [document links](connections/links.md), [wiki wiring](connections/wiki-wiring.md).
+6. Cross-system "why", wiring, or impact question → agents silently use `pnpm graph:navigate` (`scripts/wiki/navigate.cjs`) before reading files; it returns a deterministic, minimal itinerary. Developers do not need to run or remember this utility.
+7. No index hit or no route → grep `wiki/` for the term; then fall back to `git log` / `gh`. Never load the whole wiki.
+
+## Topics
+
+<!-- One line per topic page: [Title](topics/<slug>.md) — hook. Keep alphabetical by slug. -->
+
+- [Brain promotion](topics/brain-promotion.md) — how an approved proposal is applied to a local ui-design-brain checkout, and why the skill stops before committing.
+- [Knowledge graph & context wiki](topics/graph-wiki-subsystem.md) — the deterministic graph, its skill-contract integrity gate, the Sigma.js viewer, and the context wiki.
+- [Retrospective workflow](topics/retrospective-workflow.md) — the analyze path: inventory, resolution, triage, and the validator that gates the output.
+- [Skill authoring](topics/skill-authoring.md) — the frozen section spine for `SKILL.md`, the four-surfaces rule, and the conventions the conformance test enforces.
+
+## Journal
+
+<!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
+
+- 2026-07-26 — [Knowledge graph + context wiki subsystem](journal/2026-07-26-knowledge-graph-wiki-subsystem.md) — ported the deterministic graph and the context wiki from ui-design-brain, with the skill's own contract as the integrity gate in place of a catalog manifest.
+- 2026-07-26 — [Building the project-retrospective skill](journal/2026-07-26-build-project-retrospective-skill.md) — what was rejected from the original proposal and why: no subagent fan-out, no 27-field artifact model, no numeric scores, no component taxonomy.
+
+## Plans
+
+- [Plan audit table](plans/INDEX.md) — every plan executed for this repo, with implementation status and evidence.
+
+## Connections
+
+- [Skill + wiki wiring](connections.md) — a small index that routes to the generated map of how the skill, the repo tooling, and the wiki wire together: [skill contract](connections/contract.md), [coverage](connections/coverage.md), [document links](connections/links.md), [wiki wiring](connections/wiki-wiring.md). Rendered from the knowledge graph; **do not hand-edit** — rebuilt by `pnpm graph:build` and verified by `pnpm evals:graph`.

@@ -115,9 +115,9 @@ Proposal: /Users/you/Projects/ui-design-evidence/runs/site-b/2026-06-14/proposal
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
-This edits the brain **working tree** — manifest entry, pattern file, `index.md`, README count, as the proposal type requires — runs that repo's `node scripts/graph/build-graph.cjs` to verify, and stops with the edited-file list and a suggested commit. You commit (`pnpm commit` in the brain repo), PR, and merge. From there the existing daily catalog sync carries it into ai-orchestration and out to projects.
+This edits the brain **working tree** — manifest entry, pattern file, `index.md`, README count, as the proposal type requires — runs that repo's own `node scripts/graph/build-graph.cjs` from the brain root to verify, and stops with the edited-file list and a suggested commit. (This repository has a file at the same path; it validates this repository, not the catalog.) You commit (`pnpm commit` in the brain repo), PR, and merge. From there the existing daily catalog sync carries it into ai-orchestration and out to projects.
 
-Verification also regenerates the brain's committed graph and `wiki/connections*` files — expected, and that repo's pre-commit hook rebuilds them anyway.
+Verification also regenerates the brain's committed graph and its `wiki/connections*` files — expected, and that repo's pre-commit hook rebuilds them anyway.
 
 ## Across projects
 

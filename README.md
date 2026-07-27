@@ -119,8 +119,22 @@ Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json
 | [`commitlint.yml`](.github/workflows/commitlint.yml) | PRs to `main`, pushes to non-`main` | Commitlint on the PR title + commit range via the `@verndale/ai-commit` preset. |
 | [`pr.yml`](.github/workflows/pr.yml) | Pushes to non-`main`, `workflow_dispatch` | Creates/updates a draft PR by running `pnpm run pr:create` (`@verndale/ai-pr`). |
 | [`release.yml`](.github/workflows/release.yml) | Pushes to `main` | Runs `semantic-release` to version, tag, write `CHANGELOG.md`, and cut a GitHub Release. |
+| [`wiki-sync.yml`](.github/workflows/wiki-sync.yml) | PR merged | Fills a journal entry's pending PR link, drafts a stub for an uncaptured substantive PR, and opens a `bot/wiki-sync/<pr>` PR. Never pushes to `main`. |
+| [`wiki-issue-sync.yml`](.github/workflows/wiki-issue-sync.yml) | Nightly, `workflow_dispatch` | Marks issues cited under a topic's Open threads as closed once they close. |
 
-Locally, the same commit standard is enforced by Husky hooks (`commit-msg`, `prepare-commit-msg`) installed via the `prepare` script. Add repository secret `PR_BOT_TOKEN` (classic PAT with `repo`) for `pr.yml`; it falls back to the built-in `GITHUB_TOKEN` when unset.
+Locally, the same commit standard is enforced by Husky hooks (`commit-msg`, `prepare-commit-msg`) installed via the `prepare` script. A `pre-commit` hook warns when a substantive change stages no journal entry and rebuilds + stages the knowledge graph; it never blocks. Add repository secret `PR_BOT_TOKEN` (classic PAT with `repo`) for `pr.yml` and the two wiki workflows; `pr.yml` falls back to the built-in `GITHUB_TOKEN` when unset.
+
+### Knowledge graph & context wiki
+
+[`wiki/`](wiki/INDEX.md) records why the repo is the way it is — executed plans, decisions, and change history — and [`scripts/graph/`](scripts/graph/README.md) derives a typed graph over the skill, the tooling, the tests, the docs, and the wiki.
+
+```bash
+pnpm graph:build   # rebuild the committed graph + generated connections pages
+pnpm graph:view    # interactive Sigma.js viewer at http://localhost:4175
+pnpm evals:graph   # freshness, determinism, and the integrity gate
+```
+
+The gate is the skill's own contract: `SKILL.md` declares its references and scripts, and a build that cannot resolve one of them fails. It runs inside `pnpm test`, so there is no separate workflow for it.
 
 Releases use Conventional Commit types (`feat` → minor, `fix` → patch, `BREAKING` → major) with structured notes from [`scripts/commit-pr/semantic-release-structured-notes.cjs`](scripts/commit-pr/semantic-release-structured-notes.cjs). `npmPublish` is `false`. Preview with `pnpm release:dry`.
 
@@ -133,7 +147,7 @@ Releases use Conventional Commit types (`feat` → minor, `fix` → patch, `BREA
 
 ```bash
 pnpm install
-pnpm test        # node --test scripts/tests/ — the quality gate
+pnpm test        # the suites under scripts/tests/, then pnpm evals:graph — the quality gate
 ```
 
 The skill's own scripts are zero-dependency CommonJS: they run under plain `node` with no `node_modules`, so an installed copy works standalone.
@@ -145,6 +159,8 @@ The skill's own scripts are zero-dependency CommonJS: they run under plain `node
 - **Skill content:** [`skills/project-retrospective/`](skills/project-retrospective/) — `SKILL.md`, `references/`, `scripts/`
 - **Authoring standard:** [`skills/_meta/_sections.md`](skills/_meta/_sections.md)
 - **Tests & synthetic fixtures:** [`scripts/tests/`](scripts/tests/)
+- **Why things are the way they are:** [`wiki/INDEX.md`](wiki/INDEX.md) — topics, journal, and the plan audit table
+- **Knowledge graph:** [`scripts/graph/README.md`](scripts/graph/README.md)
 - **Agent guidance:** [AGENTS.md](AGENTS.md) (`CLAUDE.md` is a thin import of it)
 - **Contribution rules & commit standards:** [CONTRIBUTING.md](CONTRIBUTING.md)
 - **Release config:** [`.releaserc.cjs`](.releaserc.cjs) + the notes plugin in [`scripts/commit-pr/`](scripts/commit-pr/)

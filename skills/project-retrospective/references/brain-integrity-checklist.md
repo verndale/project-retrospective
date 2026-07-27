@@ -64,7 +64,7 @@ In this order:
 
 ## Verification
 
-From the brain checkout root:
+From the brain checkout root — `cd` into `Brain` first. This skill's own repository has a file at the identical path that validates *that* repo, so running it from the wrong working directory silently verifies nothing about the catalog:
 
 ```bash
 node scripts/graph/build-graph.cjs
@@ -72,7 +72,7 @@ node scripts/graph/build-graph.cjs
 
 This is that repo's sanctioned catalog validator: it emits a `catalogs` edge from each manifest entry to its pattern file and **fails on a dangling edge** — a manifest entry pointing at a missing or misnamed file. Exit 0 is the pass.
 
-It also regenerates `scripts/graph/data/graph.json` and the `wiki/connections*` pages. **Leave those regenerated files in place** — they are committed artifacts there, and that repo's own pre-commit hook rebuilds and stages them anyway. Mention them in the handback so the maintainer is not surprised by the diff.
+It also regenerates the brain's `scripts/graph/data/graph.json` and its `wiki/connections*` pages. **Leave those regenerated files in place** — they are committed artifacts there, and that repo's own pre-commit hook rebuilds and stages them anyway. Mention them in the handback so the maintainer is not surprised by the diff.
 
 Then confirm the manifest still parses and the diff is the shape you intended:
 
@@ -94,8 +94,8 @@ Applied <type> proposal <proposal path> to <brain path>.
 Edited:
 <output of: git -C <brain path> status --short>
 
-Verification: node scripts/graph/build-graph.cjs → exit 0
-(Regenerated scripts/graph/data/graph.json and wiki/connections* as a side effect.)
+Verification: node scripts/graph/build-graph.cjs (run in <brain path>) → exit 0
+(Regenerated that repo's scripts/graph/data/graph.json and wiki/connections* as a side effect.)
 
 Suggested commit — run inside <brain path>:
   pnpm commit
