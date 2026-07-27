@@ -1,3 +1,37 @@
+# v1.1.0 — 2026-07-27
+
+## Summary (AI, bounded)
+- Enhanced capture functionality in the project-retrospective feature (commit 8ac1bf7).
+- Synced journal, topics, and plans documentation in the wiki (commit ab55eed).
+- Merged improvements related to auditable captures (commit b784b05).
+- Integrated updates from the wiki synchronization bot (commit cd61aa7).
+
+## Highlights
+- commit: Merge pull request #10 from verndale/feat/auditable-captures (b784b05)
+- feat(project-retrospective): Enhance capture functionality in project (8ac1bf7)
+- commit: Merge pull request #8 from verndale/bot/wiki-sync/7 (cd61aa7)
+- docs(wiki): sync journal, topics, and plans for #7 (ab55eed)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Enhance capture functionality in project (8ac1bf7)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #7 (ab55eed)
+
+### Other (unknown)
+- commit: Merge pull request #10 from verndale/feat/auditable-captures (b784b05)
+- commit: Merge pull request #8 from verndale/bot/wiki-sync/7 (cd61aa7)
+
+## Full commit list
+- b784b05 commit: Merge pull request #10 from verndale/feat/auditable-captures
+- 8ac1bf7 feat(project-retrospective): Enhance capture functionality in project
+- cd61aa7 commit: Merge pull request #8 from verndale/bot/wiki-sync/7
+- ab55eed docs(wiki): sync journal, topics, and plans for #7
+
 # v1.0.0 — 2026-07-27
 
 ## Summary (AI, bounded)
