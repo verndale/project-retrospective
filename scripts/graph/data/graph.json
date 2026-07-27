@@ -628,9 +628,11 @@
         "graph-wiki-subsystem"
       ],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "7"
+      ],
       "issues": [],
-      "bytes": 2771,
+      "bytes": 2820,
       "degree": 2
     },
     {
@@ -730,11 +732,12 @@
         "graph freshness"
       ],
       "prs": [
+        "7",
         "4",
         "1"
       ],
       "issues": [],
-      "bytes": 4300,
+      "bytes": 4454,
       "degree": 14
     },
     {
@@ -752,10 +755,11 @@
         "promote watch reject"
       ],
       "prs": [
+        "7",
         "1"
       ],
       "issues": [],
-      "bytes": 2574,
+      "bytes": 2728,
       "degree": 9
     },
     {
