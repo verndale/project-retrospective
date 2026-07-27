@@ -21,7 +21,9 @@ A single agent skill, under `skills/project-retrospective/`:
 - `references/*.md` — templates and rubrics, one hop from `SKILL.md`
 - `scripts/*.cjs` — zero-dependency discovery, resolution, and validation
 
-Plus repo tooling: `scripts/tests/` (node:test suites + synthetic fixtures), `scripts/commit-pr/` (release-notes plugin), CI workflows, and `skills/_meta/` (authoring-only; no `SKILL.md`, so it is never loaded at runtime and never vendored).
+Plus repo tooling: `scripts/tests/` (node:test suites + synthetic fixtures), `scripts/graph/` (the knowledge-graph builder, routing, and vendored viewer), `scripts/wiki/` (context-wiki collectors), `scripts/evals/` (the graph freshness gate), `scripts/commit-pr/` (release-notes plugin), CI workflows, and `skills/_meta/` (authoring-only; no `SKILL.md`, so it is never loaded at runtime and never vendored).
+
+And `wiki/` — the context wiki: why the repo is the way it is, as topics, a journal, and archived plans. Start at [`wiki/INDEX.md`](wiki/INDEX.md).
 
 **Authoring:** `skills/_meta/_sections.md` is the canonical structure for this repo's `SKILL.md` and its reference files. Follow it, and follow [Anthropic's agent-skill best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices).
 

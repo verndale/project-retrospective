@@ -7,7 +7,9 @@ node scripts/wiki/pre-commit-journal.cjs
 # the commit proceed — `pnpm evals:graph` in CI is the drift backstop. Skipped in CI.
 if [ -z "$CI" ]; then
   if node scripts/graph/build-graph.cjs >/dev/null 2>&1; then
-    git add scripts/graph/data/graph.json wiki/connections.md wiki/connections
+    # `|| true` keeps the promise above: git add is the hook's last command, so its exit
+    # status would otherwise become the hook's and a locked index would abort the commit.
+    git add scripts/graph/data/graph.json wiki/connections.md wiki/connections || true
   else
     echo "warning: knowledge graph rebuild failed; committed graph.json may be stale (run pnpm graph:build)" >&2
   fi

@@ -31,6 +31,9 @@ function resolveSafe(urlPath) {
   } catch {
     return null; // malformed percent-encoding → treat as a bad request
   }
+  // fs.readFile validates null bytes synchronously and throws rather than calling back,
+  // so a single request for /%00 would escape the handler and kill the server.
+  if (clean.includes("\0")) return null;
   const relPath = clean === "/" ? "viewer/index.html" : clean.replace(/^\/+/, "");
   const abs = path.join(ROOT, relPath);
   // Reject anything that escapes ROOT.
@@ -54,7 +57,9 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
+// Bind loopback explicitly: this serves scripts/graph/ off disk and has no business
+// being reachable from the rest of the network.
+server.listen(PORT, "127.0.0.1", () => {
   if (!fs.existsSync(path.join(ROOT, "data", "graph.json"))) {
     console.log("Note: data/graph.json not found — run `pnpm graph:build` first.\n");
   }

@@ -7,7 +7,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 ## All document links
 
 - [Project Retrospective — agent guide](../../AGENTS.md) → [Context Wiki](../../wiki/INDEX.md), [Wiki Mechanics](../../wiki/MECHANICS.md)
-- [Contributing](../../CONTRIBUTING.md) → [Project Retrospective](../../README.md), [commit-pr/semantic-release-structured-notes.cjs](../../scripts/commit-pr/semantic-release-structured-notes.cjs), [Wiki Mechanics](../../wiki/MECHANICS.md)
+- [Contributing](../../CONTRIBUTING.md) → [Project Retrospective](../../README.md), [commit-pr/semantic-release-structured-notes.cjs](../../scripts/commit-pr/semantic-release-structured-notes.cjs), [Context Wiki](../../wiki/INDEX.md), [Wiki Mechanics](../../wiki/MECHANICS.md)
 - [Project Retrospective](../../README.md) → [Project Retrospective — agent guide](../../AGENTS.md), [Contributing](../../CONTRIBUTING.md) (×2), [commit-pr/semantic-release-structured-notes.cjs](../../scripts/commit-pr/semantic-release-structured-notes.cjs), [Skill file structure — section reference](../../skills/_meta/_sections.md), [project-retrospective — operator docs](../../skills/project-retrospective/README.md), [Context Wiki](../../wiki/INDEX.md) (×2)
 - [Skill file structure — section reference](../../skills/_meta/_sections.md) → [Project Retrospective — agent guide](../../AGENTS.md) (×3)
 - [project-retrospective — operator docs](../../skills/project-retrospective/README.md) → [project-retrospective](../../skills/project-retrospective/SKILL.md)
@@ -25,6 +25,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Project Retrospective — agent guide](../../AGENTS.md) → [Context Wiki](../../wiki/INDEX.md)
 - [Project Retrospective — agent guide](../../AGENTS.md) → [Wiki Mechanics](../../wiki/MECHANICS.md)
 - [Contributing](../../CONTRIBUTING.md) → [commit-pr/semantic-release-structured-notes.cjs](../../scripts/commit-pr/semantic-release-structured-notes.cjs)
+- [Contributing](../../CONTRIBUTING.md) → [Context Wiki](../../wiki/INDEX.md)
 - [Contributing](../../CONTRIBUTING.md) → [Wiki Mechanics](../../wiki/MECHANICS.md)
 - [Project Retrospective](../../README.md) → [commit-pr/semantic-release-structured-notes.cjs](../../scripts/commit-pr/semantic-release-structured-notes.cjs)
 - [Project Retrospective](../../README.md) → [Skill file structure — section reference](../../skills/_meta/_sections.md)

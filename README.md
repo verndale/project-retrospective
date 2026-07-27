@@ -90,15 +90,16 @@ Brain: /path/to/ui-design-brain
 |---|---|---|
 | `Project:` | yes | Absolute path to the completed project repository. |
 | `Brain:` | for resolution and promote | Absolute path to a local `ui-design-brain` checkout. Without it, resolution is skipped and the report says so. |
-| `Output:` | no | Where run output is written. Default: `<Project>/<artifactsRoot>/retrospective/<YYYY-MM-DD>/`. |
+| `Data:` | no | Absolute path to the private `ui-design-evidence` repo. When given, runs land under `<Data>/runs/`. |
+| `Output:` | no | Where run output is written. Never inside `Project`. |
 | `Scope:` | no | `full` (default), `inventory`, or `candidates`. |
 | `PriorReports:` | no | Comma-separated paths to earlier `report.md` files. A candidate that recurs across projects is elevated from Watch to Promote. |
 | `Action:` | no | `analyze` (default) or `promote`. |
 | `Proposal:` | for promote | Path to the approved proposal file to apply. |
 
-Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json`, `proposals/<slug>.md` per Promote candidate, and `orchestration-drafts.md`. Full parameter and output detail: [`skills/project-retrospective/README.md`](skills/project-retrospective/README.md).
+Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, and `orchestration-drafts.md`. Full parameter and output detail: [`skills/project-retrospective/README.md`](skills/project-retrospective/README.md).
 
-**Client data stays with the client.** Run output is written to the analyzed project (or wherever `Output:` points) and is never committed to this public repo.
+**Client data stays with the client.** The analyzed project is read-only — a retrospective never leaves artifacts in the repository it analyzed. Run output goes to `Data:` or `Output:`, and is never committed to this public repo.
 
 ---
 
@@ -118,6 +119,7 @@ Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json
 |----------|---------|---------|
 | [`commitlint.yml`](.github/workflows/commitlint.yml) | PRs to `main`, pushes to non-`main` | Commitlint on the PR title + commit range via the `@verndale/ai-commit` preset. |
 | [`pr.yml`](.github/workflows/pr.yml) | Pushes to non-`main`, `workflow_dispatch` | Creates/updates a draft PR by running `pnpm run pr:create` (`@verndale/ai-pr`). |
+| [`test.yml`](.github/workflows/test.yml) | PRs to `main`, pushes to non-`main`, `workflow_dispatch` | Runs `pnpm test` — the suites under `scripts/tests/` plus the graph freshness gate. |
 | [`release.yml`](.github/workflows/release.yml) | Pushes to `main` | Runs `semantic-release` to version, tag, write `CHANGELOG.md`, and cut a GitHub Release. |
 | [`wiki-sync.yml`](.github/workflows/wiki-sync.yml) | PR merged | Fills a journal entry's pending PR link, drafts a stub for an uncaptured substantive PR, and opens a `bot/wiki-sync/<pr>` PR. Never pushes to `main`. |
 | [`wiki-issue-sync.yml`](.github/workflows/wiki-issue-sync.yml) | Nightly, `workflow_dispatch` | Marks issues cited under a topic's Open threads as closed once they close. |

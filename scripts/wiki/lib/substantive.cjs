@@ -39,6 +39,7 @@ const TOPIC_RE = [
   [/^skills\/project-retrospective\/references\/brain-integrity-checklist\.md$/, "brain-promotion"],
   [/^skills\/project-retrospective\//, "retrospective-workflow"],
   [/^skills\/_meta\//, "skill-authoring"],
+  [/^scripts\/tests\/(?:build-graph|routing|substantive)/, "graph-wiki-subsystem"],
   [/^scripts\/tests\//, "retrospective-workflow"],
   [/^scripts\/(?:graph|wiki|evals)\//, "graph-wiki-subsystem"],
   [/^\.github\/workflows\/(?:wiki|test)/, "graph-wiki-subsystem"],

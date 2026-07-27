@@ -6,7 +6,6 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 
 ## Test → script
 
-- [build-graph.test.cjs](../../scripts/tests/build-graph.test.cjs) → [project-retrospective](../../skills/project-retrospective/SKILL.md)
 - [inventory.test.cjs](../../scripts/tests/inventory.test.cjs) → [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs)
 - [resolve.test.cjs](../../scripts/tests/resolve.test.cjs) → [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs), [resolve.cjs](../../skills/project-retrospective/scripts/resolve.cjs)
 - [skill-conformance.test.cjs](../../scripts/tests/skill-conformance.test.cjs) → [project-retrospective](../../skills/project-retrospective/SKILL.md)

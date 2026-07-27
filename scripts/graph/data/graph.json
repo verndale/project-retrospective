@@ -19,9 +19,9 @@
     "byEdgeType": {
       "contracts": 12,
       "covers": 10,
-      "links-to": 47,
+      "links-to": 48,
       "plan": 2,
-      "tests": 6,
+      "tests": 5,
       "topic": 9
     }
   },
@@ -59,8 +59,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 6630,
-      "degree": 5
+      "bytes": 6947,
+      "degree": 6
     },
     {
       "id": "README.md",
@@ -71,7 +71,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10570,
+      "bytes": 10955,
       "degree": 7
     },
     {
@@ -107,7 +107,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 26681,
+      "bytes": 27541,
       "degree": 2
     },
     {
@@ -131,7 +131,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 2086,
+      "bytes": 2443,
       "degree": 0
     },
     {
@@ -143,8 +143,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10131,
-      "degree": 1
+      "bytes": 11634,
+      "degree": 0
     },
     {
       "id": "scripts/tests/helpers.cjs",
@@ -287,7 +287,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 2946,
+      "bytes": 3030,
       "degree": 0
     },
     {
@@ -540,7 +540,7 @@
       "prs": [],
       "issues": [],
       "bytes": 11686,
-      "degree": 26
+      "degree": 25
     },
     {
       "id": "wiki/INDEX.md",
@@ -552,7 +552,7 @@
       "prs": [],
       "issues": [],
       "bytes": 3408,
-      "degree": 10
+      "degree": 11
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -594,7 +594,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7876,
+      "bytes": 8398,
       "degree": 7
     },
     {
@@ -636,7 +636,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 1286,
+      "bytes": 1399,
       "degree": 4
     },
     {
@@ -713,7 +713,7 @@
       ],
       "prs": [],
       "issues": [],
-      "bytes": 2465,
+      "bytes": 2467,
       "degree": 10
     }
   ],
@@ -852,6 +852,13 @@
     {
       "source": "CONTRIBUTING.md",
       "target": "scripts/commit-pr/semantic-release-structured-notes.cjs",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "CONTRIBUTING.md",
+      "target": "wiki/INDEX.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -1166,11 +1173,6 @@
       "source": "wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md",
       "target": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "type": "plan"
-    },
-    {
-      "source": "scripts/tests/build-graph.test.cjs",
-      "target": "skills/project-retrospective/SKILL.md",
-      "type": "tests"
     },
     {
       "source": "scripts/tests/inventory.test.cjs",
