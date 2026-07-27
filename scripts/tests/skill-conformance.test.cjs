@@ -11,6 +11,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { SKILL_DIR } = require('./helpers.cjs');
+// Imported, not re-declared: the graph's integrity gate and this lint gate must agree on
+// what SKILL.md declares, and two copies of a regex drift.
+const { SKILL_REFERENCE_RE, SKILL_SCRIPT_RE } = require('../graph/build-graph.cjs');
 
 const NAME_RE = /^[a-z0-9-]{1,64}$/;
 const RESERVED = ['anthropic', 'claude'];
@@ -121,7 +124,8 @@ test('no Windows-style paths in markdown links', () => {
 });
 
 test('every first-hop reference link resolves to a real file', () => {
-  const links = [...body.matchAll(/\]\((references\/[^)]+)\)/g)].map((m) => m[1]);
+  SKILL_REFERENCE_RE.lastIndex = 0;
+  const links = [...body.matchAll(SKILL_REFERENCE_RE)].map((m) => m[1].split('#')[0].split(/\s/)[0]);
   assert.ok(links.length >= 6, 'expected the reference list to be linked from SKILL.md');
   for (const link of new Set(links)) {
     assert.ok(fs.existsSync(path.join(SKILL_DIR, link)), `SKILL.md links to a missing file: ${link}`);
@@ -138,7 +142,8 @@ test('references are one hop deep — no reference links to another reference', 
 });
 
 test('every script named in SKILL.md exists', () => {
-  const scripts = [...raw.matchAll(/scripts\/([a-z-]+\.cjs)/g)].map((m) => m[1]);
+  SKILL_SCRIPT_RE.lastIndex = 0;
+  const scripts = [...raw.matchAll(SKILL_SCRIPT_RE)].map((m) => m[1]);
   assert.ok(scripts.length >= 3, 'SKILL.md should name its scripts');
   for (const script of new Set(scripts)) {
     assert.ok(

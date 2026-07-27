@@ -22,6 +22,7 @@ const {
   extractSkillReferences,
   extractSkillScripts,
   extractTestTargets,
+  extractRequires,
 } = require('../graph/build-graph.cjs');
 
 const FIXTURE = path.join(__dirname, 'fixtures', 'fake-graph-repo');
@@ -182,6 +183,63 @@ test('topic and plan edges resolve from wiki frontmatter', () => {
     [['wiki/journal/2026-01-01-entry.md', 'wiki/plans/2026-01-01-plan.md']],
   );
   assert.ok(edgesOf(graph, 'topic').some((e) => e.target === 'wiki/topics/demo.md'));
+});
+
+test('a module links to the modules it requires, and bare specifiers are ignored', () => {
+  const graph = build({ repoRoot: FIXTURE });
+  assert.deepEqual(
+    edgesOf(graph, 'requires').map((e) => [e.source, e.target]),
+    [['scripts/tests/alpha.test.cjs', 'scripts/tests/helpers.cjs']],
+  );
+  // Assembled rather than written literally: this file is itself indexed, so a literal
+  // require(...) in an assertion would be read as a real dependency and dangle the build.
+  const req = (spec) => `require('${spec}')`;
+  assert.deepEqual(extractRequires('scripts/a/b.cjs', `${req('node:fs')}; ${req('graphology')}`), []);
+  assert.deepEqual(extractRequires('scripts/a/b.cjs', req('../c/d.cjs')), ['scripts/c/d.cjs']);
+});
+
+test('a require that does not resolve dangles the build', () => {
+  const graph = brokenCopy((dir) => fs.rmSync(path.join(dir, 'scripts/tests/helpers.cjs')));
+  const dangling = danglingEdges(graph);
+  assert.equal(dangling.length, 1);
+  assert.equal(dangling[0].type, 'requires');
+});
+
+test('no node is stranded except the known standalone ones', () => {
+  // Before the requires pass, 18 of 55 nodes had degree 0 and `pnpm graph:navigate` returned
+  // no-route for any script, which fails open into exactly the broad read it should prevent.
+  // CLAUDE.md is a bare `@AGENTS.md` import shim with no markdown link to resolve. Anything
+  // else appearing here is a real gap: wire it, or add it with a reason.
+  const ALLOWED = ['CLAUDE.md'];
+  const stranded = build().nodes.filter((n) => n.degree === 0).map((n) => n.id);
+  assert.deepEqual(stranded, ALLOWED);
+});
+
+test('every node and edge type the builder emits is renderable by the viewer', () => {
+  // The viewer's colour/label tables were the one declared surface with no automated
+  // coupling: adding a node type silently produced a grey node with no legend row.
+  const viewer = fs.readFileSync(path.join(__dirname, '..', 'graph', 'viewer', 'viewer.js'), 'utf8');
+  const keysOf = (table) => {
+    const body = viewer.split(`const ${table} = {`)[1].split('};')[0];
+    return new Set([...body.matchAll(/^\s*"?([a-zA-Z-]+)"?\s*:/gm)].map((m) => m[1]));
+  };
+  const graph = build();
+  const colors = keysOf('TYPE_COLORS');
+  const labels = keysOf('TYPE_LABELS');
+  const edgeColors = keysOf('EDGE_COLORS');
+  for (const type of Object.keys(graph.counts.byType)) {
+    assert.ok(colors.has(type), `viewer TYPE_COLORS is missing node type ${type}`);
+    assert.ok(labels.has(type), `viewer TYPE_LABELS is missing node type ${type}`);
+  }
+  for (const type of Object.keys(graph.counts.byEdgeType)) {
+    assert.ok(edgeColors.has(type), `viewer EDGE_COLORS is missing edge type ${type}`);
+  }
+});
+
+test('the graph gate and the conformance lint share one definition of the contract', () => {
+  const conformance = fs.readFileSync(path.join(__dirname, 'skill-conformance.test.cjs'), 'utf8');
+  assert.match(conformance, /require\('\.\.\/graph\/build-graph\.cjs'\)/);
+  assert.doesNotMatch(conformance, /\/scripts\\\/\(\[a-z/, 'the conformance test must import the regex, not re-declare it');
 });
 
 test('fixtures never leak into the real graph', () => {

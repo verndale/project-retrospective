@@ -13,6 +13,7 @@ const TYPE_COLORS = {
   "skill-script": "#c58af9",
   "authoring-spec": "#d9a3ff",
   "repo-script": "#a78bfa",
+  "tooling-doc": "#ffb3c1",
   test: "#5bd0d0",
   "wiki-journal": "#4fb8c9",
   "wiki-topic": "#8fd14f",
@@ -27,6 +28,7 @@ const TYPE_LABELS = {
   "skill-script": "Skill script",
   "authoring-spec": "Authoring spec",
   "repo-script": "Repo script",
+  "tooling-doc": "Tooling doc",
   test: "Test",
   "wiki-journal": "Wiki journal",
   "wiki-topic": "Wiki topic",
@@ -36,6 +38,7 @@ const TYPE_LABELS = {
 };
 const EDGE_COLORS = {
   contracts: "rgba(197,138,249,0.38)",
+  requires: "rgba(167,139,250,0.3)",
   tests: "rgba(91,208,208,0.4)",
   "links-to": "rgba(150,156,170,0.22)",
   topic: "rgba(143,209,79,0.4)",
