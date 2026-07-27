@@ -5,6 +5,7 @@ date: 2026-07-26
 evidence:
   - "commit caebd12"
   - "commit 012a6f0"
+  - "PR #1 https://github.com/verndale/project-retrospective/pull/1 (merged 2026-07-27)"
 source_tool: claude
 source: "/Users/joe.fusco/.claude/plans/users-joe-fusco-desktop-project-retrosp-fancy-lantern.md"
 topics: [skill-authoring, retrospective-workflow, brain-promotion]

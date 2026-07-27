@@ -565,9 +565,11 @@
         "brain-promotion"
       ],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "1"
+      ],
       "issues": [],
-      "bytes": 3138,
+      "bytes": 3187,
       "degree": 9
     },
     {
@@ -580,9 +582,11 @@
         "skill-authoring"
       ],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "1"
+      ],
       "issues": [],
-      "bytes": 3562,
+      "bytes": 3611,
       "degree": 6
     },
     {
@@ -606,9 +610,11 @@
         "graph-wiki-subsystem"
       ],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "1"
+      ],
       "issues": [],
-      "bytes": 24957,
+      "bytes": 25043,
       "degree": 5
     },
     {
@@ -622,9 +628,11 @@
         "brain-promotion"
       ],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "1"
+      ],
       "issues": [],
-      "bytes": 24333,
+      "bytes": 24422,
       "degree": 8
     },
     {
@@ -634,9 +642,11 @@
       "dir": "wiki/plans",
       "topics": [],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "1"
+      ],
       "issues": [],
-      "bytes": 1399,
+      "bytes": 1528,
       "degree": 4
     },
     {
@@ -653,9 +663,11 @@
         "pattern proposal",
         "handback"
       ],
-      "prs": [],
+      "prs": [
+        "1"
+      ],
       "issues": [],
-      "bytes": 2333,
+      "bytes": 2474,
       "degree": 6
     },
     {
@@ -673,9 +685,11 @@
         "connections pages",
         "graph freshness"
       ],
-      "prs": [],
+      "prs": [
+        "1"
+      ],
       "issues": [],
-      "bytes": 3234,
+      "bytes": 3375,
       "degree": 9
     },
     {
@@ -692,9 +706,11 @@
         "evidence triage",
         "promote watch reject"
       ],
-      "prs": [],
+      "prs": [
+        "1"
+      ],
       "issues": [],
-      "bytes": 2433,
+      "bytes": 2574,
       "degree": 9
     },
     {

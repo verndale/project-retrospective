@@ -16,5 +16,6 @@ How an approved proposal is applied to a local ui-design-brain checkout, and why
 
 ## Decisions
 
+- 2026-07-27 — chore(ci): Add workflows for wiki issue synchronization ([PR #1](https://github.com/verndale/project-retrospective/pull/1))
 - 2026-07-26 — The manifest is edited textually rather than parsed and re-serialized. `JSON.stringify` reformats six hand-formatted context-alias entries and turns a six-line insert into a thirty-line diff; found during a promote rehearsal on a disposable copy of the brain ([journal](../journal/2026-07-26-build-project-retrospective-skill.md), [plan](../plans/2026-07-26-project-retrospective-critique-build-plan.md)).
 - 2026-07-26 — Promotion targets the brain's vocabulary only. The original proposal's shared component repository was dropped: the brain deliberately contains zero implementation, and creating one is a separate organizational decision the retrospective must not depend on ([plan](../plans/2026-07-26-project-retrospective-critique-build-plan.md)).
