@@ -2,7 +2,7 @@
 date: 2026-07-26
 topics: [skill-authoring, retrospective-workflow, brain-promotion]
 plan: plans/2026-07-26-project-retrospective-critique-build-plan.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/1
 ---
 # Building the project-retrospective skill
 

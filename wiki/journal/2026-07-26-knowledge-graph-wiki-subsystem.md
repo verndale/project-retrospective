@@ -2,7 +2,7 @@
 date: 2026-07-26
 topics: [graph-wiki-subsystem, skill-authoring]
 plan: plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/1
 ---
 # Knowledge graph + context wiki subsystem
 
