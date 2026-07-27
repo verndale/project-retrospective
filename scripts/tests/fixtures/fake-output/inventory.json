@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-01-01T00:00:00.000Z",
+  "project": "/tmp/fake-project",
+  "mode": "artifacts",
+  "config": {
+    "present": true,
+    "path": "/tmp/fake-project/build.config.json",
+    "artifactsRoot": "artifacts",
+    "stackAdapter": "fake-adapter",
+    "componentBuckets": { "ui": "src/components/ui", "rendering": "src/components/renderings" },
+    "renderingDomains": { "marketing": "marketing" }
+  },
+  "components": [
+    {
+      "name": "Cards",
+      "folder": "cards",
+      "bucket": "ui",
+      "domain": null,
+      "path": "src/components/ui/cards",
+      "entry": "src/components/ui/cards/Cards.tsx",
+      "sources": ["component-index"],
+      "buildPack": null,
+      "fingerprint": null
+    },
+    {
+      "name": "CheckoutPanel",
+      "folder": "checkout-panel",
+      "bucket": "rendering",
+      "domain": "marketing",
+      "path": "src/components/renderings/marketing/checkout-panel",
+      "entry": "src/components/renderings/marketing/checkout-panel/CheckoutPanel.tsx",
+      "sources": ["component-index"],
+      "buildPack": null,
+      "fingerprint": null
+    },
+    {
+      "name": "LogoRibbon",
+      "folder": "logo-ribbon",
+      "bucket": "rendering",
+      "domain": "marketing",
+      "path": "src/components/renderings/marketing/logo-ribbon",
+      "entry": "src/components/renderings/marketing/logo-ribbon/LogoRibbon.tsx",
+      "sources": ["build-pack", "component-index", "memory"],
+      "buildPack": { "style": "flat", "files": ["logo-ribbon.md"] },
+      "fingerprint": null
+    },
+    {
+      "name": "Modal",
+      "folder": "modal",
+      "bucket": "ui",
+      "domain": null,
+      "path": "src/components/ui/modal",
+      "entry": "src/components/ui/modal/Modal.tsx",
+      "sources": ["build-pack", "component-index", "fingerprint"],
+      "buildPack": { "style": "dir", "files": ["dom-contract.md", "master.md"] },
+      "fingerprint": { "slots": ["title", "body", "actions"], "affordance": "overlay", "role": "dialog", "variants": ["default", "wide"] }
+    }
+  ],
+  "evidence": {
+    "componentIndex": true,
+    "buildPacksDir": 1,
+    "buildPacksFlat": 1,
+    "fingerprints": 1,
+    "memoryShards": ["design-system.md"],
+    "memoryIndex": true,
+    "designFacts": 0,
+    "shipLog": { "present": true, "lines": 2 }
+  },
+  "counts": { "components": 4 },
+  "warnings": []
+}

@@ -1,0 +1,9 @@
+{
+  "stackAdapter": "fake-adapter",
+  "artifactsRoot": "artifacts",
+  "componentBuckets": {
+    "ui": "src/components/ui",
+    "rendering": "src/components/renderings"
+  },
+  "renderingDomains": { "marketing": "marketing" }
+}

@@ -1,0 +1,7 @@
+.DS_Store
+.env
+/node_modules
+
+# Retrospective run outputs are client-derived and this repo is public.
+# Outputs belong in the analyzed project (or a private data repo), never here.
+/retrospective-output

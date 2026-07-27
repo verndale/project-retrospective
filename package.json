@@ -1,0 +1,48 @@
+{
+  "name": "@verndale/project-retrospective",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Agent skill that analyzes completed frontend projects and mines promotable architectural knowledge for the ui-design-brain catalog and the ai-orchestration pipeline, distributed via the skills CLI.",
+  "license": "MIT",
+  "author": "Verndale",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/verndale/project-retrospective.git"
+  },
+  "keywords": [
+    "retrospective",
+    "knowledge-mining",
+    "ui-patterns",
+    "design-system",
+    "agent-skill"
+  ],
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=24.14.0"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "commit": "ai-commit run",
+    "pr:create": "ai-pr",
+    "lint:commits:last": "commitlint --config node_modules/@verndale/ai-commit/lib/commitlint-preset.cjs --last",
+    "release:dry": "semantic-release --dry-run",
+    "test": "node --test \"scripts/tests/**/*.test.cjs\"",
+    "retro:inventory": "node skills/project-retrospective/scripts/inventory.cjs",
+    "retro:resolve": "node skills/project-retrospective/scripts/resolve.cjs",
+    "retro:validate": "node skills/project-retrospective/scripts/validate-report.cjs"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.8",
+    "@semantic-release/npm": "^13.1.5",
+    "@semantic-release/release-notes-generator": "^14.1.1",
+    "@verndale/ai-commit": "^2.6.3",
+    "@verndale/ai-pr": "^1.3.5",
+    "dotenv": "^17.4.2",
+    "husky": "^9.1.7",
+    "semantic-release": "^25.0.3"
+  }
+}

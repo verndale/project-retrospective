@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Alert",
+    "slug": "alert",
+    "aliases": [{ "name": "Banner", "context": "page-level message/notification" }],
+    "file": "patterns/alert.md"
+  },
+  {
+    "name": "Badge",
+    "slug": "badge",
+    "aliases": ["Chip", { "name": "Label", "context": "tag/chip context" }],
+    "file": "patterns/badge.md"
+  },
+  {
+    "name": "Card",
+    "slug": "card",
+    "aliases": [],
+    "file": "patterns/card.md"
+  },
+  {
+    "name": "Hero",
+    "slug": "hero",
+    "aliases": [{ "name": "Banner", "context": "top-of-page hero/promotional area" }],
+    "file": "patterns/hero.md"
+  },
+  {
+    "name": "Link",
+    "slug": "link",
+    "aliases": ["Text link"],
+    "file": "patterns/link.md"
+  },
+  {
+    "name": "Modal",
+    "slug": "modal",
+    "aliases": ["Dialog", "Popup"],
+    "file": "patterns/modal.md"
+  }
+]

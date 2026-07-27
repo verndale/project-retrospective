@@ -1,0 +1,65 @@
+name: Commit message lint
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Org policy: only GitHub + org-owned actions — Corepack + actions/cache (no pnpm/action-setup).
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.14.0"
+
+      - name: Enable pnpm via Corepack
+        run: corepack enable && corepack prepare pnpm@10.33.0 --activate
+
+      - name: Get pnpm store path
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint PR title (squash merge becomes the commit on main)
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          printf '%s\n' "$PR_TITLE" | pnpm -s exec commitlint --verbose --config node_modules/@verndale/ai-commit/lib/commitlint-preset.cjs
+
+      - name: Lint commit messages (PR range)
+        if: github.event_name == 'pull_request'
+        run: |
+          pnpm -s exec commitlint \
+            --from "${{ github.event.pull_request.base.sha }}" \
+            --to "${{ github.event.pull_request.head.sha }}" \
+            --verbose \
+            --config node_modules/@verndale/ai-commit/lib/commitlint-preset.cjs
+
+      # --last reads the tip commit directly, so this works on a branch whose only
+      # commit has no parent (HEAD~1 would be an invalid revision there).
+      - name: Lint last commit (push)
+        if: github.event_name == 'push'
+        run: |
+          pnpm -s exec commitlint --last --verbose --config node_modules/@verndale/ai-commit/lib/commitlint-preset.cjs

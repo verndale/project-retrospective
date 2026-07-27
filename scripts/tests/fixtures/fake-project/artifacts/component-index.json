@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "components": [
+    { "name": "Modal", "folder": "modal", "bucket": "ui", "domain": null,
+      "path": "src/components/ui/modal", "entry": "src/components/ui/modal/Modal.tsx", "fingerprint": null },
+    { "name": "Chip", "folder": "chip", "bucket": "ui", "domain": null,
+      "path": "src/components/ui/chip", "entry": "src/components/ui/chip/Chip.tsx", "fingerprint": null },
+    { "name": "TextLink", "folder": "text-link", "bucket": "ui", "domain": null,
+      "path": "src/components/ui/text-link", "entry": "src/components/ui/text-link/TextLink.tsx", "fingerprint": null },
+    { "name": "Banner", "folder": "banner", "bucket": "rendering", "domain": "marketing",
+      "path": "src/components/renderings/marketing/banner", "entry": "src/components/renderings/marketing/banner/Banner.tsx", "fingerprint": null },
+    { "name": "LogoRibbon", "folder": "logo-ribbon", "bucket": "rendering", "domain": "marketing",
+      "path": "src/components/renderings/marketing/logo-ribbon", "entry": "src/components/renderings/marketing/logo-ribbon/LogoRibbon.tsx", "fingerprint": null },
+    { "name": "LogoRibbon", "folder": "logo-ribbon-compact", "bucket": "rendering", "domain": "marketing",
+      "path": "src/components/renderings/marketing/logo-ribbon-compact", "entry": "src/components/renderings/marketing/logo-ribbon-compact/LogoRibbon.tsx", "fingerprint": null },
+    { "name": "CheckoutPanel", "folder": "checkout-panel", "bucket": "rendering", "domain": "marketing",
+      "path": "src/components/renderings/marketing/checkout-panel", "entry": "src/components/renderings/marketing/checkout-panel/CheckoutPanel.tsx", "fingerprint": null },
+    { "name": "Cards", "folder": "cards", "bucket": "ui", "domain": null,
+      "path": "src/components/ui/cards", "entry": "src/components/ui/cards/Cards.tsx", "fingerprint": null }
+  ]
+}

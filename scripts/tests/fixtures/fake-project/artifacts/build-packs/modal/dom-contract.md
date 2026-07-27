@@ -1,0 +1,3 @@
+# Modal DOM contract
+
+Synthetic.
