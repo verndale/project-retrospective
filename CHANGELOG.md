@@ -1,3 +1,37 @@
+# v1.2.0 — 2026-07-30
+
+## Summary (AI, bounded)
+- Updated graph data and enhanced capture preflight in project retrospective (commit ba2b761)
+- Synchronized wiki content including journal, topics, and plans (commit ed2a3b2)
+- Merged pull request adding deferred captures variant triage feature (commit 8f2e7aa)
+- Merged pull request for bot wiki synchronization updates (commit 02cf839)
+
+## Highlights
+- commit: Merge pull request #13 from verndale/feat/defer-captures-variant-triage (8f2e7aa)
+- feat(project-retrospective): Update graph data and enhance capture preflight (ba2b761)
+- commit: Merge pull request #11 from verndale/bot/wiki-sync/10 (02cf839)
+- docs(wiki): sync journal, topics, and plans for #10 (ed2a3b2)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Update graph data and enhance capture preflight (ba2b761)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #10 (ed2a3b2)
+
+### Other (unknown)
+- commit: Merge pull request #11 from verndale/bot/wiki-sync/10 (02cf839)
+- commit: Merge pull request #13 from verndale/feat/defer-captures-variant-triage (8f2e7aa)
+
+## Full commit list
+- 8f2e7aa commit: Merge pull request #13 from verndale/feat/defer-captures-variant-triage
+- ba2b761 feat(project-retrospective): Update graph data and enhance capture preflight
+- 02cf839 commit: Merge pull request #11 from verndale/bot/wiki-sync/10
+- ed2a3b2 docs(wiki): sync journal, topics, and plans for #10
+
 # v1.1.0 — 2026-07-27
 
 ## Summary (AI, bounded)
