@@ -87,7 +87,7 @@ For any entry with `ambiguous: true`, the manifest scopes that label to more tha
 
 - `report.md` — following [`references/report-template.md`](references/report-template.md).
 - `proposals/<kebab-label>.md` — one per Promote candidate, using the template for its type.
-- `captures/<kebab-canonical>.md` — for implementations mature enough that the next project should start from them rather than rebuild. Draw these from the **resolved** list as much as the unresolved one: a mature Card or Modal implementation is a better library candidate than a novel label, which is usually the least-settled code in the project. Apply [`references/proposal-component-capture-template.md`](references/proposal-component-capture-template.md). Omit the directory when nothing qualifies.
+- `captures/<kebab-canonical>.md` — for implementations mature enough that the next project should start from them rather than rebuild. Draw these from the **resolved** list as much as the unresolved one: a mature Card or Modal implementation is a better library candidate than a novel label, which is usually the least-settled code in the project. A Promote candidate (new-pattern) whose *implementation* is itself mature also earns a capture, keyed to the canonical its proposal establishes — note it **deferred** in its `## Captures` entry and link the proposal; `capture-preflight.cjs` reports it `deferred` (exit 6) until that proposal is promoted, so promote first, then capture. When two components resolve to one canonical, fold prop/visual variants into one capture's `variants` or route a structurally distinct module to its own canonical — never drop the second (see the template). Apply [`references/proposal-component-capture-template.md`](references/proposal-component-capture-template.md). Omit the directory when nothing qualifies.
 - `orchestration-drafts.md` — pipeline-shaped findings per [`references/orchestration-draft-template.md`](references/orchestration-draft-template.md), or its explicit "no pipeline learnings" note.
 
 **5. Self-check.** Run the validator (see Validation loops) and fix what it reports.
@@ -100,7 +100,7 @@ For any entry with `ambiguous: true`, the manifest scopes that label to more tha
 
 **3. Verify** by running the brain's own graph build — `node scripts/graph/build-graph.cjs` from the `Brain` root, not this repo's copy of that path (exit 0 required).
 
-**4. Stop and hand back** in the shape the checklist specifies: edited files, verification result, suggested commit. Do not commit.
+**4. Stop and hand back** in the shape the checklist specifies: edited files, verification result, suggested commit. Do not commit. If this promotion establishes a canonical that a run's `captures/` deferred, name those deferred captures in the handback so the operator can re-run `Action: capture` and apply them now — that loopback is what the deferred state exists to close.
 
 ### Action: capture
 
@@ -112,7 +112,7 @@ Requires `Captures`, `Library`, and `Brain`. Applies a run's component captures 
 node <skill>/scripts/capture-preflight.cjs --captures <Captures> --library <Library> --brain <Brain> --pretty
 ```
 
-Report `orphanedByRun` verbatim — a library component claiming this run with no capture file is the defect this action exists to prevent. Do not start while any capture is `blocked`.
+Report `orphanedByRun` verbatim — a library component claiming this run with no capture file is the defect this action exists to prevent. Do not start while any capture is `blocked`. A **`deferred`** capture (the preflight exits `6`) is likewise not yours to write yet — its canonical is only *proposed* this run; promote that proposal first, then re-run so it becomes `ready`. Exit `6` is not a green light.
 
 **2. Apply** one capture at a time, in the checklist's order: implementation, then stories, then `component.json` — never the reverse, because a component directory holding only a `component.json` fails that repo's contracts. Executing a capture is a rewrite, not a copy: the `.tsx`, the token mapping, and the stories are yours to write. Paste the preflight's `componentJson` verbatim and fill `declienting` from what you actually removed.
 

@@ -29,6 +29,9 @@
  *   3  --captures is missing or is not a directory
  *   4  --library is missing or is not a ui-design-library checkout
  *   5  the manifest is missing, unreadable, or structurally invalid
+ *   6  no capture is blocked, but one or more are deferred: their canonical is
+ *      only established by a new-pattern proposal in this run. Promote the
+ *      proposal first (Action: promote), then re-run — the capture becomes ready.
  *
  * A missing manifest is the one input that degrades rather than fails: without
  * --brain or --manifest the run records a warning and skips the catalog check.
@@ -135,6 +138,45 @@ function loadTokens(libraryDir, warnings) {
   return names;
 }
 
+/**
+ * The run's new-pattern proposals, reduced to the canonical each would establish.
+ * A capture whose canonical is absent from the manifest but named by one of these
+ * is deferred, not blocked: the canonical becomes real the moment its proposal is
+ * promoted. Read the same way validate-report.cjs reads a new-pattern entry —
+ * fence-aware, new-pattern only, and guarded so a malformed proposal never throws
+ * past the top-level catch and loses the plan for every other capture.
+ */
+function loadProposals(proposalsDir, warnings) {
+  if (!isDir(proposalsDir)) return [];
+  const out = [];
+  for (const file of listEntries(proposalsDir).filter((e) => !e.dir && e.name.endsWith('.md'))) {
+    const text = readTextSafe(file.path, 2 * 1024 * 1024, warnings);
+    if (text === null) continue;
+    const top = sections(text, 2);
+    const typeSection = top.find((s) => s.heading === 'Proposal type');
+    if (!typeSection || !/\bnew-pattern\b/.test(typeSection.body)) continue;
+    const entrySection = top.find((s) => s.heading === 'Manifest entry');
+    const entryJson = entrySection ? fencedBlock(entrySection.body, 'json') : null;
+    let entry = null;
+    if (entryJson) {
+      try {
+        entry = JSON.parse(entryJson);
+      } catch {
+        entry = null;
+      }
+    }
+    if (!entry || typeof entry.name !== 'string' || !entry.name) {
+      warnings.add(
+        'proposal-unparsable',
+        `${file.name} is a new-pattern proposal but its "## Manifest entry" has no parseable canonical name, so a capture that would defer to it stays blocked.`,
+      );
+      continue;
+    }
+    out.push({ file: file.name, canonical: entry.name });
+  }
+  return out;
+}
+
 /** What `components/<slug>/` currently holds, if anything. */
 function inspectLibraryDir(libraryDir, slug) {
   const dir = path.join(libraryDir, 'components', slug);
@@ -166,6 +208,8 @@ function readCapture(file, ctx) {
     slug: stem,
     status: 'blocked',
     blockers: [],
+    deferred: false,
+    deferral: null,
     manifest: null,
     library: null,
     componentJson: null,
@@ -222,10 +266,25 @@ function readCapture(file, ctx) {
     const entry = ctx.manifest.find((e) => normalizeLabel(e.name) === normalizeLabel(canonical)) || null;
     record.manifest = { matched: Boolean(entry), entry };
     if (!entry) {
-      block(
-        'canonical-unknown',
-        `"${canonical}" is not a canonical in the catalog. Promote it first — the library keys on names the catalog resolves to.`,
-      );
+      // Deferred, not blocked: a sibling new-pattern proposal in THIS run establishes
+      // the canonical. It cannot be in the manifest yet, but it will be the moment that
+      // proposal is promoted — so the capture is valid, just not executable now. Set a
+      // flag, not the status: any other blocker must still win at the terminal gate.
+      const proposal =
+        ctx.proposals.find((p) => normalizeLabel(p.canonical) === normalizeLabel(canonical)) || null;
+      if (proposal) {
+        record.deferred = true;
+        record.deferral = {
+          reason: 'pending-promotion',
+          proposal: `proposals/${proposal.file}`,
+          message: `Promote "${canonical}" first — proposals/${proposal.file} establishes it this run, then re-run capture-preflight.`,
+        };
+      } else {
+        block(
+          'canonical-unknown',
+          `"${canonical}" is not a canonical in the catalog. Promote it first — the library keys on names the catalog resolves to.`,
+        );
+      }
     }
   }
 
@@ -318,7 +377,7 @@ function readCapture(file, ctx) {
     // else blocks it. A mis-slugged capture that happens to point at an occupied
     // directory is still mis-slugged, and reporting it as "already applied"
     // would hide exactly the defect this script exists to catch.
-    if (record.blockers.length === 0) record.status = 'skipped';
+    if (record.blockers.length === 0) record.status = record.deferred ? 'deferred' : 'skipped';
     return record;
   }
   if (library.exists && (componentJson || impl || stories)) {
@@ -328,7 +387,7 @@ function readCapture(file, ctx) {
     );
   }
 
-  if (record.blockers.length === 0) record.status = 'ready';
+  if (record.blockers.length === 0) record.status = record.deferred ? 'deferred' : 'ready';
   return record;
 }
 
@@ -373,7 +432,7 @@ function findOrphanedByRun(libraryDir, records, warnings) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2), {
-    keys: ['captures', 'library', 'brain', 'manifest', 'out'],
+    keys: ['captures', 'library', 'brain', 'manifest', 'out', 'proposals'],
     flags: ['pretty'],
   });
   const { values } = args;
@@ -399,13 +458,20 @@ function main() {
       : null;
   const manifest = loadManifest(manifestPath, warnings);
   const tokens = loadTokens(libraryDir, warnings);
+  const proposalsDir = values.proposals
+    ? path.resolve(values.proposals)
+    : path.resolve(capturesDir, '..', 'proposals');
+  // Deferral is only consulted inside `if (ctx.manifest)`, so skip the read entirely
+  // when no catalog was given — nothing downstream would look at it. A missing
+  // proposals/ sibling degrades silently to an empty set (most runs have none).
+  const proposals = manifest ? loadProposals(proposalsDir, warnings) : [];
 
   const files = listEntries(capturesDir).filter((e) => !e.dir && e.name.endsWith('.md'));
   if (files.length === 0) {
     warnings.add('no-captures', `${capturesDir} contains no capture files — nothing to apply.`);
   }
 
-  const ctx = { manifest, tokens, libraryDir, warnings };
+  const ctx = { manifest, tokens, libraryDir, proposals, warnings };
   const components = files.map((file) => readCapture(file, ctx));
   const orphanedByRun = findOrphanedByRun(libraryDir, components, warnings);
 
@@ -414,6 +480,7 @@ function main() {
     ready: components.filter((c) => c.status === 'ready').length,
     blocked: components.filter((c) => c.status === 'blocked').length,
     skipped: components.filter((c) => c.status === 'skipped').length,
+    deferred: components.filter((c) => c.status === 'deferred').length,
     orphanedByRun: orphanedByRun.length,
   };
 
@@ -433,13 +500,17 @@ function main() {
     values.pretty,
   );
 
-  // A blocked capture is not something to shrug past: exit 0 means every capture
-  // in the set can be executed as-is.
+  // A blocked capture is not something to shrug past, and a deferred one is not
+  // executable yet: exit 0 means every capture in the set can be executed as-is.
+  // Blocked dominates (exit 1); a set with only deferred captures exits 6 so a
+  // naive executor keying on exit 0 stops and promotes the proposal first — the
+  // library's contracts check the directory name, never the catalog, so nothing
+  // downstream would otherwise catch a component keyed to an unpromoted canonical.
   //
   // `process.exitCode` rather than `process.exit()`: stdout is async on a pipe, and
   // exiting outright truncates it at the pipe buffer — a large plan would emit
   // syntactically broken JSON alongside a successful exit code.
-  process.exitCode = counts.blocked > 0 ? 1 : 0;
+  process.exitCode = counts.blocked > 0 ? 1 : counts.deferred > 0 ? 6 : 0;
 }
 
 try {
