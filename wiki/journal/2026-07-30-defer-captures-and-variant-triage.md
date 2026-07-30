@@ -2,7 +2,7 @@
 date: 2026-07-30
 topics: [library-capture]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/13
 ---
 # Defer captures for pending canonicals, and triage variant multiplicity
 
