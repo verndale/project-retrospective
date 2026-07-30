@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 63,
-    "edges": 141,
+    "nodes": 67,
+    "edges": 151,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -9,22 +9,22 @@
       "test": 7,
       "authoring-spec": 1,
       "skill-readme": 1,
-      "skill-reference": 10,
+      "skill-reference": 13,
       "skill-script": 5,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 6,
+      "wiki-journal": 7,
       "wiki-plan": 2,
       "wiki-topic": 5
     },
     "byEdgeType": {
-      "contracts": 14,
+      "contracts": 17,
       "covers": 16,
-      "links-to": 63,
+      "links-to": 69,
       "plan": 2,
       "requires": 26,
       "tests": 6,
-      "topic": 14
+      "topic": 15
     }
   },
   "nodes": [
@@ -37,7 +37,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7535,
+      "bytes": 7912,
       "degree": 6
     },
     {
@@ -229,7 +229,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 17116,
+      "bytes": 19794,
       "degree": 2
     },
     {
@@ -397,8 +397,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 16694,
-      "degree": 3
+      "bytes": 18094,
+      "degree": 4
     },
     {
       "id": "skills/project-retrospective/references/brain-integrity-checklist.md",
@@ -517,7 +517,43 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 5197,
+      "bytes": 5299,
+      "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/references/wiki-client-template.md",
+      "label": "wiki client page template",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 1525,
+      "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/references/wiki-feed.md",
+      "label": "Wiki feed",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 4062,
+      "degree": 3
+    },
+    {
+      "id": "skills/project-retrospective/references/wiki-journal-template.md",
+      "label": "wiki journal entry template",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 1713,
       "degree": 2
     },
     {
@@ -577,7 +613,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 21923,
+      "bytes": 24883,
       "degree": 4
     },
     {
@@ -589,8 +625,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 16485,
-      "degree": 28
+      "bytes": 19146,
+      "degree": 34
     },
     {
       "id": "wiki/INDEX.md",
@@ -601,8 +637,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 4731,
-      "degree": 16
+      "bytes": 4959,
+      "degree": 17
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -689,6 +725,20 @@
       "issues": [],
       "bytes": 2820,
       "degree": 2
+    },
+    {
+      "id": "wiki/journal/2026-07-30-client-wiki-feed.md",
+      "label": "Feed a client wiki from analyze (Step 6 + meta.json)",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 1911,
+      "degree": 3
     },
     {
       "id": "wiki/journal/2026-07-30-defer-captures-and-variant-triage.md",
@@ -851,8 +901,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 4131,
-      "degree": 12
+      "bytes": 4510,
+      "degree": 14
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -923,6 +973,21 @@
     {
       "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/report-template.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/wiki-client-template.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/wiki-feed.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/wiki-journal-template.md",
       "type": "contracts"
     },
     {
@@ -1146,6 +1211,13 @@
     },
     {
       "source": "skills/project-retrospective/README.md",
+      "target": "skills/project-retrospective/references/wiki-feed.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/README.md",
       "target": "skills/project-retrospective/SKILL.md",
       "type": "links-to",
       "count": 1,
@@ -1229,6 +1301,27 @@
       "anchors": []
     },
     {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/wiki-client-template.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/wiki-feed.md",
+      "type": "links-to",
+      "count": 4,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/wiki-journal-template.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
       "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
       "type": "links-to",
@@ -1259,6 +1352,13 @@
     {
       "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-07-27-graph-module-edges.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-07-30-client-wiki-feed.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -1422,6 +1522,13 @@
       "target": "wiki/journal/2026-07-27-auditable-captures-and-capture-action.md",
       "type": "links-to",
       "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/journal/2026-07-30-client-wiki-feed.md",
+      "type": "links-to",
+      "count": 1,
       "anchors": []
     },
     {
@@ -1679,6 +1786,11 @@
     {
       "source": "wiki/journal/2026-07-27-graph-module-edges.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-07-30-client-wiki-feed.md",
+      "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },
     {

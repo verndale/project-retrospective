@@ -18,6 +18,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-07-30 — Added Step 6 (wiki feed) and a machine-readable `meta.json` identity contract, so an analyze run feeds a per-client knowledge wiki in ui-design-evidence; `validate-report.cjs` gained `checkMeta` at full/candidates scope, and identity stays model-written so the deterministic scripts remain client-agnostic ([journal](../journal/2026-07-30-client-wiki-feed.md)).
 - 2026-07-30 — feat(project-retrospective): Update graph data and enhance capture prefl ([PR #13](https://github.com/verndale/project-retrospective/pull/13))
 - 2026-07-27 — feat(project-retrospective): Enhance capture functionality in project ([PR #10](https://github.com/verndale/project-retrospective/pull/10))
 - 2026-07-27 — `## Captures` is required at `full` scope only, alongside Learnings, because it pairs with an artifact the drafting step produces and `Scope: candidates` waives that step. A run that captured nothing keeps the heading and says so in prose; nothing regexes that sentence ([journal](../journal/2026-07-27-auditable-captures-and-capture-action.md)).

@@ -49,7 +49,7 @@ Data: /Users/you/Projects/ui-design-evidence
 
 `Data` is what puts the run in the evidence repo. Without it, output lands in `~/project-retrospective/runs/` and the skill tells you so.
 
-Output goes to `<Data>/runs/<project-slug>/<YYYY-MM-DD>/`. **Done when:** that directory holds `report.md`, `inventory.json`, `resolution.json`, `orchestration-drafts.md`, plus `proposals/` and `captures/` if anything qualified — and the validator exits 0.
+Output goes to `<Data>/runs/<project-slug>/<YYYY-MM-DD>/`. **Done when:** that directory holds `meta.json`, `report.md`, `inventory.json`, `resolution.json`, `orchestration-drafts.md`, plus `proposals/` and `captures/` if anything qualified — the validator exits 0 — and (because `Data` is set) the client wiki under `<Data>/wiki/` gained a journal entry and its client page.
 
 ### Step 2 — Read the report
 
@@ -152,6 +152,7 @@ PriorReports: /Users/you/Projects/ui-design-evidence/runs/site-a/2026-05-02/repo
 | `Brain` | for resolution, promote, and capture | — | Absolute path to a local ui-design-brain checkout. Without it, resolution is skipped and the report records the gap. |
 | `Data` | no | — | Absolute path to the private `ui-design-evidence` repo. When given, runs land under `<Data>/runs/<project-slug>/<date>/`. |
 | `Output` | no | `<Data>/runs/…`, else `~/project-retrospective/runs/…` | Where run output is written. Never inside `Project`. |
+| `Client` | no | derived | Human-readable client name; sets the wiki client-slug (distinct from the project-slug — one client may own several projects). Resolution order in [`references/wiki-feed.md`](references/wiki-feed.md). |
 | `Scope` | no | `full` | `inventory` (what was built), `candidates` (adds resolution and verdicts), `full` (adds proposals and drafts). |
 | `PriorReports` | no | — | Comma-separated paths to earlier `report.md` files. A Watch candidate that recurs is elevated to Promote. |
 | `Action` | no | `analyze` | `analyze`, `promote`, or `capture`. |
@@ -165,6 +166,7 @@ Written to `Output`, never into this skill's repository:
 
 | File | Contents |
 |---|---|
+| `meta.json` | Machine-readable run identity: client, project, platform, date, scope, priorReports. Grounds the client wiki. |
 | `report.md` | The human-readable retrospective: summary, inventory, resolution, candidates with verdicts and evidence, learnings, gaps, next steps. |
 | `inventory.json` | Every component found, with its evidence sources, build pack, and fingerprint. |
 | `resolution.json` | Resolved labels with how they resolved; unresolved labels with occurrences and locations. |
@@ -173,6 +175,8 @@ Written to `Output`, never into this skill's repository:
 | `orchestration-drafts.md` | Pipeline-shaped findings as paste-ready drafts for ai-orchestration. |
 
 **The analyzed project is never written to.** Runs land in the private `ui-design-evidence` repo (`Data`) or, failing that, a user-level directory — never in the client repo. That keeps a retrospective from leaving artifacts a project team has to review, and keeps cross-project evidence out of any single client's tree.
+
+**The client wiki (Step 6).** When `Data` is the `ui-design-evidence` checkout, an analyze run also feeds that repo's client wiki: it creates/updates `<Data>/wiki/clients/<client-slug>.md` (durable client knowledge) and appends `<Data>/wiki/journal/<date>-<project-slug>.md` (what happened this run), so the evidence repo answers "who is this client and what have we run for them." Skipped when the run lands in the home fallback. See [`references/wiki-feed.md`](references/wiki-feed.md).
 
 **Two modes.** A project that went through the build pipeline has normalized evidence (build packs, component index, fingerprints, project memory) — that is `artifacts` mode. A project without it degrades to `code-scan`: directory walking only, which yields names but no contract, so verdicts cap at Watch. The report says which mode ran, in the Run and Gaps sections.
 
@@ -239,6 +243,8 @@ One project's retrospective is a snapshot; the signal gets much stronger with hi
 
 | Symptom | Cause and fix |
 |---|---|
+| Wiki not updated | The run landed in the home fallback. Pass `Data:` (the ui-design-evidence checkout) so `<Data>/wiki/` is a sibling of `<Data>/runs/` and Step 6 can write the client page and journal entry. |
+| Validator fails on `meta-present` / `meta-dir` | `meta.json` is missing, or its `project.slug`/`date` disagree with the run directory. Write it in Step 4 with slug and date matching `runs/<project-slug>/<date>/`. |
 | `mode: code-scan` on a pipeline project | The artifacts root was not found. Check `artifactsRoot` in the project's `build.config.json` and that you pointed `Project` at the repo root, not the app subdirectory. |
 | `no-build-config` warning | No `build.config.json` at the project root. Expected for pre-pipeline projects; the scan falls back to conventional component roots. |
 | Everything unresolved | Usually `--brain` pointed somewhere without `skills/ui-design-brain/patterns-manifest.json` (exit 4), or the project genuinely uses domain-specific names — which is the finding, not an error. |

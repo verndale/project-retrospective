@@ -63,9 +63,10 @@ Retrospective runs read client repositories and produce client-derived output. N
 
 - **Never commit** run outputs, component inventories, resolution results, reports, proposals, memory excerpts, client names, or client repo paths.
 - Run output goes wherever `Data:` or `Output:` points — never inside this repo, and never inside the analyzed project, which the skill treats as strictly read-only.
+- **The client wiki the skill feeds (Step 6) lands only in the `ui-design-evidence` checkout**, under `<Data>/wiki/`. That private repo is the sanctioned home for richer client identity (client names, platforms); this rule forbids that content from ever landing here. It is distinct from this repo's own `wiki/` (which records why *this repo* is the way it is).
 - **Test fixtures are synthetic.** Invent component names; never copy a real project's inventory into `scripts/tests/fixtures/`.
 - Examples in docs use placeholder paths, not real client checkouts.
-- **The wiki is covered by this rule too.** A journal entry or archived plan may name what was learned, never who it was learned from; plans are redacted on archive.
+- **This repo's own `wiki/` is covered by this rule too.** A journal entry or archived plan may name what was learned, never who it was learned from; plans are redacted on archive.
 
 ## Downstream repos are read-mostly
 

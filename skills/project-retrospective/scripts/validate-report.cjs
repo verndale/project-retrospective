@@ -143,6 +143,64 @@ function checkResolution(dir, result) {
   return res;
 }
 
+function checkMeta(dir, scope, result) {
+  const file = path.join(dir, 'meta.json');
+  if (!isFile(file)) {
+    result.fail('meta-present', 'meta.json is missing');
+    return null;
+  }
+  const read = readJsonSafe(file);
+  if (!read.ok) {
+    result.fail('meta-parses', `meta.json could not be parsed: ${read.error}`);
+    return null;
+  }
+  const meta = read.value;
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) {
+    result.fail('meta-parses', 'meta.json is not a JSON object');
+    return null;
+  }
+  if (meta.schemaVersion !== 1) result.fail('meta-schema', `meta.json schemaVersion is ${meta.schemaVersion}, expected 1`);
+
+  const client = meta.client && typeof meta.client === 'object' ? meta.client : {};
+  const project = meta.project && typeof meta.project === 'object' ? meta.project : {};
+  for (const [label, value] of [
+    ['client.name', client.name],
+    ['client.slug', client.slug],
+    ['project.slug', project.slug],
+    ['date', meta.date],
+  ]) {
+    if (typeof value !== 'string' || !value) result.fail('meta-fields', `meta.json ${label} must be a non-empty string`);
+  }
+  // platform is required as a key but may be null (code-scan / no build.config.json).
+  if (!(typeof meta.platform === 'string' || meta.platform === null)) {
+    result.fail('meta-fields', 'meta.json platform must be a string or null');
+  }
+  if (meta.priorReports !== undefined && !Array.isArray(meta.priorReports)) {
+    result.fail('meta-fields', 'meta.json priorReports must be an array');
+  }
+
+  if (typeof client.slug === 'string' && client.slug && kebab(client.slug) !== client.slug) {
+    result.fail('meta-slug', `meta.json client.slug "${client.slug}" is not kebab-case ("${kebab(client.slug)}")`);
+  }
+  if (typeof project.slug === 'string' && project.slug && kebab(project.slug) !== project.slug) {
+    result.fail('meta-slug', `meta.json project.slug "${project.slug}" is not kebab-case ("${kebab(project.slug)}")`);
+  }
+
+  // When the output dir is a real run directory (runs/<slug>/<date>/), meta must
+  // agree with it — this is what keeps the wiki, the graph, and captures'
+  // provenance.run on the same project-slug. Skipped for ad-hoc output dirs.
+  if (path.basename(path.dirname(path.dirname(dir))) === 'runs') {
+    const parent = path.basename(path.dirname(dir));
+    if (typeof project.slug === 'string' && project.slug && project.slug !== parent) {
+      result.fail('meta-dir', `meta.json project.slug "${project.slug}" does not match the run directory "${parent}"`);
+    }
+    if (typeof meta.date === 'string' && meta.date && meta.date !== path.basename(dir)) {
+      result.fail('meta-dir', `meta.json date "${meta.date}" does not match the run directory "${path.basename(dir)}"`);
+    }
+  }
+  return meta;
+}
+
 function checkReport(dir, scope, noBrain, result) {
   const file = path.join(dir, 'report.md');
   const text = isFile(file) ? readTextSafe(file) : null;
@@ -493,6 +551,9 @@ function main() {
 
   checkInventory(dir, result);
   if (scope !== 'inventory' && !noBrain) checkResolution(dir, result);
+  // Identity is required wherever the run has candidates (full and candidates
+  // scopes); an inventory-only run has no client wiki to feed.
+  if (scope !== 'inventory') checkMeta(dir, scope, result);
 
   const { promoted, captured, capturesSectionPresent } = checkReport(dir, scope, noBrain, result);
 
