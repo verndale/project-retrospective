@@ -1,3 +1,37 @@
+# v1.4.0 — 2026-07-30
+
+## Summary (AI, bounded)
+- Updated graph data and enhanced documentation for project retrospective (commit 75fd299)
+- Synchronized wiki journal, topics, and plans (commit 48d5bfc)
+- Merged pull request adding downstream wiki feed functionality (commit e38efac)
+- Incorporated wiki synchronization improvements via bot (commit 85d11ba)
+
+## Highlights
+- commit: Merge pull request #19 from verndale/feat/downstream-wiki-feed (e38efac)
+- feat(project-retrospective): Update graph data and enhance documentation (75fd299)
+- commit: Merge pull request #17 from verndale/bot/wiki-sync/16 (85d11ba)
+- docs(wiki): sync journal, topics, and plans for #16 (48d5bfc)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Update graph data and enhance documentation (75fd299)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #16 (48d5bfc)
+
+### Other (unknown)
+- commit: Merge pull request #17 from verndale/bot/wiki-sync/16 (85d11ba)
+- commit: Merge pull request #19 from verndale/feat/downstream-wiki-feed (e38efac)
+
+## Full commit list
+- e38efac commit: Merge pull request #19 from verndale/feat/downstream-wiki-feed
+- 75fd299 feat(project-retrospective): Update graph data and enhance documentation
+- 85d11ba commit: Merge pull request #17 from verndale/bot/wiki-sync/16
+- 48d5bfc docs(wiki): sync journal, topics, and plans for #16
+
 # v1.3.0 — 2026-07-30
 
 ## Summary (AI, bounded)
