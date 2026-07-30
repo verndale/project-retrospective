@@ -76,7 +76,7 @@ Proposal: /Users/you/Projects/ui-design-evidence/runs/some-client-site/2026-06-1
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
-Edits the brain working tree, verifies with that repo's own graph build, stops. Then you commit:
+Edits the brain working tree, authors a client-agnostic context-wiki entry (a `wiki/journal/` entry, one `wiki/INDEX.md` line, and a `component-catalog` Decisions bullet — skipped when the checkout has no `wiki/`), verifies with that repo's own graph build, stops. Then you commit:
 
 ```bash
 cd /Users/you/Projects/ui-design-brain && pnpm commit
@@ -106,7 +106,7 @@ Then you commit, one per component:
 cd /Users/you/Projects/ui-design-library && pnpm commit
 ```
 
-**Done when:** `pnpm test` passes in the library and each new `components/<slug>/` holds three files.
+**Done when:** `pnpm test` passes in the library, each new `components/<slug>/` holds three files, and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
 
 ### Step 5 — Carry the orchestration drafts over
 
@@ -213,7 +213,7 @@ Brain: /Users/you/Projects/ui-design-brain
 
 This edits the brain **working tree** — manifest entry, pattern file, `index.md`, README count, as the proposal type requires — runs that repo's own `node scripts/graph/build-graph.cjs` from the brain root to verify, and stops with the edited-file list and a suggested commit. (This repository has a file at the same path; it validates this repository, not the catalog.) You commit (`pnpm commit` in the brain repo), PR, and merge. From there the existing daily catalog sync carries it into ai-orchestration and out to projects.
 
-Verification also regenerates the brain's committed graph and its `wiki/connections*` files — expected, and that repo's pre-commit hook rebuilds them anyway.
+It also authors a **client-agnostic** context-wiki entry in the brain — a `wiki/journal/<date>-<change-slug>.md`, one `wiki/INDEX.md` line, and a `wiki/topics/component-catalog.md` Decisions bullet — following that repo's `wiki/MECHANICS.md` and grounded in recurrence and the catalog delta, never the client name or run slug. It is skipped when the checkout has no `wiki/`. Verification also regenerates the brain's committed graph and its `wiki/connections*` files — expected, and that repo's pre-commit hook rebuilds them anyway.
 
 ## Executing captures
 
@@ -232,6 +232,8 @@ Brain: /Users/you/Projects/ui-design-brain
 **Executing a capture is a rewrite, not a copy.** Project imports are replaced with library primitives, client tokens are mapped onto semantic tokens (adding one when a value has no semantic home), client copy and assets come out, and every removal is recorded in `component.json`'s `declienting` array. That array is mandated by the library but not checked by its contract script, so it is the one thing only the author enforces.
 
 **Read `orphanedByRun` first.** Preflight reports any library component whose `provenance.run` names a run this capture set covers but which has no capture file behind it — a component that reached the library with no evidence. It is a detector, not a fix: decide what to do about each one before applying anything.
+
+**Each written component also gains a context-wiki entry.** Following the library's `wiki/MECHANICS.md`, a client-agnostic `wiki/journal/<date>-add-<slug>-component.md` plus one `wiki/INDEX.md` line — grounded in the `declienting` removals and the canonical, never the client — then `wiki/connections*` is rebuilt with `pnpm graph:build`. A `deferred`, `blocked`, or `skipped` capture writes nothing, so it gets no entry; the whole step is skipped when the checkout has no `wiki/`.
 
 Then you commit in the library repo (`pnpm commit`), one per component, and PR.
 
