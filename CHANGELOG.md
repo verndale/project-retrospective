@@ -1,3 +1,36 @@
+# v1.3.0 — 2026-07-30
+
+## Summary (AI, bounded)
+- Enhanced client wiki integration and documentation as part of project retrospective (commit dbcedea).
+- Wiki updated to sync journal, topics, and plans (commit caa7375).
+- Merged pull requests related to wiki feed and bot wiki sync to improve functionality (commits 159bf07, 32d8631).
+
+## Highlights
+- commit: Merge pull request #16 from verndale/feat/wiki-feed-step6 (159bf07)
+- feat(project-retrospective): Enhance client wiki integration and documentation (dbcedea)
+- commit: Merge pull request #14 from verndale/bot/wiki-sync/13 (32d8631)
+- docs(wiki): sync journal, topics, and plans for #13 (caa7375)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Enhance client wiki integration and documentation (dbcedea)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #13 (caa7375)
+
+### Other (unknown)
+- commit: Merge pull request #14 from verndale/bot/wiki-sync/13 (32d8631)
+- commit: Merge pull request #16 from verndale/feat/wiki-feed-step6 (159bf07)
+
+## Full commit list
+- 159bf07 commit: Merge pull request #16 from verndale/feat/wiki-feed-step6
+- dbcedea feat(project-retrospective): Enhance client wiki integration and documentation
+- 32d8631 commit: Merge pull request #14 from verndale/bot/wiki-sync/13
+- caa7375 docs(wiki): sync journal, topics, and plans for #13
+
 # v1.2.0 — 2026-07-30
 
 ## Summary (AI, bounded)
