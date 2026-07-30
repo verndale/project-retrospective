@@ -21,7 +21,7 @@ Write one file per candidate at `captures/<kebab-canonical>.md` — a separate d
 
 Capture when all of these hold:
 
-1. **The label resolves to a canonical**, or a `new-pattern` proposal in this same run establishes one. A library entry with no catalog name has nothing to key on.
+1. **The label resolves to a canonical**, or a `new-pattern` proposal in this same run establishes one — in which case the capture is drafted now but comes back `deferred` from `capture-preflight.cjs` until that proposal is promoted (promote first, then capture). A library entry with no catalog name has nothing to key on.
 2. **The implementation is evidenced as mature** — a build pack, colocated unit tests, a `fingerprint.json` declaring a real slot/variant surface, and accessibility work that is visible in the code rather than assumed.
 3. **The client-specific surface is separable.** If the component only makes sense with the client's content model, it is project code.
 4. **The token usage is disciplined** — semantic token utilities rather than arbitrary values, so the component can be re-themed instead of re-styled.
@@ -115,4 +115,6 @@ The scope is the component slug, not `library` — `ui-design-library` owns that
 - **`maturity: "candidate"`** on every capture. Promoting a candidate to a supported library component is a human decision made in that repo, after the rewrite and the story exist.
 - **The de-client list is the deliverable.** A capture that says "minor cleanup needed" is useless; the value is in naming every coupling so the rewrite can be estimated and nothing client-specific leaks into shared code.
 - **No client names, copy, or asset URLs in the capture body** beyond the provenance paths needed to find the source. The capture travels to a repo other projects read.
-- One capture per canonical per run. If two components in the project implement the same canonical, capture the stronger one and say why in Reuse evidence.
+- **One capture *file* per canonical per run — but never silently drop a second module.** When two components resolve to the same canonical, decide which case you have and record it in the report's `## Captures` prose and this capture's `## Reuse evidence`:
+  - **Prop or visual variants of one component** (a wide Modal, a compact Card, a tone) fold into that single capture's `component.json.variants` array — one file, multiple entries. The golden `captures/modal.md` shows the shape (`"variants": ["default", "wide"]`).
+  - **A structurally distinct module** — a different `fingerprint.json` slot / affordance / role / interaction contract, *not* a difference in styling, size, colour, copy, or a prefix/suffix word — is not a variant even when it resolves to the same canonical: it misresolved, and was never really that canonical. Route it to its **own** canonical via a `new-pattern` proposal (it must still clear all four Promote tests), then draft its capture keyed to that proposed canonical; preflight reports it `deferred` until the proposal is promoted. The library keys one directory per canonical, so this is the only way two implementations coexist.

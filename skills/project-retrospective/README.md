@@ -86,7 +86,7 @@ PR and merge. **Done when:** the new canonical is on `main` in ui-design-brain.
 
 ### Step 4 — Execute the captures
 
-**Step 3 must come first for any capture whose canonical is new.** Preflight blocks a capture whose canonical is not in the manifest (`canonical-unknown`), and that block is the *only* enforcement of it — the library's own contracts are self-referential, checking `component.json`'s `slug` against its directory name and `kebab(canonical)`, never against the catalog. A component keyed on a canonical the catalog does not have would pass `pnpm contracts` and be wrong anyway. Requires `Brain`; without it preflight cannot make this check at all and says so.
+**Step 3 must come first for any capture whose canonical is new.** Preflight blocks a capture whose canonical is not in the manifest with no in-run proposal behind it (`canonical-unknown`); when a `new-pattern` proposal in the same run establishes that canonical, it reports the capture `deferred` (exit 6) instead — a "promote first, then re-run" state rather than a hard stop. Either way the enforcement is preflight's alone — the library's own contracts are self-referential, checking `component.json`'s `slug` against its directory name and `kebab(canonical)`, never against the catalog. A component keyed on a canonical the catalog does not have would pass `pnpm contracts` and be wrong anyway. Requires `Brain`; without it preflight cannot make this check at all and says so.
 
 The whole directory in one invocation:
 
@@ -192,7 +192,7 @@ node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <l
 | `inventory.cjs` | 0 success (including degraded) · 1 unexpected · 2 bad invocation · 3 `--project` is not a directory |
 | `resolve.cjs` | 0 · 1 · 2 · 3 inventory missing/unreadable/wrong schema · 4 manifest missing/unreadable/invalid |
 | `validate-report.cjs` | 0 pass · 1 failures · 2 bad invocation · 3 `--output` is not a directory |
-| `capture-preflight.cjs` | 0 all ready or already applied · 1 one or more blocked, or unexpected · 2 bad invocation · 3 `--captures` is not a directory · 4 `--library` is not a library checkout · 5 manifest missing/unreadable/invalid |
+| `capture-preflight.cjs` | 0 all ready or already applied · 1 one or more blocked, or unexpected · 2 bad invocation · 3 `--captures` is not a directory · 4 `--library` is not a library checkout · 5 manifest missing/unreadable/invalid · 6 none blocked, but one or more deferred (canonical only proposed this run — promote first, then re-run) |
 
 Inputs *within* a run never crash the script: a missing artifact, an unreadable file, or an unexpected shape records a `{ code, message }` warning and the run continues with less evidence. Read the warnings — they are what the report's Gaps section is built from. A named input that was requested but cannot be used — an unreadable inventory, a structurally invalid manifest — exits on its own code instead, because every downstream answer would otherwise be meaningless.
 
@@ -247,6 +247,6 @@ One project's retrospective is a snapshot; the signal gets much stronger with hi
 | Promote refuses to start | A precondition failed — unreadable proposal, no manifest at the `Brain` path, or the change is already applied. The message names which. |
 | Validator fails on `capture-parity` | A `### <Canonical>` entry under `## Captures` has no `captures/<kebab-canonical>.md`, or a capture file has no entry. Both directions fail — a capture the report does not list is how a component reaches the library with no evidence. |
 | Validator fails on `capture-canonical` | The capture's bolded canonical, its backticked slug, and its filename disagree. Name the file after the canonical (`Badge` → `captures/badge.md`), never after the project's label. |
-| Preflight blocks on `canonical-unknown` | The catalog has no such canonical. Promote it into ui-design-brain first — the library keys on names the catalog resolves to. |
+| Preflight blocks on `canonical-unknown` | The catalog has no such canonical and no `new-pattern` proposal in the run establishes it. Promote it into ui-design-brain first — the library keys on names the catalog resolves to. (If the run *does* propose it, preflight reports `deferred` — exit 6 — instead: promote that proposal, then re-run.) |
 | Preflight blocks on `library-partial` | `components/<slug>/` already exists holding some but not all three files. Finish or remove it by hand; the skill will not write into a half-built directory. |
 | Preflight blocks on `slug-mismatch` | The same disagreement `capture-canonical` catches, seen at capture time. Fix the capture file rather than the library directory. |

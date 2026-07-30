@@ -75,6 +75,7 @@ test('the envelope carries the documented key order', () => {
     ready: 1,
     blocked: 0,
     skipped: 0,
+    deferred: 0,
     orphanedByRun: 1,
   });
 });
@@ -148,13 +149,56 @@ test('no --brain or --manifest degrades with a warning instead of failing', () =
   assert.ok(!record.blockers.some((b) => b.code === 'canonical-unknown'));
 });
 
-test('a canonical the catalog does not have is blocked', () => {
+test('a canonical the catalog does not have, with no in-run proposal, is blocked', () => {
   const captures = tempCaptures();
   const brain = tempFixture('fake-brain');
   const manifestPath = path.join(brain, 'skills/ui-design-brain/patterns-manifest.json');
   const entries = JSON.parse(fs.readFileSync(manifestPath, 'utf8')).filter((e) => e.name !== 'Modal');
   fs.writeFileSync(manifestPath, JSON.stringify(entries, null, 2));
+  // The sibling proposals/logo-ribbon.md establishes "Logo ribbon", not "Modal", so
+  // no deferral applies and Modal stays hard-blocked.
   assertBlocked(preflight(captures, fixture('fake-library'), ['--manifest', manifestPath]), 'canonical-unknown');
+});
+
+test('an unknown canonical established by an in-run new-pattern proposal is deferred, not blocked', () => {
+  // proposals/logo-ribbon.md (new-pattern, name "Logo ribbon") ships in fake-output, and
+  // "Logo ribbon" is absent from fake-brain's manifest — so a logo-ribbon capture defers
+  // to that pending promotion instead of hard-blocking. Promote it, re-run, and it is ready.
+  const captures = tempCaptures();
+  const text = readFile(captures, 'modal.md')
+    .replace(/\*\*Modal\*\* \(`modal`\)/, '**Logo ribbon** (`logo-ribbon`)')
+    .replace(/"canonical": "Modal"/, '"canonical": "Logo ribbon"')
+    .replace(/"slug": "modal"/, '"slug": "logo-ribbon"');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'logo-ribbon.md', text);
+  const result = preflight(captures, fixture('fake-library'));
+  assert.equal(result.status, 6, `deferred-only must exit 6, got ${result.status}:\n${result.stdout}${result.stderr}`);
+  const record = only(result);
+  assert.equal(record.status, 'deferred');
+  assert.equal(record.deferral.reason, 'pending-promotion');
+  assert.match(record.deferral.proposal, /logo-ribbon\.md/);
+  assert.ok(!record.blockers.some((b) => b.code === 'canonical-unknown'));
+  assert.equal(result.json.counts.deferred, 1);
+  assert.equal(result.json.counts.blocked, 0);
+});
+
+test('a deferred capture that also has a hard blocker stays blocked, not deferred', () => {
+  // Blocked outranks deferred at the terminal gate: an empty slots array is a real
+  // defect, so the pending-promotion flag must not launder it into a deferral.
+  const captures = tempCaptures();
+  const text = readFile(captures, 'modal.md')
+    .replace(/\*\*Modal\*\* \(`modal`\)/, '**Logo ribbon** (`logo-ribbon`)')
+    .replace(/"canonical": "Modal"/, '"canonical": "Logo ribbon"')
+    .replace(/"slug": "modal"/, '"slug": "logo-ribbon"')
+    .replace(/"slots": \[[^\]]*\]/, '"slots": []');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'logo-ribbon.md', text);
+  const result = preflight(captures, fixture('fake-library'));
+  assert.equal(result.status, 1, 'a blocker outranks deferral → exit 1');
+  const record = only(result);
+  assert.equal(record.status, 'blocked');
+  assert.ok(record.deferred, 'the deferral flag is still set even though status is blocked');
+  assert.ok(record.blockers.some((b) => b.code === 'slots-empty'));
 });
 
 test('a capture named after the project label rather than the canonical is blocked', () => {
@@ -331,7 +375,7 @@ test('a capture set declaring no provenance.run warns that the orphan check did 
 
 test('a mixed set reports every status in one plan', () => {
   // The headline claim is "one plan covering all of them" — exercise ready,
-  // blocked, and skipped together, since that combination drives the exit rule.
+  // blocked, skipped, and deferred together, since that combination drives the exit rule.
   const captures = tempCaptures();
   const base = readFile(captures, 'modal.md');
   const retarget = (canonical, slug) =>
@@ -340,19 +384,26 @@ test('a mixed set reports every status in one plan', () => {
       .replace(/"canonical": "Modal"/, `"canonical": "${canonical}"`)
       .replace(/"slug": "modal"/, `"slug": "${slug}"`);
 
-  writeFile(captures, 'badge.md', retarget('Badge', 'badge')); // already applied  → skipped
-  writeFile(captures, 'link.md', retarget('Link', 'link')); //    partial dir      → blocked
-  // modal.md stays as-is                                        //                → ready
+  writeFile(captures, 'badge.md', retarget('Badge', 'badge')); //                already applied  → skipped
+  writeFile(captures, 'link.md', retarget('Link', 'link')); //                   partial dir      → blocked
+  writeFile(captures, 'logo-ribbon.md', retarget('Logo ribbon', 'logo-ribbon')); // in-run proposal → deferred
+  // modal.md stays as-is                                                        //                → ready
 
   const result = preflight(captures, fixture('fake-library'), ['--brain', BRAIN]);
-  assert.equal(result.status, 1, 'a set containing a blocked capture must exit 1');
+  assert.equal(result.status, 1, 'a set containing a blocked capture must exit 1 even with a deferred one present');
   const byFile = Object.fromEntries(result.json.components.map((c) => [c.file, c.status]));
-  assert.deepEqual(byFile, { 'badge.md': 'skipped', 'link.md': 'blocked', 'modal.md': 'ready' });
+  assert.deepEqual(byFile, {
+    'badge.md': 'skipped',
+    'link.md': 'blocked',
+    'logo-ribbon.md': 'deferred',
+    'modal.md': 'ready',
+  });
   assert.deepEqual(result.json.counts, {
-    captures: 3,
+    captures: 4,
     ready: 1,
     blocked: 1,
     skipped: 1,
+    deferred: 1,
     orphanedByRun: 0,
   });
 });

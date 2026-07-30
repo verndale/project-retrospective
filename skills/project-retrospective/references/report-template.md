@@ -86,7 +86,7 @@ Verdict: Reject
 
 ## Captures
 
-Implementations the next project should start from rather than rebuild. Drafted in `captures/`, executed into ui-design-library by `Action: capture`.
+Implementations the next project should start from rather than rebuild. Drafted in `captures/`, executed into ui-design-library by `Action: capture`. A capture whose canonical is established by a `new-pattern` proposal in this run is a **deferred** capture — note that on its entry and link the proposal; `capture-preflight.cjs` holds it `deferred` until the pattern is promoted.
 
 ### <Canonical Name>
 

@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 62,
-    "edges": 138,
+    "nodes": 63,
+    "edges": 141,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 5,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 5,
+      "wiki-journal": 6,
       "wiki-plan": 2,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 14,
       "covers": 16,
-      "links-to": 61,
+      "links-to": 63,
       "plan": 2,
       "requires": 26,
       "tests": 6,
-      "topic": 13
+      "topic": 14
     }
   },
   "nodes": [
@@ -169,7 +169,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 16708,
+      "bytes": 19535,
       "degree": 2
     },
     {
@@ -397,7 +397,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 16181,
+      "bytes": 16694,
       "degree": 3
     },
     {
@@ -433,7 +433,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7356,
+      "bytes": 8362,
       "degree": 2
     },
     {
@@ -445,7 +445,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 8591,
+      "bytes": 9033,
       "degree": 3
     },
     {
@@ -469,7 +469,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 6930,
+      "bytes": 8110,
       "degree": 3
     },
     {
@@ -517,7 +517,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 4965,
+      "bytes": 5197,
       "degree": 2
     },
     {
@@ -529,7 +529,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 17729,
+      "bytes": 21523,
       "degree": 4
     },
     {
@@ -589,7 +589,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 15461,
+      "bytes": 16485,
       "degree": 28
     },
     {
@@ -601,8 +601,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 4369,
-      "degree": 15
+      "bytes": 4731,
+      "degree": 16
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -689,6 +689,20 @@
       "issues": [],
       "bytes": 2820,
       "degree": 2
+    },
+    {
+      "id": "wiki/journal/2026-07-30-defer-captures-and-variant-triage.md",
+      "label": "Defer captures for pending canonicals, and triage variant multiplicity",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3534,
+      "degree": 3
     },
     {
       "id": "wiki/MECHANICS.md",
@@ -811,8 +825,8 @@
       ],
       "prs": [],
       "issues": [],
-      "bytes": 4322,
-      "degree": 8
+      "bytes": 5821,
+      "degree": 10
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -1248,6 +1262,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-07-30-defer-captures-and-variant-triage.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -1370,6 +1391,13 @@
       "target": "wiki/journal/2026-07-27-auditable-captures-and-capture-action.md",
       "type": "links-to",
       "count": 4,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
+      "target": "wiki/journal/2026-07-30-defer-captures-and-variant-triage.md",
+      "type": "links-to",
+      "count": 2,
       "anchors": []
     },
     {
@@ -1648,6 +1676,11 @@
     {
       "source": "wiki/journal/2026-07-27-graph-module-edges.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-07-30-defer-captures-and-variant-triage.md",
+      "target": "wiki/topics/library-capture.md",
       "type": "topic"
     },
     {
