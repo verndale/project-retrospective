@@ -37,6 +37,9 @@ Operator docs: [README.md](README.md).
 6. [`references/brain-integrity-checklist.md`](references/brain-integrity-checklist.md) — the ordered promote procedure. Read only for `Action: promote`.
 7. [`references/library-integrity-checklist.md`](references/library-integrity-checklist.md) — the ordered capture procedure. Read only for `Action: capture`.
 8. [`references/code-scan-mode.md`](references/code-scan-mode.md) — degraded-mode procedure. Read only when the inventory reports `mode: code-scan`.
+9. [`references/wiki-feed.md`](references/wiki-feed.md) — Step 6: feeding the client wiki, the `meta.json` contract, and client-identity resolution. Read for `Action: analyze`.
+10. [`references/wiki-client-template.md`](references/wiki-client-template.md) — the durable per-client page shape.
+11. [`references/wiki-journal-template.md`](references/wiki-journal-template.md) — the per-run journal entry shape.
 
 ## Workflow
 
@@ -51,6 +54,7 @@ Retrospective progress:
 - [ ] 3. Triage
 - [ ] 4. Draft
 - [ ] 5. Self-check
+- [ ] 6. Wiki
 ```
 
 **0. Resolve inputs.** Require `Project`. Resolve `Output` in this order — **never inside `Project`**, which is read-only for this skill:
@@ -85,12 +89,15 @@ For any entry with `ambiguous: true`, the manifest scopes that label to more tha
 
 **4. Draft.** Write, in `<Output>`:
 
+- `meta.json` — machine-readable run identity (client, project, platform, date, scope, priorReports) per [`references/wiki-feed.md`](references/wiki-feed.md). The model writes it; `resolve.cjs`/`inventory.cjs` stay client-agnostic.
 - `report.md` — following [`references/report-template.md`](references/report-template.md).
 - `proposals/<kebab-label>.md` — one per Promote candidate, using the template for its type.
 - `captures/<kebab-canonical>.md` — for implementations mature enough that the next project should start from them rather than rebuild. Draw these from the **resolved** list as much as the unresolved one: a mature Card or Modal implementation is a better library candidate than a novel label, which is usually the least-settled code in the project. A Promote candidate (new-pattern) whose *implementation* is itself mature also earns a capture, keyed to the canonical its proposal establishes — note it **deferred** in its `## Captures` entry and link the proposal; `capture-preflight.cjs` reports it `deferred` (exit 6) until that proposal is promoted, so promote first, then capture. When two components resolve to one canonical, fold prop/visual variants into one capture's `variants` or route a structurally distinct module to its own canonical — never drop the second (see the template). Apply [`references/proposal-component-capture-template.md`](references/proposal-component-capture-template.md). Omit the directory when nothing qualifies.
 - `orchestration-drafts.md` — pipeline-shaped findings per [`references/orchestration-draft-template.md`](references/orchestration-draft-template.md), or its explicit "no pipeline learnings" note.
 
 **5. Self-check.** Run the validator (see Validation loops) and fix what it reports.
+
+**6. Wiki.** Feed the client/project knowledge wiki, per [`references/wiki-feed.md`](references/wiki-feed.md). Only when `Output` resolved under a `Data` checkout that is `ui-design-evidence` (`<Data>/wiki/` beside `<Data>/runs/`): resolve the client identity (a client-slug distinct from the project-slug — one client may own several), upsert `<Data>/wiki/clients/<client-slug>.md` and append `<Data>/wiki/journal/<YYYY-MM-DD>-<project-slug>.md` from their templates with outcomes grounded in this run, add one `<Data>/wiki/INDEX.md` line per new file, and hand back the wiki paths. When the run landed in the home fallback, skip this and say so. Append-only: never overwrite a journal entry; keep client-page sets additive.
 
 ### Action: promote
 
@@ -136,6 +143,7 @@ Brain: /abs/path/to/ui-design-brain
 | `Brain` | for resolution, promote, and capture | — | Absolute path to a local ui-design-brain checkout. |
 | `Data` | no | — | Absolute path to the private `ui-design-evidence` repo. When given, runs land under `<Data>/runs/`. |
 | `Output` | no | see step 0 | Where run output is written. Never inside `Project`. |
+| `Client` | no | derived | Human-readable client name; sets the wiki client-slug. One client may own several project-slugs. Resolution order in [`references/wiki-feed.md`](references/wiki-feed.md). |
 | `Scope` | no | `full` | `full`, `inventory`, or `candidates`. |
 | `PriorReports` | no | — | Comma-separated paths to earlier `report.md` files. |
 | `Action` | no | `analyze` | `analyze`, `promote`, or `capture`. |
@@ -143,7 +151,9 @@ Brain: /abs/path/to/ui-design-brain
 | `Captures` | for capture | — | Path to a run's `captures/` directory. Applied as a set. |
 | `Library` | for capture | — | Absolute path to a local ui-design-library checkout. |
 
-**Outputs (analyze)** — all inside `Output`: `inventory.json`, `resolution.json`, `report.md`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, `orchestration-drafts.md`.
+**Outputs (analyze)** — all inside `Output`: `meta.json`, `inventory.json`, `resolution.json`, `report.md`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, `orchestration-drafts.md`.
+
+**Side effects (analyze, wiki)** — when `Output` is under a `Data` = ui-design-evidence checkout, Step 6 also creates/updates `<Data>/wiki/clients/<client-slug>.md`, appends `<Data>/wiki/journal/<date>-<project-slug>.md`, and adds `<Data>/wiki/INDEX.md` lines. Skipped in the home fallback. Nothing is committed.
 
 **Side effects (promote)** — edits the ui-design-brain working tree, and regenerates that repo's committed graph artifacts as a by-product of verification. Nothing is committed anywhere.
 
@@ -180,4 +190,8 @@ Normative rubric: [`references/evidence-rubric.md`](references/evidence-rubric.m
 - MUST treat `Project` as read-only. Analyze output goes only inside `Output`, which MUST NOT be inside `Project`; promote edits go only inside the `Brain` working tree; capture edits go only inside the `Library` working tree — under `components/<slug>/`, plus `src/tokens/semantic.css` when a mapping needs a token that does not exist. A retrospective never leaves artifacts in the repository it analyzed.
 - MUST report script warnings verbatim rather than silently proceeding. A missing `build.config.json` degrades to code-scan mode; it is not a reason to stop.
 - MUST NOT emit numeric scores, confidence percentages, or rankings. Evidence and a verdict.
+- MUST write the client wiki only under `<Data>/wiki/` (the private ui-design-evidence checkout), never into this repository, and only when `Data` is that checkout — otherwise skip Step 6 and say so.
+- MUST keep the wiki append-only: one `journal/` file per run, never overwritten; client-page `projects[]`/`platforms[]`/`aliases` additive. Supersede a stale fact with a new entry.
+- MUST NOT invent wiki outcomes. Every journal Outcome traces to this run's `resolution.json` and its report verdicts; every "What we know" bullet traces to a run report.
+- MUST write `meta.json` for every analyze run, with `project.slug` and `date` equal to the run's own directory, so the wiki, the graph, and captures' `provenance.run` never disagree.
 - Client-derived output stays with the client: it belongs in the project or a private data repo, never in this skill's own repository.

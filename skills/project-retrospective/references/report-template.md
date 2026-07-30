@@ -22,6 +22,8 @@ The run's human-readable output. The `##` headings inside the template are **fro
 | Field | Value |
 |---|---|
 | Project | `<absolute path>` |
+| Client | `<display name>` (`<client-slug>`) |
+| Platform | `<Platform display>` (`<adapter-key>`) |
 | Date | `<YYYY-MM-DD>` |
 | Mode | `artifacts` or `code-scan` |
 | Catalog | `<brain path>` (<N> canonical entries) |

@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-07-30 — [Feed a client wiki from analyze (Step 6 + meta.json)](journal/2026-07-30-client-wiki-feed.md) — the skill now writes a per-client knowledge wiki in ui-design-evidence and a `meta.json` identity file per run.
 - 2026-07-30 — [Defer captures for pending canonicals, and triage variant multiplicity](journal/2026-07-30-defer-captures-and-variant-triage.md) — a mature implementation of a just-promoted pattern can now reach the library via a `deferred` capture (exit 6, promote then re-run), and two modules sharing a canonical are triaged rather than silently dropped.
 - 2026-07-27 — [Auditable captures, and a capture action for the library](journal/2026-07-27-auditable-captures-and-capture-action.md) — a component reached the library claiming a run that produced no capture for it; captures now hold two-way parity with the report, and `Action: capture` gives the library leg the shape the catalog leg has.
 - 2026-07-27 — [Module edges, so navigation reaches the tooling](journal/2026-07-27-graph-module-edges.md) — added a `requires` edge and indexed all of `scripts/`; isolated nodes went from 18 to 1 and `pnpm graph:navigate` no longer dead-ends on tooling.

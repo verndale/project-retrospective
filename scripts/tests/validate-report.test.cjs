@@ -436,3 +436,70 @@ test('a capture type is rejected inside proposals/', () => {
   );
   assertFails(dir, 'proposal-type');
 });
+
+// --- meta.json (the client-wiki identity contract) ---
+
+test('a run missing meta.json fails at full scope', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'meta.json'));
+  assertFails(dir, 'meta-present');
+});
+
+test('meta.json with the wrong schemaVersion fails', () => {
+  const dir = tempOutput();
+  const meta = JSON.parse(readFile(dir, 'meta.json'));
+  meta.schemaVersion = 2;
+  writeFile(dir, 'meta.json', JSON.stringify(meta, null, 2));
+  assertFails(dir, 'meta-schema');
+});
+
+test('meta.json with a missing required field fails', () => {
+  const dir = tempOutput();
+  const meta = JSON.parse(readFile(dir, 'meta.json'));
+  delete meta.client.name;
+  writeFile(dir, 'meta.json', JSON.stringify(meta, null, 2));
+  assertFails(dir, 'meta-fields');
+});
+
+test('meta.json with a non-kebab slug fails', () => {
+  const dir = tempOutput();
+  const meta = JSON.parse(readFile(dir, 'meta.json'));
+  meta.client.slug = 'FakeProject';
+  writeFile(dir, 'meta.json', JSON.stringify(meta, null, 2));
+  assertFails(dir, 'meta-slug');
+});
+
+test('meta.json with a null platform is accepted', () => {
+  const dir = tempOutput();
+  const meta = JSON.parse(readFile(dir, 'meta.json'));
+  meta.platform = null;
+  writeFile(dir, 'meta.json', JSON.stringify(meta, null, 2));
+  const result = validate(dir);
+  assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
+test('scope inventory does not require meta.json', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'meta.json'));
+  fs.rmSync(path.join(dir, 'resolution.json'));
+  fs.rmSync(path.join(dir, 'proposals'), { recursive: true });
+  fs.rmSync(path.join(dir, 'orchestration-drafts.md'));
+  const result = validate(dir, ['--scope', 'inventory']);
+  assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
+test('meta.json must agree with a real run directory', () => {
+  const os = require('node:os');
+  // A run laid out as runs/<slug>/<date>/ triggers the dir-agreement check.
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-run-'));
+  const runDir = path.join(base, 'runs', 'fake-project', '2026-01-01');
+  fs.cpSync(tempOutput(), runDir, { recursive: true });
+  // The fixture meta already declares slug fake-project / date 2026-01-01 → passes.
+  const pass = validate(runDir);
+  assert.equal(pass.status, 0, `expected pass, got:\n${pass.stdout}`);
+  // Now break the date so it disagrees with the directory.
+  const meta = JSON.parse(fs.readFileSync(path.join(runDir, 'meta.json'), 'utf8'));
+  meta.date = '2026-02-02';
+  fs.writeFileSync(path.join(runDir, 'meta.json'), JSON.stringify(meta, null, 2));
+  assertFails(runDir, 'meta-dir');
+});

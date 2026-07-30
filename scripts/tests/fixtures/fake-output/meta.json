@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-01-01",
+  "scope": "full",
+  "client": { "name": "Fake Project", "slug": "fake-project", "nameSource": "project-dir" },
+  "project": { "name": "Fake Project", "slug": "fake-project", "path": "/tmp/fake-project" },
+  "platform": "fake-adapter",
+  "platformDisplay": "Fake Adapter",
+  "priorReports": []
+}
