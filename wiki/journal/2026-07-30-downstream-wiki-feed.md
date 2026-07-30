@@ -2,7 +2,7 @@
 date: 2026-07-30
 topics: [brain-promotion, library-capture]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/19
 issue: https://github.com/verndale/project-retrospective/issues/18
 ---
 # Feed the downstream context-wikis on promote and capture
