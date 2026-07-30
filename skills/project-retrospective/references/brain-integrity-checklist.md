@@ -12,6 +12,7 @@ That repo's catalog integrity is maintained by hand across five surfaces that dr
 - Type: new-alias
 - Type: guidance-edit
 - Verification
+- Wiki
 - Handback
 - If verification fails
 
@@ -84,6 +85,17 @@ git diff --stat skills/ui-design-brain/patterns-manifest.json
 A new-pattern insertion adds six lines plus one line per alias, and removes nothing. Any removed line
 means the file was re-serialized — revert it and redo the edit textually.
 
+## Wiki
+
+After verification, author the client-agnostic context-wiki entry in the same delivery, per `references/downstream-wiki.md` — the brain's own `wiki/MECHANICS.md` owns the format. Skip with a stated message when `<Brain>/wiki/` is absent.
+
+- **Journal** — `wiki/journal/<date>-<change-slug>.md`, `plan: none`, `pr: pending`. Slug and title by proposal type: new-pattern → `add-<slug>-pattern` / `Add the <Name> pattern`; new-alias → `add-<label>-alias-to-<slug>` / `Add <alias> alias to <Name>`; guidance-edit → `<slug>-<subject>` / `<Name>: <subject>` — skip entirely for a pure reword, which is MECHANICS "do not capture".
+- **INDEX** — one `wiki/INDEX.md` Journal line, newest-first.
+- **Decisions bullet** — on `wiki/topics/component-catalog.md`, newest-first, for new-pattern and new-alias (and a substantive guidance-edit). Skip it, and say so, if that topic page is absent.
+- **Rebuild** — re-run `node scripts/graph/build-graph.cjs` from the `Brain` root so `wiki/connections*` folds in the new journal/topic/INDEX nodes (exit 0). Same command Verification ran; running it after the wiki edit is what keeps the graph byte-fresh.
+
+Client-agnostic throughout — recurrence count and the catalog delta, never the client name, the run slug, or client copy. Append-only: never overwrite a journal entry, duplicate an INDEX line, or re-add a Decisions bullet that already links the journal.
+
 ## Handback
 
 Stop here. Report:
@@ -96,6 +108,9 @@ Edited:
 
 Verification: node scripts/graph/build-graph.cjs (run in <brain path>) → exit 0
 (Regenerated that repo's scripts/graph/data/graph.json and wiki/connections* as a side effect.)
+
+Wiki: wiki/journal/<date>-<change-slug>.md, wiki/INDEX.md[, wiki/topics/component-catalog.md]
+(client-agnostic; skipped when <brain path>/wiki/ is absent).
 
 Suggested commit — run inside <brain path>:
   pnpm commit

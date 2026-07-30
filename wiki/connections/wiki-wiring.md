@@ -22,6 +22,8 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Module edges, so navigation reaches the tooling](../../wiki/journal/2026-07-27-graph-module-edges.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Feed a client wiki from analyze (Step 6 + meta.json)](../../wiki/journal/2026-07-30-client-wiki-feed.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Defer captures for pending canonicals, and triage variant multiplicity](../../wiki/journal/2026-07-30-defer-captures-and-variant-triage.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
+- [Feed the downstream context-wikis on promote and capture](../../wiki/journal/2026-07-30-downstream-wiki-feed.md) → [Brain promotion — Design History](../../wiki/topics/brain-promotion.md)
+- [Feed the downstream context-wikis on promote and capture](../../wiki/journal/2026-07-30-downstream-wiki-feed.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Brain promotion — Design History](../../wiki/topics/brain-promotion.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)

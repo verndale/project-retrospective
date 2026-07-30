@@ -40,6 +40,7 @@ Operator docs: [README.md](README.md).
 9. [`references/wiki-feed.md`](references/wiki-feed.md) — Step 6: feeding the client wiki, the `meta.json` contract, and client-identity resolution. Read for `Action: analyze`.
 10. [`references/wiki-client-template.md`](references/wiki-client-template.md) — the durable per-client page shape.
 11. [`references/wiki-journal-template.md`](references/wiki-journal-template.md) — the per-run journal entry shape.
+12. [`references/downstream-wiki.md`](references/downstream-wiki.md) — the client-agnostic context-wiki entry in the repo an action touches. Read for `Action: promote` (ui-design-brain) and `Action: capture` (ui-design-library).
 
 ## Workflow
 
@@ -107,7 +108,9 @@ For any entry with `ambiguous: true`, the manifest scopes that label to more tha
 
 **3. Verify** by running the brain's own graph build — `node scripts/graph/build-graph.cjs` from the `Brain` root, not this repo's copy of that path (exit 0 required).
 
-**4. Stop and hand back** in the shape the checklist specifies: edited files, verification result, suggested commit. Do not commit. If this promotion establishes a canonical that a run's `captures/` deferred, name those deferred captures in the handback so the operator can re-run `Action: capture` and apply them now — that loopback is what the deferred state exists to close.
+**4. Wiki.** Author a client-agnostic context-wiki entry in the `Brain` checkout, per [`references/downstream-wiki.md`](references/downstream-wiki.md). Skip with a stated message when `<Brain>/wiki/` is absent. Otherwise read `<Brain>/wiki/MECHANICS.md` and follow it: write `wiki/journal/<date>-<change-slug>.md`, add one `wiki/INDEX.md` Journal line, and — per the proposal type — add a Decisions bullet to `wiki/topics/component-catalog.md`. Ground it in recurrence and the catalog delta (count `N → N+1`), never the client name, run slug, or copy. Then re-run `node scripts/graph/build-graph.cjs` from the `Brain` root so `wiki/connections*` folds in the new entry (exit 0). Never commit.
+
+**5. Stop and hand back** in the shape the checklist specifies: edited files (catalog and the wiki paths touched), verification result, suggested commit. Do not commit. If this promotion establishes a canonical that a run's `captures/` deferred, name those deferred captures in the handback so the operator can re-run `Action: capture` and apply them now — that loopback is what the deferred state exists to close.
 
 ### Action: capture
 
@@ -125,7 +128,9 @@ Report `orphanedByRun` verbatim — a library component claiming this run with n
 
 **3. Verify** each component before starting the next, from the `Library` root: `pnpm contracts`, then `pnpm test` (exit 0 required).
 
-**4. Stop and hand back** in the shape the checklist specifies: components added, verification result, suggested commits. Do not commit.
+**4. Wiki.** For each component actually written, author a client-agnostic context-wiki entry in the `Library` checkout, per [`references/downstream-wiki.md`](references/downstream-wiki.md). Skip a `deferred`, `blocked`, or `skipped` capture — nothing was written. Skip with a stated message when `<Library>/wiki/` is absent. Otherwise read `<Library>/wiki/MECHANICS.md` and follow it: write `wiki/journal/<date>-add-<slug>-component.md` (`topics: []`) and add one `wiki/INDEX.md` Journal line, grounded in the `declienting` removals and the canonical — never the client name, run slug, or copy. After the last entry, rebuild the graph with `pnpm graph:build` from the `Library` root (this is new here — Step 3 does not touch the graph; run the library's own copy, not this repo's identically-pathed one). Never commit.
+
+**5. Stop and hand back** in the shape the checklist specifies: components added, the wiki paths touched, verification result, suggested commits. Do not commit.
 
 ## Inputs and outputs
 
@@ -155,9 +160,9 @@ Brain: /abs/path/to/ui-design-brain
 
 **Side effects (analyze, wiki)** — when `Output` is under a `Data` = ui-design-evidence checkout, Step 6 also creates/updates `<Data>/wiki/clients/<client-slug>.md`, appends `<Data>/wiki/journal/<date>-<project-slug>.md`, and adds `<Data>/wiki/INDEX.md` lines. Skipped in the home fallback. Nothing is committed.
 
-**Side effects (promote)** — edits the ui-design-brain working tree, and regenerates that repo's committed graph artifacts as a by-product of verification. Nothing is committed anywhere.
+**Side effects (promote)** — edits the ui-design-brain working tree, and regenerates that repo's committed graph artifacts as a by-product of verification. When `<Brain>/wiki/` exists, also authors a client-agnostic wiki entry there — `wiki/journal/<date>-<change-slug>.md`, one `wiki/INDEX.md` line, and (per proposal type) a `wiki/topics/component-catalog.md` Decisions bullet — and rebuilds `wiki/connections*` via the brain's own `scripts/graph/build-graph.cjs`. Skipped when that checkout has no `wiki/`. Nothing is committed anywhere.
 
-**Side effects (capture)** — adds `components/<slug>/` directories to the ui-design-library working tree, three files each, and may add a semantic token to that repo's `src/tokens/semantic.css` when a client token has no semantic home. Nothing is committed anywhere.
+**Side effects (capture)** — adds `components/<slug>/` directories to the ui-design-library working tree, three files each, and may add a semantic token to that repo's `src/tokens/semantic.css` when a client token has no semantic home. When `<Library>/wiki/` exists, also authors a client-agnostic wiki entry per written component — `wiki/journal/<date>-add-<slug>-component.md` plus one `wiki/INDEX.md` line — and rebuilds `wiki/connections*` via `pnpm graph:build`. Skipped when that checkout has no `wiki/`. Nothing is committed anywhere.
 
 ## Validation loops
 
@@ -194,4 +199,8 @@ Normative rubric: [`references/evidence-rubric.md`](references/evidence-rubric.m
 - MUST keep the wiki append-only: one `journal/` file per run, never overwritten; client-page `projects[]`/`platforms[]`/`aliases` additive. Supersede a stale fact with a new entry.
 - MUST NOT invent wiki outcomes. Every journal Outcome traces to this run's `resolution.json` and its report verdicts; every "What we know" bullet traces to a run report.
 - MUST write `meta.json` for every analyze run, with `project.slug` and `date` equal to the run's own directory, so the wiki, the graph, and captures' `provenance.run` never disagree.
+- MUST author the downstream wiki (ui-design-brain on promote, ui-design-library on capture) client-agnostically, per [`references/downstream-wiki.md`](references/downstream-wiki.md): no client display name, no run slug or `provenance.source` path in prose, no client-naming `declienting` string. Ground each entry in recurrence and the catalog/de-client decision — these are shared repos, unlike the private evidence wiki that alone may name the client.
+- MUST read the downstream repo's own `wiki/MECHANICS.md` and follow its per-capture protocol and templates — that repo owns the format; `references/downstream-wiki.md` adds only the data boundary, the skip rule, and the grounding.
+- MUST skip the downstream wiki entry, with a stated message, when the checkout has no `wiki/`; and MUST author a library entry only for a capture actually written (skip `deferred`/`blocked`). Never create a `wiki/` tree the repo lacks.
+- MUST rebuild the downstream repo's connections graph after the wiki entry by running its own graph build from its root — `pnpm graph:build` for the library, `node scripts/graph/build-graph.cjs` for the brain — and MUST NOT hand-edit the generated `wiki/connections*` pages.
 - Client-derived output stays with the client: it belongs in the project or a private data repo, never in this skill's own repository.

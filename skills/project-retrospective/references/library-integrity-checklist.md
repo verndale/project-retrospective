@@ -13,6 +13,7 @@ Executing a capture is a rewrite, not a copy. A component lifted straight out of
 - Write the stories
 - Write component.json
 - Verification
+- Wiki
 - Handback
 - If verification fails
 
@@ -93,6 +94,16 @@ Typecheck, contracts, every story rendered in a real Chromium with axe over the 
 
 `pnpm test` needs a browser (`pnpm exec playwright install chromium`, once per machine). A missing browser is an environment failure, not a failing component — say so and do not spend an attempt on it.
 
+## Wiki
+
+After `pnpm test` passes, author the client-agnostic context-wiki entry in the same delivery, per `references/downstream-wiki.md` — the library's own `wiki/MECHANICS.md` owns the format. Skip with a stated message when `<Library>/wiki/` is absent, and write **only for a component actually written**: a `deferred`, `blocked`, or `skipped` capture wrote nothing, so it gets no entry.
+
+- **Journal** — one `wiki/journal/<date>-add-<slug>-component.md` per written component, `topics: []`, `plan: none`, `pr: pending`. Ground *What changed* in the `declienting` removals (citing only the semantic destination token, never the client source token) and what was kept verbatim; provenance stays "in `component.json`", never the run slug in prose. No topic page — MECHANICS creates one only once two related entries exist.
+- **INDEX** — one `wiki/INDEX.md` Journal line per new journal file, newest-first.
+- **Rebuild** — after the last entry, rebuild the graph from the `Library` root. Prefer `pnpm graph:build`; a bare `node scripts/graph/build-graph.cjs` from the wrong directory rebuilds *this* skill's graph instead — this repo has a file at the identical path. This step is new to capture: `pnpm contracts`/`pnpm test` do not touch the graph, so without it the handed-back `wiki/connections*` are stale.
+
+Client-agnostic throughout — the canonical, the count, the de-client decision; never the client name, the run slug, or client copy. Append-only.
+
 ## Handback
 
 Stop here. Report:
@@ -107,6 +118,10 @@ Orphaned by run (library components claiming a run in this set with no capture):
 <the preflight's orphanedByRun, or "none">
 
 Verification: pnpm contracts → exit 0; pnpm test → exit 0 (run in <library path>)
+
+Wiki: wiki/journal/<date>-add-<slug>-component.md (per written component), wiki/INDEX.md
+(client-agnostic; skipped when <library path>/wiki/ is absent).
+Regenerated wiki/connections* and scripts/graph/data/graph.json via pnpm graph:build.
 
 Suggested commits — run inside <library path>, one per component:
   pnpm commit
