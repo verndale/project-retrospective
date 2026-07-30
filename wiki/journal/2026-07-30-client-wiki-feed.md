@@ -2,7 +2,7 @@
 date: 2026-07-30
 topics: [retrospective-workflow]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/16
 ---
 # Feed a client wiki from analyze (Step 6 + meta.json)
 
