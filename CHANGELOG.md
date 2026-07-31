@@ -1,3 +1,37 @@
+# v1.8.0 — 2026-07-31
+
+## Summary (AI, bounded)
+- Added new components for project-retrospective including brand mark and cart button (commit 6092220).
+- Synced wiki journal, topics, and plans documentation (#24) to keep content up-to-date (commit 54f8c65).
+- Merged pull request fixing shallow scan issues in sibling folders (commit afba4f7).
+- Merged pull request for bot wiki synchronization improvements (commit 9143132).
+
+## Highlights
+- commit: Merge pull request #27 from verndale/fix/26-shallow-scan-sibling-folders (afba4f7)
+- feat(project-retrospective): Add new components for brand mark and cart button (6092220)
+- commit: Merge pull request #25 from verndale/bot/wiki-sync/24 (9143132)
+- docs(wiki): sync journal, topics, and plans for #24 (54f8c65)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Add new components for brand mark and cart button (6092220)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #24 (54f8c65)
+
+### Other (unknown)
+- commit: Merge pull request #25 from verndale/bot/wiki-sync/24 (9143132)
+- commit: Merge pull request #27 from verndale/fix/26-shallow-scan-sibling-folders (afba4f7)
+
+## Full commit list
+- afba4f7 commit: Merge pull request #27 from verndale/fix/26-shallow-scan-sibling-folders
+- 6092220 feat(project-retrospective): Add new components for brand mark and cart button
+- 9143132 commit: Merge pull request #25 from verndale/bot/wiki-sync/24
+- 54f8c65 docs(wiki): sync journal, topics, and plans for #24
+
 # v1.7.0 — 2026-07-31
 
 ## Summary (AI, bounded)
