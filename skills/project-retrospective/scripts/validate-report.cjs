@@ -353,8 +353,24 @@ function checkProposalFile(file, manifestEntries, result, allowedTypes = PROPOSA
       const clash = manifestEntries.find(
         (m) => kebab(m.name) === kebab(entry.name || '') || m.slug === entry.slug,
       );
-      if (clash) {
-        result.fail('proposal-collision', `${name} proposes "${entry.name}" but the catalog already has "${clash.name}" (${clash.slug})`);
+      // A new-pattern proposal whose canonical already exists is one of two things: a
+      // duplicate (the run proposed something the catalog already names — a real error),
+      // or a proposal that has since been promoted and is kept as the run's record. An
+      // "## Applied" section is the author's assertion of the latter, so with it a
+      // catalog match is expected and without it a match is a collision. The mirror also
+      // holds: a proposal marked applied whose canonical is absent is a false claim — the
+      // promotion never landed, or was reverted.
+      const applied = sections(text, 2).some((s) => s.heading === 'Applied');
+      if (clash && !applied) {
+        result.fail(
+          'proposal-collision',
+          `${name} proposes "${entry.name}" but the catalog already has "${clash.name}" (${clash.slug}). If this proposal was promoted, add an "## Applied" section to record it; otherwise it duplicates an existing canonical.`,
+        );
+      } else if (applied && !clash) {
+        result.fail(
+          'proposal-applied',
+          `${name} is marked "## Applied" but its canonical "${entry.name}" is not in the catalog — the promotion did not land, or was reverted.`,
+        );
       }
       const proposedAliases = (Array.isArray(entry.aliases) ? entry.aliases : [])
         .map((a) => (typeof a === 'string' ? a : a?.name))
