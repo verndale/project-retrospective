@@ -379,7 +379,9 @@ function checkProposalFile(file, manifestEntries, result, allowedTypes = PROPOSA
         const owner = manifestEntries.find((m) =>
           (m.aliases || []).some((a) => kebab(typeof a === 'string' ? a : a?.name || '') === kebab(alias)),
         );
-        if (owner) {
+        // An applied proposal's own now-promoted canonical claiming the alias it proposed
+        // is expected, not a collision — mirror how proposal-collision is gated by `applied`.
+        if (owner && !(applied && kebab(owner.name) === kebab(entry.name || ''))) {
           result.warn('proposal-alias-duplicate', `${name} proposes alias "${alias}", which "${owner.name}" already claims — it must be context-scoped or dropped`);
         }
       }

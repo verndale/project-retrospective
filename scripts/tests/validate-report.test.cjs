@@ -186,6 +186,27 @@ test('an alias already claimed by another canonical warns without failing', () =
   assert.ok(result.json.warnings.some((w) => w.check === 'proposal-alias-duplicate'));
 });
 
+test('an applied proposal whose alias its own now-existing canonical claims does not warn', () => {
+  const dir = tempOutput();
+  // Rename to Modal (in the manifest) with an alias Modal itself claims, marked applied:
+  // the "duplicate" is the proposal's own promoted canonical, not a collision with another.
+  const applied =
+    readFile(dir, 'proposals/logo-ribbon.md')
+      .replace(/"name": "Logo ribbon"/, '"name": "Modal"')
+      .replace(/"slug": "logo-ribbon"/, '"slug": "modal"')
+      .replace(/"file": "patterns\/logo-ribbon\.md"/, '"file": "patterns/modal.md"')
+      .replace('## Logo ribbon', '## Modal')
+      .replace('"aliases": ["Logo bar", "Logo cloud"]', '"aliases": ["Dialog"]') +
+    '\n## Applied\n\n2026-07-30 — promoted to ui-design-brain.\n';
+  writeFile(dir, 'proposals/logo-ribbon.md', applied);
+  const result = validate(dir, ['--manifest', MANIFEST, '--json']);
+  assert.equal(result.status, 0, `expected pass, got: ${JSON.stringify(result.json?.failures, null, 2)}`);
+  assert.ok(
+    !result.json.warnings.some((w) => w.check === 'proposal-alias-duplicate'),
+    'an applied proposal must not warn on an alias its own canonical claims',
+  );
+});
+
 test('an excluded-category proposal name warns without failing', () => {
   const dir = tempOutput();
   // Rename the Promote candidate and its proposal so both still agree.
