@@ -1,3 +1,28 @@
+# v1.7.0 — 2026-07-31
+
+## Summary (AI, bounded)
+- Introduced new components and updated graph data in the project retrospective feature (commit bd31d3c).
+- Added stack-aware inventory discovery capabilities as part of the update (commit 02c5c5b).
+- No breaking changes were introduced in this release.
+
+## Highlights
+- commit: Merge pull request #24 from verndale/feat/23-stack-aware-inventory-discovery (02c5c5b)
+- feat(project-retrospective): Add new components and update graph data (bd31d3c)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Add new components and update graph data (bd31d3c)
+
+### Other (unknown)
+- commit: Merge pull request #24 from verndale/feat/23-stack-aware-inventory-discovery (02c5c5b)
+
+## Full commit list
+- 02c5c5b commit: Merge pull request #24 from verndale/feat/23-stack-aware-inventory-discovery
+- bd31d3c feat(project-retrospective): Add new components and update graph data
+
 # v1.6.1 — 2026-07-31
 
 ## Summary (AI, bounded)
