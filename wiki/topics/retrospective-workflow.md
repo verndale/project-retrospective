@@ -18,6 +18,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-07-31 — feat(project-retrospective): Enhance proposal validation logic ([PR #21](https://github.com/verndale/project-retrospective/pull/21))
 - 2026-07-30 — feat(project-retrospective): Update graph data and enhance documentation ([PR #19](https://github.com/verndale/project-retrospective/pull/19))
 - 2026-07-30 — feat(project-retrospective): Enhance client wiki integration and documen ([PR #16](https://github.com/verndale/project-retrospective/pull/16))
 - 2026-07-30 — Added Step 6 (wiki feed) and a machine-readable `meta.json` identity contract, so an analyze run feeds a per-client knowledge wiki in ui-design-evidence; `validate-report.cjs` gained `checkMeta` at full/candidates scope, and identity stays model-written so the deterministic scripts remain client-agnostic ([journal](../journal/2026-07-30-client-wiki-feed.md)).

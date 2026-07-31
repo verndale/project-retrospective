@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-07-31 — [feat(project-retrospective): Enhance proposal validation logic](journal/2026-07-31-feat-project-retrospective-enhance-proposal-validation-logic.md) — AI-drafted, revise
 - 2026-07-30 — [Feed the downstream context-wikis on promote and capture](journal/2026-07-30-downstream-wiki-feed.md) — promote now writes a client-agnostic brain wiki entry and capture a library one, mirroring the Step 6 evidence feed.
 - 2026-07-30 — [Feed a client wiki from analyze (Step 6 + meta.json)](journal/2026-07-30-client-wiki-feed.md) — the skill now writes a per-client knowledge wiki in ui-design-evidence and a `meta.json` identity file per run.
 - 2026-07-30 — [Defer captures for pending canonicals, and triage variant multiplicity](journal/2026-07-30-defer-captures-and-variant-triage.md) — a mature implementation of a just-promoted pattern can now reach the library via a `deferred` capture (exit 6, promote then re-run), and two modules sharing a canonical are triaged rather than silently dropped.
