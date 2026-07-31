@@ -2,7 +2,8 @@
 status: implemented
 executed: 2026-07-31
 date: 2026-07-31
-evidence: []
+evidence:
+  - "PR #24 https://github.com/verndale/project-retrospective/pull/24 (merged 2026-07-31)"
 source_tool: file
 source: "/private/tmp/claude-505/-Users-joe-fusco-Projects--verndale-project-retrospective/d57715d5-2a87-447f-8b6f-cd6bd97ca201/scratchpad/2026-07-31-stack-aware-inventory-discovery.md"
 topics: [retrospective-workflow]

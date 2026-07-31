@@ -18,6 +18,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-07-31 — feat(project-retrospective): Add new components and update graph data ([PR #24](https://github.com/verndale/project-retrospective/pull/24))
 - 2026-07-31 — Made discovery stack-aware (`stackAdapter` → extensions/roots/Storybook) and unioned a filesystem scan with the index in both modes; demoted `renderingDomains` to a drift check and gated Storybook to the stacks that use it, rather than trusting the index or keying discovery on declared domains ([journal](../journal/2026-07-31-stack-aware-inventory-discovery.md), [plan](../plans/2026-07-31-stack-aware-inventory-discovery.md))
 - 2026-07-31 — feat(project-retrospective): Enhance proposal validation logic ([PR #21](https://github.com/verndale/project-retrospective/pull/21))
 - 2026-07-30 — feat(project-retrospective): Update graph data and enhance documentation ([PR #19](https://github.com/verndale/project-retrospective/pull/19))

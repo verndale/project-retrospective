@@ -2,7 +2,7 @@
 date: 2026-07-31
 topics: [retrospective-workflow]
 plan: plans/2026-07-31-stack-aware-inventory-discovery.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/24
 issue: https://github.com/verndale/project-retrospective/issues/23
 ---
 # Make inventory discovery stack-aware
