@@ -1,0 +1,11 @@
+{
+  "stackAdapter": "mystery-stack",
+  "artifactsRoot": "artifacts",
+  "componentBuckets": {
+    "ui": "src/components/ui",
+    "rendering": "src/components/renderings",
+    "legacy": "src/components/legacy",
+    "widgets": "src/components/widgets"
+  },
+  "renderingDomains": { "alpha": "alpha", "ghost": "ghost" }
+}

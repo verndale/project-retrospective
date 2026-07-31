@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-07-31 — [Make inventory discovery stack-aware](journal/2026-07-31-stack-aware-inventory-discovery.md) — `stackAdapter` now drives extensions/roots, a filesystem scan unions with the index in both modes, and Storybook counts only where the stack uses it.
 - 2026-07-31 — [feat(project-retrospective): Enhance proposal validation logic](journal/2026-07-31-feat-project-retrospective-enhance-proposal-validation-logic.md) — AI-drafted, revise
 - 2026-07-30 — [Feed the downstream context-wikis on promote and capture](journal/2026-07-30-downstream-wiki-feed.md) — promote now writes a client-agnostic brain wiki entry and capture a library one, mirroring the Step 6 evidence feed.
 - 2026-07-30 — [Feed a client wiki from analyze (Step 6 + meta.json)](journal/2026-07-30-client-wiki-feed.md) — the skill now writes a per-client knowledge wiki in ui-design-evidence and a `meta.json` identity file per run.
