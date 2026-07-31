@@ -24,4 +24,4 @@ Totals: 3 implemented (3 plans).
 | --- | --- | --- | --- | --- |
 | 2026-07-26 | [project-retrospective — critique + build plan](2026-07-26-project-retrospective-critique-build-plan.md) | implemented | commit caebd12, commit 012a6f0, [PR #1](https://github.com/verndale/project-retrospective/pull/1) | skill-authoring, retrospective-workflow, brain-promotion |
 | 2026-07-26 | [Port the knowledge-graph + context-wiki subsystem into project-retrospective](2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) | implemented | [PR #1](https://github.com/verndale/project-retrospective/pull/1) | graph-wiki-subsystem |
-| 2026-07-31 | [Make inventory discovery stack-aware and comprehensive](2026-07-31-stack-aware-inventory-discovery.md) | implemented | — | retrospective-workflow |
+| 2026-07-31 | [Make inventory discovery stack-aware and comprehensive](2026-07-31-stack-aware-inventory-discovery.md) | implemented | [PR #24](https://github.com/verndale/project-retrospective/pull/24) | retrospective-workflow |
