@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 69,
-    "edges": 158,
+    "nodes": 70,
+    "edges": 161,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 5,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 8,
+      "wiki-journal": 9,
       "wiki-plan": 2,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 18,
       "covers": 16,
-      "links-to": 73,
+      "links-to": 74,
       "plan": 2,
       "requires": 26,
       "tests": 6,
-      "topic": 17
+      "topic": 19
     }
   },
   "nodes": [
@@ -649,8 +649,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 5200,
-      "degree": 18
+      "bytes": 5389,
+      "degree": 19
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -790,6 +790,23 @@
       "degree": 5
     },
     {
+      "id": "wiki/journal/2026-07-31-feat-project-retrospective-enhance-proposal-validation-logic.md",
+      "label": "feat(project-retrospective): Enhance proposal validation logic",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow",
+        "brain-promotion"
+      ],
+      "aliases": [],
+      "prs": [
+        "21"
+      ],
+      "issues": [],
+      "bytes": 1260,
+      "degree": 3
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -864,12 +881,13 @@
         "handback"
       ],
       "prs": [
+        "21",
         "19",
         "1"
       ],
       "issues": [],
-      "bytes": 3270,
-      "degree": 9
+      "bytes": 3420,
+      "degree": 10
     },
     {
       "id": "wiki/topics/graph-wiki-subsystem.md",
@@ -929,6 +947,7 @@
         "promote watch reject"
       ],
       "prs": [
+        "21",
         "19",
         "16",
         "13",
@@ -937,8 +956,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 4830,
-      "degree": 14
+      "bytes": 4980,
+      "degree": 15
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1427,6 +1446,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-07-31-feat-project-retrospective-enhance-proposal-validation-logic.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -1875,6 +1901,16 @@
     {
       "source": "wiki/journal/2026-07-30-downstream-wiki-feed.md",
       "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-07-31-feat-project-retrospective-enhance-proposal-validation-logic.md",
+      "target": "wiki/topics/brain-promotion.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-07-31-feat-project-retrospective-enhance-proposal-validation-logic.md",
+      "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },
     {
