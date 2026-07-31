@@ -1,3 +1,23 @@
+# v1.6.1 — 2026-07-31
+
+## Summary (AI, bounded)
+- Fixed update of graph data in project retrospective component.
+- Enhanced validation tests in project retrospective module.
+- Commit reference: 7a3d0fa.
+
+## Highlights
+- fix(project-retrospective): Update graph data and enhance validation tests (7a3d0fa)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Fixes
+- fix(project-retrospective): Update graph data and enhance validation tests (7a3d0fa)
+
+## Full commit list
+- 7a3d0fa fix(project-retrospective): Update graph data and enhance validation tests
+
 # v1.6.0 — 2026-07-31
 
 ## Summary (AI, bounded)
