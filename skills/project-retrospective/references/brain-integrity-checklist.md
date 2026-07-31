@@ -120,6 +120,8 @@ Or directly:
 This skill does not commit, push, or open a PR.
 ```
 
+**Close the loop on the run.** When the promoted proposal lives in a retrospective run's `proposals/`, add an `## Applied` section to it (a dated line is enough) as part of the handback. The catalog now carries the canonical, so without the marker `validate-report` reports the run's own proposal as a `proposal-collision`; with it, the match is recorded as expected. This is the proposal analog of the deferred-capture loopback `Action: capture` closes — promote, then mark applied.
+
 Commit subjects follow that repo's convention — `type(ui-design-brain): Sentence-case imperative subject`:
 
 - `feat(ui-design-brain): Add <Name> pattern`

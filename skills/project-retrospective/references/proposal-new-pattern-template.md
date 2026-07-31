@@ -87,3 +87,4 @@ What promote will change in the catalog:
 - **The draft ends with `---`.**
 - Keep the draft in the catalog's register: ~6 practices, ~4 layouts, no framework names, no client names, no time-sensitive phrasing.
 - Every alias listed must be consumer-evidenced — a label an analyzed project actually used. Cite it under Evidence.
+- **After this proposal is promoted, add an `## Applied` section** — a dated line is enough (`## Applied\n\n<YYYY-MM-DD> — promoted to ui-design-brain.`). The catalog then carries the canonical, so `validate-report` reads the match as expected rather than a `proposal-collision`; without the marker a match is a collision (a duplicate proposal), and with it a *missing* canonical is a `proposal-applied` failure (the promotion never landed). It is the proposal analog of the deferred-capture loopback; see `brain-integrity-checklist.md`.
