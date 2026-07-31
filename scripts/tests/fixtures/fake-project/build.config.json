@@ -1,9 +1,10 @@
 {
-  "stackAdapter": "fake-adapter",
+  "stackAdapter": "optimizely",
   "artifactsRoot": "artifacts",
   "componentBuckets": {
     "ui": "src/components/ui",
-    "rendering": "src/components/renderings"
+    "rendering": "src/components/renderings",
+    "layouts": "src/components/layouts"
   },
   "renderingDomains": { "marketing": "marketing" }
 }

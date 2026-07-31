@@ -8,7 +8,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Current state
 
-- Three deterministic scripts do the mechanical work. `inventory.cjs` reads pipeline artifacts (build packs, component index, fingerprints, project memory) and degrades to a code scan when they are absent. `resolve.cjs` matches every component label against the ui-design-brain manifest. `validate-report.cjs` is the sanctioned validator for a run's output directory.
+- Three deterministic scripts do the mechanical work. `inventory.cjs` reads pipeline artifacts (build packs, component index, fingerprints, project memory) and unions them with a stack-aware filesystem scan: `stackAdapter` selects the component extensions and roots, the scan runs in both modes so it recovers components the index omitted, and Storybook is counted where the stack uses it. `resolve.cjs` matches every component label against the ui-design-brain manifest. `validate-report.cjs` is the sanctioned validator for a run's output directory.
 - Resolution is exact after normalization — lowercase, camelCase-boundary split, spaces and underscores collapsed to hyphens. No stemming, no plural folding, no nearest-match. A label resolves or it is novel.
 - A label that maps to two canonicals through a context-scoped alias is reported `ambiguous` with its candidates; the script never picks. The model confirms from usage evidence or demotes the label to unresolved.
 - The model's only job is judgment: triage into Promote / Watch / Reject with cited evidence, then draft prose. Verdicts carry evidence paths, never numeric scores.
@@ -18,6 +18,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-07-31 — Made discovery stack-aware (`stackAdapter` → extensions/roots/Storybook) and unioned a filesystem scan with the index in both modes; demoted `renderingDomains` to a drift check and gated Storybook to the stacks that use it, rather than trusting the index or keying discovery on declared domains ([journal](../journal/2026-07-31-stack-aware-inventory-discovery.md), [plan](../plans/2026-07-31-stack-aware-inventory-discovery.md))
 - 2026-07-31 — feat(project-retrospective): Enhance proposal validation logic ([PR #21](https://github.com/verndale/project-retrospective/pull/21))
 - 2026-07-30 — feat(project-retrospective): Update graph data and enhance documentation ([PR #19](https://github.com/verndale/project-retrospective/pull/19))
 - 2026-07-30 — feat(project-retrospective): Enhance client wiki integration and documen ([PR #16](https://github.com/verndale/project-retrospective/pull/16))

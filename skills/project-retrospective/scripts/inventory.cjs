@@ -45,21 +45,83 @@ const USAGE = [
   '  --pretty   Indent the JSON output',
 ];
 
-// Probed in order when build.config.json declares no componentBuckets. These are
-// the conventional roots across the frontend stacks this skill analyzes.
-const HEURISTIC_ROOTS = ['src/components', 'components', 'src/ui', 'app/components'];
+// Heavy directories never descended into by any scan.
+const HEAVY_DIRS = ['node_modules', '.git', 'dist', 'build', '.next', 'coverage'];
 
-// A directory holding one of these directly is treated as a component directory.
-const COMPONENT_FILE_RE = /\.(tsx|jsx|vue|svelte)$/;
-
-// Never descended into during a code scan.
+// Skipped during the component (markup) walk. Storybook lives under `stories`/
+// `.storybook`; those are excluded here because stories are discovered separately.
 const SKIP_DIRS = new Set([
-  'node_modules', '.git', '__tests__', '__snapshots__', '__mocks__',
-  'dist', 'build', '.next', 'coverage', 'e2e', 'stories', '.storybook',
+  ...HEAVY_DIRS, '__tests__', '__snapshots__', '__mocks__', 'e2e', 'stories', '.storybook',
 ]);
 
-// Depth guard for the code scan: bucket root -> [domain] -> component -> files.
+// Skipped during Storybook discovery — the same heavy dirs, but NOT `stories`/`.storybook`.
+const STORY_SKIP_DIRS = new Set([...HEAVY_DIRS, '__tests__', '__snapshots__', '__mocks__', 'e2e']);
+
+// Probed only when nothing is declared (no componentBuckets, no adapter roots, no
+// reusableComponentsBase). Conventional roots across the stacks this skill analyzes.
+const HEURISTIC_ROOTS = [
+  'src/components', 'components', 'src/ui', 'app/components',
+  'frontend/src/html/components', 'frontend/src/html/modules', 'src/modules',
+];
+
+// Depth guard for the recursive component walk: bucket root -> [domain] -> component -> files.
 const MAX_SCAN_DEPTH = 4;
+// Depth guard for Storybook discovery (stories nest a few levels under src/stories).
+const MAX_STORY_DEPTH = 8;
+
+// Story files are deterministically named `<slug>.stories.<ext>` (plain `.mdx` docs excluded).
+const STORY_FILE_RE = /\.stories\.(?:tsx?|jsx?|mdx)$/;
+
+// Co-located test/spec/story/cypress files carry a component extension but are not components
+// (`Modal.test.tsx`, `useX.a11y.test.tsx`, `Card.stories.tsx`). Excluded from component discovery.
+const NON_COMPONENT_RE = /\.(?:test|spec|stories|cy)\.[jt]sx?$/i;
+
+// Stack profiles: which file extensions mark a component, which conventional roots hold
+// components (as [path, bucket] pairs), how deep the walk goes, and whether Storybook is
+// the component registry. Grounded in the ai-orchestration adapter rules; adapter names are
+// not stable across projects, so an unknown adapter falls back to the broad default rather
+// than returning zero components.
+const REACT_EXTS = ['.tsx', '.jsx'];
+const ADAPTER_PROFILES = {
+  toolkit: {
+    exts: ['.hbs', '.handlebars'],
+    roots: [
+      ['frontend/src/html/components', 'ui'],
+      ['frontend/src/html/modules', 'rendering'],
+      ['frontend/src/html/templates', 'template'],
+    ],
+    granularity: 'shallow',
+    storybook: true,
+  },
+  optimizely: { exts: REACT_EXTS, roots: [], granularity: 'recursive', storybook: false },
+  'sitecore-ai': { exts: REACT_EXTS, roots: [], granularity: 'recursive', storybook: false },
+  contentstack: { exts: REACT_EXTS, roots: [], granularity: 'recursive', storybook: false },
+  'contentstack-sdk': { exts: REACT_EXTS, roots: [], granularity: 'recursive', storybook: false },
+};
+const DEFAULT_PROFILE = {
+  exts: ['.tsx', '.jsx', '.vue', '.svelte', '.astro', '.hbs', '.handlebars', '.twig', '.liquid'],
+  roots: [],
+  granularity: 'recursive',
+  storybook: true,
+};
+
+/** Resolve a stackAdapter to its discovery profile; warns when it falls back to the default. */
+function profileFor(stackAdapter, warnings) {
+  if (stackAdapter == null || stackAdapter === '') return DEFAULT_PROFILE;
+  const profile = ADAPTER_PROFILES[stackAdapter];
+  if (profile) return profile;
+  warnings.add(
+    'unknown-adapter',
+    `stackAdapter "${stackAdapter}" has no discovery profile — using the broad default (all known extensions, heuristic roots).`,
+  );
+  return DEFAULT_PROFILE;
+}
+
+/** Build a component-file matcher from a profile's extension list. */
+function makeFileRe(exts) {
+  const alt = exts.map((e) => e.replace(/^\./, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  return new RegExp(`\\.(?:${alt})$`);
+}
 
 function loadConfig(projectDir, warnings) {
   const configPath = path.join(projectDir, 'build.config.json');
@@ -83,6 +145,9 @@ function loadConfig(projectDir, warnings) {
     stackAdapter: cfg.stackAdapter ?? null,
     componentBuckets: cfg.componentBuckets ?? null,
     renderingDomains: cfg.renderingDomains ?? null,
+    // Deprecated pipeline-side (superseded by componentBuckets) but still declared by some
+    // toolkit projects as their only component-root pointer, so it is honored as a root.
+    reusableComponentsBase: typeof cfg.reusableComponentsBase === 'string' ? cfg.reusableComponentsBase : null,
   };
 }
 
@@ -228,10 +293,10 @@ function readFingerprint(projectDir, componentPath, warnings) {
 }
 
 /** Walk a bucket root collecting directories that directly hold a component file. */
-function scanBucket(projectDir, rootRel, bucketKey, warnings) {
+function scanBucket(projectDir, rootRel, bucketKey, fileRe, opts, warnings) {
   const rootAbs = path.join(projectDir, rootRel);
   if (!isDir(rootAbs)) {
-    warnings.add('empty-bucket', `Component bucket "${rootRel}" does not exist in the project.`);
+    if (!opts.silentEmpty) warnings.add('empty-bucket', `Component bucket "${rootRel}" does not exist in the project.`);
     return [];
   }
 
@@ -243,39 +308,76 @@ function scanBucket(projectDir, rootRel, bucketKey, warnings) {
     for (const entry of listEntries(absDir)) {
       if (!entry.dir || SKIP_DIRS.has(entry.name) || entry.name.startsWith('.')) continue;
       const entries = listEntries(entry.path);
-      if (entries.some((e) => !e.dir && COMPONENT_FILE_RE.test(e.name))) return true;
+      if (entries.some((e) => !e.dir && fileRe.test(e.name) && !NON_COMPONENT_RE.test(e.name))) return true;
       if (holdsComponentBelow(entry.path, depth + 1)) return true;
     }
     return false;
   };
 
+  const rootDepth = rootRel.split('/').filter(Boolean).length;
+  // A barrel (any-extension `index.*`, not just the component extensions) re-exports a folder's
+  // parts, marking the folder as one component rather than a flat container of siblings.
+  const isBarrelName = (name) => /^index\.[a-z]+$/i.test(name);
+
   const walk = (absDir, relDir, depth) => {
     if (depth > MAX_SCAN_DEPTH) return;
     const entries = listEntries(absDir);
-    // A barrel file (index.tsx re-exporting the folder) would otherwise make the
-    // parent look like the component and hide every real component beneath it.
-    const hasComponentFile =
-      entries.some((e) => !e.dir && COMPONENT_FILE_RE.test(e.name)) &&
-      !holdsComponentBelow(absDir, depth);
+    const compFiles = entries.filter(
+      (e) => !e.dir && !e.name.startsWith('.') && fileRe.test(e.name) && !NON_COMPONENT_RE.test(e.name),
+    );
+    // A leaf holds component files and nothing component-like deeper (a barrel re-exporting
+    // subfolders would otherwise mask the real components beneath it).
+    const isLeaf = compFiles.length > 0 && !holdsComponentBelow(absDir, depth);
+    const segments = relDir.split('/').filter(Boolean);
 
-    if (hasComponentFile && depth > 0) {
+    // Emit each non-barrel file in a flat directory as its own component.
+    const pushFlat = (files, domain) => {
+      for (const e of files) {
+        if (files.length > 1 && isBarrelName(e.name)) continue;
+        const stem = e.name.replace(fileRe, '');
+        // Kebab the folder to match the dir-per-component convention; keep the file stem as name.
+        found.push({ folder: normalizeLabel(stem), name: stem, bucket: bucketKey, domain, path: relDir, entry: `${relDir}/${e.name}` });
+      }
+    };
+
+    if (isLeaf) {
       const folder = path.basename(relDir);
-      const segments = relDir.split('/').filter(Boolean);
-      const rootDepth = rootRel.split('/').filter(Boolean).length;
-      // A single path segment between the bucket root and the component dir is
-      // the domain (e.g. renderings/<domain>/<component>).
-      const between = segments.slice(rootDepth, -1);
-      const entryFile = entries.find((e) => !e.dir && COMPONENT_FILE_RE.test(e.name) && /^[A-Z]/.test(e.name));
-      found.push({
-        folder,
-        name: entryFile ? entryFile.name.replace(COMPONENT_FILE_RE, '') : folder,
-        bucket: bucketKey,
-        domain: between.length === 1 ? between[0] : null,
-        path: relDir,
-        entry: entryFile ? `${relDir}/${entryFile.name}` : null,
-      });
+      const kebabFolder = normalizeLabel(folder);
+      const norm = (name) => normalizeLabel(name.replace(fileRe, ''));
+      const nonBarrel = compFiles.filter((e) => !isBarrelName(e.name));
+      // A directory is one component when it names a matching entry file (`Modal/Modal.tsx`), holds
+      // a single file, or is a compound whose every part is namespaced under the folder
+      // (`accordion/AccordionItem.tsx`, `AccordionTrigger.tsx`). A flat set of independent siblings
+      // (`ui/icons/ArrowIcon.tsx`, `CloseIcon.tsx`) is NOT — each file is its own component. A
+      // barrel (`index.*`) marks neither on its own: icon sets carry one too.
+      const matchesFolder = depth > 0 && compFiles.find((e) => norm(e.name) === kebabFolder);
+      const compound =
+        depth > 0 && nonBarrel.length > 1 && nonBarrel.every((e) => norm(e.name).startsWith(`${kebabFolder}-`));
+      const dirPerComponent = depth > 0 && (compFiles.length === 1 || Boolean(matchesFolder) || compound);
+
+      if (dirPerComponent) {
+        // A single path segment between the bucket root and the component dir is the domain
+        // (e.g. renderings/<domain>/<component>). Prefer the matching/PascalCase entry file.
+        const between = segments.slice(rootDepth, -1);
+        const entryFile = matchesFolder || compFiles.find((e) => /^[A-Z]/.test(e.name)) || compFiles[0];
+        found.push({
+          folder,
+          name: entryFile.name.replace(fileRe, ''),
+          bucket: bucketKey,
+          domain: between.length === 1 ? between[0] : null,
+          path: relDir,
+          entry: `${relDir}/${entryFile.name}`,
+        });
+      } else {
+        const between = segments.slice(rootDepth); // the container segment, if any, is the domain
+        pushFlat(compFiles, between.length === 1 ? between[0] : null);
+      }
       return; // Do not descend into a component's own subdirectories.
     }
+
+    // Not a leaf. Component files sitting directly at the bucket root are still real components
+    // (e.g. `src/components/Layout.tsx` alongside `src/components/forms/`) — emit them, then descend.
+    if (depth === 0 && compFiles.length > 0) pushFlat(compFiles, null);
 
     for (const entry of entries) {
       if (!entry.dir || SKIP_DIRS.has(entry.name) || entry.name.startsWith('.')) continue;
@@ -284,37 +386,238 @@ function scanBucket(projectDir, rootRel, bucketKey, warnings) {
   };
 
   walk(rootAbs, rootRel, 0);
-  if (found.length === 0) {
+  if (found.length === 0 && !opts.silentEmpty) {
     warnings.add('empty-bucket', `Component bucket "${rootRel}" contained no component directories.`);
   }
   return found;
 }
 
-function codeScan(projectDir, config, warnings) {
+/**
+ * Shallow (depth-1) discovery: each flat component file, or each immediate subdir holding
+ * one, is one component. Suits template stacks (Handlebars) where components are flat files
+ * or single-level folders; fine-grained leaves inside a folder come from Storybook instead.
+ */
+function scanBucketShallow(projectDir, rootRel, bucketKey, fileRe, opts, warnings) {
+  const rootAbs = path.join(projectDir, rootRel);
+  if (!isDir(rootAbs)) {
+    if (!opts.silentEmpty) warnings.add('empty-bucket', `Component bucket "${rootRel}" does not exist in the project.`);
+    return [];
+  }
+
+  const found = [];
+  for (const entry of listEntries(rootAbs)) {
+    if (entry.name.startsWith('.')) continue;
+    if (entry.dir) {
+      if (SKIP_DIRS.has(entry.name)) continue;
+      const inner = listEntries(entry.path).filter(
+        (e) => !e.dir && fileRe.test(e.name) && !NON_COMPONENT_RE.test(e.name),
+      );
+      if (inner.length === 0) continue; // a folder with no component file is not a component
+      const match = inner.find((e) => e.name.replace(fileRe, '') === entry.name) || inner[0];
+      found.push({
+        folder: entry.name,
+        name: entry.name,
+        bucket: bucketKey,
+        domain: null,
+        path: `${rootRel}/${entry.name}`,
+        entry: `${rootRel}/${entry.name}/${match.name}`,
+      });
+    } else if (fileRe.test(entry.name) && !NON_COMPONENT_RE.test(entry.name)) {
+      const stem = entry.name.replace(fileRe, '');
+      found.push({
+        folder: stem,
+        name: stem,
+        bucket: bucketKey,
+        domain: null,
+        path: rootRel,
+        entry: `${rootRel}/${entry.name}`,
+      });
+    }
+  }
+
+  if (found.length === 0 && !opts.silentEmpty) {
+    warnings.add('empty-bucket', `Component bucket "${rootRel}" contained no components.`);
+  }
+  return found;
+}
+
+/**
+ * Discovery roots as {rootRel, bucketKey} entries: declared componentBuckets, the adapter
+ * profile's conventional roots, a deprecated reusableComponentsBase pointer, and a layouts
+ * root derived from the buckets. Heuristic roots are added later, only when nothing declared.
+ */
+function resolveRoots(config, profile, warnings) {
+  const roots = [];
+  const seen = new Set();
+  // `speculative` roots (adapter conventions, reusableComponentsBase, the derived layouts
+  // root) are probes — missing is not noteworthy. Declared componentBuckets are not.
+  const add = (rel, bucketKey, speculative) => {
+    if (typeof rel !== 'string' || !rel) return;
+    const norm = rel.replace(/\/+$/, '');
+    if (seen.has(norm)) return;
+    seen.add(norm);
+    roots.push({ rootRel: norm, bucketKey, speculative });
+  };
+
   const buckets = config.componentBuckets && typeof config.componentBuckets === 'object'
-    ? Object.entries(config.componentBuckets)
-    : null;
+    ? Object.entries(config.componentBuckets) : [];
+  for (const [key, rel] of buckets) {
+    if (typeof rel !== 'string' || !rel) {
+      warnings.add('unreadable-config', `componentBuckets.${key} is not a path string — that bucket was skipped.`);
+      continue;
+    }
+    add(rel, key, false);
+  }
+  for (const [rel, bucketKey] of profile.roots) add(rel, bucketKey, true);
+  if (config.reusableComponentsBase) add(config.reusableComponentsBase, 'ui', true);
 
-  if (buckets && buckets.length > 0) {
-    return buckets.flatMap(([key, rel]) => {
-      if (typeof rel !== 'string' || !rel) {
-        warnings.add('unreadable-config', `componentBuckets.${key} is not a path string — that bucket was skipped.`);
-        return [];
+  // Census breadth: a layouts root alongside the declared buckets (e.g. src/components/layouts).
+  const uiBucket = config.componentBuckets && typeof config.componentBuckets.ui === 'string'
+    ? config.componentBuckets.ui : null;
+  if (uiBucket) {
+    const base = path.posix.dirname(uiBucket.replace(/\/+$/, ''));
+    if (base && base !== '.') add(`${base}/layouts`, 'layout', true);
+  }
+
+  return roots;
+}
+
+/** Collapse scan results by normalized key. Two entries that normalize to the same key — sibling
+ *  files in a flat directory, or components under different roots — are genuine ambiguity: warn
+ *  (identifying each by its entry file) and keep the first. */
+function dedupeScan(comps, warnings) {
+  const byKey = new Map();
+  for (const c of comps) {
+    const key = normalizeLabel(c.folder || c.name);
+    const prev = byKey.get(key);
+    if (!prev) {
+      byKey.set(key, c);
+      continue;
+    }
+    warnings.add(
+      'duplicate-component',
+      `Components "${prev.entry || prev.path || prev.folder}" and "${c.entry || c.path || c.folder}" normalize to the same key "${key}" — only the first was kept.`,
+    );
+  }
+  return [...byKey.values()];
+}
+
+/**
+ * Discover components from the filesystem, driven by the stack profile. Runs in BOTH modes:
+ * in artifacts mode it corroborates and supplements the index; in code-scan mode it is the
+ * component source. Heuristic roots are probed only when nothing is declared and heuristics
+ * are allowed (code-scan mode).
+ */
+function discoverComponents(projectDir, config, profile, fileRe, opts, warnings) {
+  const roots = resolveRoots(config, profile, warnings);
+  const scan = profile.granularity === 'shallow' ? scanBucketShallow : scanBucket;
+
+  const out = [];
+  if (roots.length > 0) {
+    for (const r of roots) {
+      // Declared buckets warn when missing (except in artifacts mode, where the index is
+      // authoritative and the scan only corroborates); speculative roots stay quiet.
+      const silentEmpty = r.speculative || !opts.allowHeuristic;
+      out.push(...scan(projectDir, r.rootRel, r.bucketKey, fileRe, { silentEmpty }, warnings));
+    }
+  } else if (opts.allowHeuristic) {
+    const probed = HEURISTIC_ROOTS.filter((rel) => isDir(path.join(projectDir, rel)));
+    if (probed.length > 0) {
+      warnings.add('heuristic-buckets', `No componentBuckets or adapter roots — probed conventional roots: ${probed.join(', ')}.`);
+      for (const rel of probed) out.push(...scanBucket(projectDir, rel, null, fileRe, { silentEmpty: false }, warnings));
+    }
+  }
+  return dedupeScan(out, warnings);
+}
+
+/**
+ * Discover Storybook stories as a supplementary signal. Most projects have none (a no-op);
+ * for the toolkit stack Storybook is the registry, so stories contribute to the census. Each
+ * `<slug>.stories.<ext>` yields one component keyed by its slug, bucketed by its story path.
+ */
+function discoverStories(projectDir) {
+  const found = [];
+  const walk = (absDir, relDir, depth) => {
+    if (depth > MAX_STORY_DEPTH) return;
+    for (const entry of listEntries(absDir)) {
+      if (entry.name.startsWith('.')) continue;
+      if (entry.dir) {
+        if (STORY_SKIP_DIRS.has(entry.name)) continue;
+        walk(entry.path, relDir ? `${relDir}/${entry.name}` : entry.name, depth + 1);
+      } else if (STORY_FILE_RE.test(entry.name)) {
+        const slug = entry.name.replace(STORY_FILE_RE, '');
+        const hay = `/${relDir.toLowerCase()}/`;
+        const bucket = hay.includes('/components/') ? 'ui'
+          : hay.includes('/modules/') ? 'rendering'
+            : hay.includes('/shared/') ? 'ui'
+              : hay.includes('/templates/') ? 'template'
+                : null;
+        found.push({
+          folder: slug,
+          name: slug,
+          bucket,
+          domain: null,
+          path: relDir,
+          entry: relDir ? `${relDir}/${entry.name}` : entry.name,
+          source: 'storybook',
+        });
       }
-      return scanBucket(projectDir, rel.replace(/\/+$/, ''), key, warnings);
-    });
-  }
+    }
+  };
+  walk(projectDir, '', 0);
 
-  warnings.add(
-    'heuristic-buckets',
-    `No componentBuckets configured — probing conventional roots: ${HEURISTIC_ROOTS.join(', ')}.`,
-  );
-  const results = [];
-  for (const root of HEURISTIC_ROOTS) {
-    if (!isDir(path.join(projectDir, root))) continue;
-    results.push(...scanBucket(projectDir, root, null, warnings));
+  // A slug can appear under two hierarchies (e.g. modules/ and templates/); keep the first.
+  const byKey = new Map();
+  for (const c of found) {
+    const key = normalizeLabel(c.folder);
+    if (!byKey.has(key)) byKey.set(key, c);
   }
-  return results;
+  return [...byKey.values()];
+}
+
+/** Warn when a declared renderingDomain has no directory on disk (a stale/fictional mapping). */
+function warnRenderingDomainDrift(projectDir, config, warnings) {
+  const rd = config.renderingDomains;
+  const buckets = config.componentBuckets;
+  if (!rd || typeof rd !== 'object' || !buckets || typeof buckets.rendering !== 'string') return;
+  const renderingRoot = buckets.rendering.replace(/\/+$/, '');
+  for (const [key, sub] of Object.entries(rd)) {
+    if (typeof sub !== 'string' || !sub) continue;
+    const domRel = `${renderingRoot}/${sub.replace(/^\/+|\/+$/g, '')}`;
+    if (!isDir(path.join(projectDir, domRel))) {
+      warnings.add('rendering-domain-missing', `renderingDomains.${key} → "${domRel}" does not exist on disk (stale declaration).`);
+    }
+  }
+}
+
+/**
+ * Fold discovered/story components into the keyed map: corroborate an existing component (add
+ * the source, fill null fields) or add one that was missing. Cross-signal matches (index vs
+ * scan vs story) are expected, so this is silent — genuine duplicates are caught upstream.
+ */
+function foldSignals(byKey, comps, defaultSource) {
+  for (const c of comps) {
+    const key = normalizeLabel(c.folder || c.name);
+    const src = c.source || defaultSource;
+    const existing = byKey.get(key);
+    if (!existing) {
+      byKey.set(key, {
+        name: c.name,
+        folder: c.folder,
+        bucket: c.bucket ?? null,
+        domain: c.domain ?? null,
+        path: c.path ?? null,
+        entry: c.entry ?? null,
+        sources: [src],
+      });
+      continue;
+    }
+    if (!existing.sources.includes(src)) existing.sources.push(src);
+    existing.bucket = existing.bucket ?? c.bucket ?? null;
+    existing.domain = existing.domain ?? c.domain ?? null;
+    existing.path = existing.path ?? c.path ?? null;
+    existing.entry = existing.entry ?? c.entry ?? null;
+  }
 }
 
 function main() {
@@ -335,6 +638,8 @@ function main() {
 
   const warnings = new Warnings();
   const config = loadConfig(projectDir, warnings);
+  const profile = profileFor(config.stackAdapter, warnings);
+  const fileRe = makeFileRe(profile.exts);
   const artifactsDir = path.join(projectDir, config.artifactsRoot);
 
   if (!isDir(artifactsDir)) {
@@ -351,10 +656,15 @@ function main() {
   const designFacts = isDir(artifactsDir) ? loadDesignFacts(artifactsDir) : [];
   const shipLog = isDir(artifactsDir) ? loadShipLog(artifactsDir, warnings) : { present: false, lines: 0 };
 
-  const mode = componentIndex || packs.size > 0 ? 'artifacts' : 'code-scan';
+  // An empty component-index.json ([]) is not artifacts evidence — fall through to a code scan so
+  // the heuristic roots are still probed rather than the run yielding zero components.
+  const hasIndex = Array.isArray(componentIndex) && componentIndex.length > 0;
+  const mode = hasIndex || packs.size > 0 ? 'artifacts' : 'code-scan';
 
-  // Component list: the index when present, otherwise a code scan.
-  const base = componentIndex
+  // Discovery unions every signal: the component index (when present), a filesystem scan of the
+  // declared + adapter + heuristic roots (run in BOTH modes so it corroborates and supplements
+  // the index), and Storybook stories where the stack uses them.
+  const indexComps = componentIndex
     ? componentIndex.map((c) => ({
         name: typeof c.name === 'string' ? c.name : String(c.folder ?? ''),
         folder: typeof c.folder === 'string' ? c.folder : normalizeLabel(typeof c.name === 'string' ? c.name : ''),
@@ -364,11 +674,18 @@ function main() {
         entry: typeof c.entry === 'string' ? c.entry : null,
         sources: ['component-index'],
       }))
-    : codeScan(projectDir, config, warnings).map((c) => ({ ...c, sources: ['code-scan'] }));
+    : [];
+  const scanComps = discoverComponents(projectDir, config, profile, fileRe, { allowHeuristic: mode === 'code-scan' }, warnings);
+  // Storybook is a supplementary signal, honored only for stacks whose profile marks it the
+  // registry (toolkit, and the broad default for unknown adapters). React stacks that merely
+  // happen to ship stories are a no-op — the story tree is not even walked.
+  const storyComps = profile.storybook ? discoverStories(projectDir) : [];
+  warnRenderingDomainDrift(projectDir, config, warnings);
 
-  // Build packs with no matching component still count as evidence of something built.
+  // The index is authoritative on conflict; a duplicate-component warning is kept for genuine
+  // index collisions. Scan + story signals are then folded in (corroborate or supplement).
   const byKey = new Map();
-  for (const component of base) {
+  for (const component of indexComps) {
     const key = normalizeLabel(component.folder || component.name);
     const existing = byKey.get(key);
     if (existing) {
@@ -379,6 +696,10 @@ function main() {
     }
     byKey.set(key, component);
   }
+  foldSignals(byKey, scanComps, 'code-scan');
+  foldSignals(byKey, storyComps, 'storybook');
+
+  // Build packs with no matching component still count as evidence of something built.
   for (const [key, pack] of packs) {
     if (byKey.has(key)) continue;
     byKey.set(key, {
@@ -447,7 +768,7 @@ function main() {
       config,
       components,
       evidence: {
-        componentIndex: Boolean(componentIndex),
+        componentIndex: hasIndex,
         buildPacksDir: dirStyle,
         buildPacksFlat: flatStyle,
         fingerprints: fingerprintCount,

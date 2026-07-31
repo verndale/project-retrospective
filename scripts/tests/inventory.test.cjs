@@ -6,6 +6,9 @@ const { run, runJson, fixture } = require('./helpers.cjs');
 
 const PROJECT = fixture('fake-project');
 const BARE = fixture('fake-project-bare');
+const TOOLKIT = fixture('fake-project-toolkit');
+const CODESCAN = fixture('fake-project-codescan');
+const EMPTYINDEX = fixture('fake-project-emptyindex');
 
 function inventory(project) {
   const result = runJson('inventory.cjs', ['--project', project]);
@@ -23,10 +26,11 @@ test('artifacts mode is detected when pipeline evidence exists', () => {
   assert.equal(inv.config.artifactsRoot, 'artifacts');
 });
 
-test('component-index entries and build-pack-only components are unioned', () => {
+test('component-index, code-scan, and build-pack-only components are all unioned', () => {
   const inv = inventory(PROJECT);
-  // 8 from the component index + 1 build pack with no index entry.
-  assert.equal(inv.counts.components, 9);
+  // 8 from the component index + orphan-pack (build-pack only) + promo-strip and spacer
+  // (on disk but absent from the index, recovered by the bucket scan).
+  assert.equal(inv.counts.components, 11);
   assert.equal(inv.counts.components, inv.components.length);
 
   const folders = inv.components.map((c) => c.folder);
@@ -74,6 +78,42 @@ test('bucket and domain carry through from the component index', () => {
   assert.equal(banner.domain, 'marketing');
 });
 
+test('the bucket scan runs in artifacts mode and corroborates the index', () => {
+  const inv = inventory(PROJECT);
+  const modal = inv.components.find((c) => c.folder === 'modal');
+  assert.ok(modal.sources.includes('component-index'));
+  assert.ok(
+    modal.sources.includes('code-scan'),
+    'an on-disk component named in the index gains a code-scan source in artifacts mode',
+  );
+});
+
+test('the union recovers an on-disk component the index omitted', () => {
+  const inv = inventory(PROJECT);
+  const promo = inv.components.find((c) => c.folder === 'promo-strip');
+  assert.ok(promo, 'promo-strip is on disk but not in the index — the scan must add it');
+  assert.deepEqual(promo.sources, ['code-scan']);
+  assert.equal(promo.domain, 'marketing');
+});
+
+test('an undeclared rendering domain is discovered and labeled from its path', () => {
+  const inv = inventory(PROJECT);
+  const spacer = inv.components.find((c) => c.folder === 'spacer');
+  assert.ok(spacer, 'a component under an undeclared domain must still be found');
+  assert.equal(spacer.bucket, 'rendering');
+  assert.equal(spacer.domain, 'utility');
+});
+
+test('Storybook is ignored on a stack whose profile opts out (React)', () => {
+  const inv = inventory(PROJECT);
+  // fake-project is `optimizely` (storybook: false) and ships two story files. Neither the
+  // component-matching story nor the standalone one may influence the census.
+  const folders = inv.components.map((c) => c.folder);
+  assert.ok(!folders.includes('tokens'), 'a story with no component must not become a phantom on a non-Storybook stack');
+  const modal = inv.components.find((c) => c.folder === 'modal');
+  assert.ok(!modal.sources.includes('storybook'), 'a matching story must not add a storybook source when the adapter opts out');
+});
+
 test('a project with no config or artifacts degrades to a code scan', () => {
   const inv = inventory(BARE);
   assert.equal(inv.mode, 'code-scan');
@@ -88,6 +128,166 @@ test('a project with no config or artifacts degrades to a code scan', () => {
   assert.equal(widget.folder, 'foo-widget');
   assert.equal(widget.name, 'FooWidget', 'the PascalCase entry file names the component');
   assert.deepEqual(widget.sources, ['code-scan']);
+});
+
+test('a toolkit (Handlebars + Storybook) project discovers markup and stories', () => {
+  const inv = inventory(TOOLKIT);
+  assert.equal(inv.mode, 'artifacts', 'build packs exist even though there is no component-index');
+  const codes = inv.warnings.map((w) => w.code);
+  assert.ok(!codes.includes('unknown-adapter'), 'toolkit is a known adapter');
+  assert.ok(!codes.includes('empty-bucket'), 'the declared toolkit roots exist');
+
+  const folders = inv.components.map((c) => c.folder).sort();
+  assert.deepEqual(folders, ['badge', 'cta-banner', 'generic-card', 'homepage', 'toast']);
+});
+
+test('toolkit .hbs markup is discovered across components, modules, and templates', () => {
+  const inv = inventory(TOOLKIT);
+  const byFolder = Object.fromEntries(inv.components.map((c) => [c.folder, c]));
+  assert.equal(byFolder['badge'].bucket, 'ui', 'flat components/badge.hbs');
+  assert.equal(byFolder['generic-card'].bucket, 'ui', 'dir-per-component generic-card/generic-card.hbs');
+  assert.equal(byFolder['cta-banner'].bucket, 'rendering', 'modules/cta-banner.hbs');
+  assert.equal(byFolder['homepage'].bucket, 'template', 'templates/homepage.hbs');
+  assert.ok(byFolder['badge'].sources.includes('code-scan'));
+});
+
+test('Storybook stories are accounted for as a component signal', () => {
+  const inv = inventory(TOOLKIT);
+  const badge = inv.components.find((c) => c.folder === 'badge');
+  assert.ok(badge.sources.includes('storybook'), 'a story matching a component adds the storybook source');
+  assert.ok(badge.sources.includes('build-pack'), 'and the build pack enriches the same component');
+
+  const toast = inv.components.find((c) => c.folder === 'toast');
+  assert.ok(toast, 'a story with no matching markup is still a component');
+  assert.deepEqual(toast.sources, ['storybook']);
+});
+
+test('server-side .cshtml views are not treated as components', () => {
+  const inv = inventory(TOOLKIT);
+  const folders = inv.components.map((c) => c.folder);
+  assert.ok(!folders.includes('index'), 'the .cshtml under Sample.Website/ must be excluded');
+});
+
+test('a project with buckets but no artifacts runs a config-driven code scan', () => {
+  const inv = inventory(CODESCAN);
+  assert.equal(inv.mode, 'code-scan');
+  const codes = inv.warnings.map((w) => w.code);
+  assert.ok(!codes.includes('heuristic-buckets'), 'declared componentBuckets are used — no heuristic probe');
+});
+
+test('a declared bucket that is missing warns empty-bucket; the speculative layouts root does not', () => {
+  const inv = inventory(CODESCAN);
+  const empty = inv.warnings.filter((w) => w.code === 'empty-bucket');
+  assert.equal(empty.length, 1, 'only the declared, absent "legacy" bucket warns');
+  assert.match(empty[0].message, /legacy/);
+  assert.ok(!empty.some((w) => /layouts/.test(w.message)), 'the derived layouts root is speculative and stays silent');
+});
+
+test('a stale renderingDomains entry is flagged as missing on disk', () => {
+  const inv = inventory(CODESCAN);
+  const drift = inv.warnings.filter((w) => w.code === 'rendering-domain-missing');
+  assert.equal(drift.length, 1);
+  assert.match(drift[0].message, /ghost/);
+});
+
+test('the derived layouts root discovers layout components', () => {
+  const inv = inventory(CODESCAN);
+  const shell = inv.components.find((c) => c.folder === 'shell');
+  assert.ok(shell, 'a component under src/components/layouts is discovered');
+  assert.equal(shell.bucket, 'layout');
+});
+
+test('an unknown stackAdapter falls back to the default profile with a warning', () => {
+  const inv = inventory(CODESCAN);
+  const codes = inv.warnings.map((w) => w.code);
+  assert.ok(codes.includes('unknown-adapter'), 'an unrecognized adapter is flagged');
+  assert.ok(inv.counts.components > 0, 'the default profile still discovers components');
+});
+
+test('code scan finds declared and undeclared rendering domains', () => {
+  const inv = inventory(CODESCAN);
+  const byFolder = Object.fromEntries(inv.components.map((c) => [c.folder, c]));
+  assert.equal(byFolder['button'].bucket, 'ui');
+  assert.equal(byFolder['hero'].domain, 'alpha', 'a declared domain');
+  assert.equal(byFolder['card'].bucket, 'rendering');
+  assert.equal(byFolder['card'].domain, 'beta', 'an undeclared domain, inferred from the path');
+});
+
+test('two components normalizing to the same key raise duplicate-component (Guard 1)', () => {
+  const inv = inventory(CODESCAN);
+  const codes = inv.warnings.map((w) => w.code);
+  assert.ok(codes.includes('duplicate-component'), 'ui/widget and renderings/gamma/widget collide');
+  const widgets = inv.components.filter((c) => c.folder === 'widget');
+  assert.equal(widgets.length, 1, 'only one survives the collision');
+});
+
+test('a flat container of sibling files yields one component per file', () => {
+  const inv = inventory(CODESCAN);
+  const byFolder = Object.fromEntries(inv.components.map((c) => [c.folder, c]));
+  // src/components/ui/icons/ has an index.ts barrel but un-namespaced siblings (FooIcon, BarIcon) —
+  // a barrel alone does not collapse a flat set, so each file is a component, not one "icons".
+  assert.ok(byFolder['foo-icon'], 'FooIcon.tsx is its own component');
+  assert.ok(byFolder['bar-icon'], 'BarIcon.tsx is its own component');
+  assert.ok(!byFolder['icons'], 'the flat container is not collapsed into one component');
+  assert.equal(byFolder['foo-icon'].bucket, 'ui');
+  assert.equal(byFolder['foo-icon'].domain, 'icons');
+  // A dir-per-component sibling is still one component, not split by its files.
+  assert.ok(byFolder['button'], 'button/Button.tsx stays a single component');
+});
+
+test('component files at a bucket root are each discovered', () => {
+  const inv = inventory(CODESCAN);
+  const byFolder = Object.fromEntries(inv.components.map((c) => [c.folder, c]));
+  // src/components/widgets/{Sidebar,Topbar}.tsx sit directly at the bucket root (depth 0).
+  assert.ok(byFolder['sidebar'], 'Sidebar.tsx at the bucket root is discovered');
+  assert.ok(byFolder['topbar'], 'Topbar.tsx at the bucket root is discovered');
+  assert.equal(byFolder['sidebar'].bucket, 'widgets');
+});
+
+test('an empty component-index falls through to a code scan (not zero components)', () => {
+  const inv = inventory(EMPTYINDEX);
+  assert.equal(inv.mode, 'code-scan', 'an empty [] index is not artifacts evidence');
+  assert.equal(inv.evidence.componentIndex, false, 'an empty index did not contribute');
+  const gizmo = inv.components.find((c) => c.folder === 'gizmo');
+  assert.ok(gizmo, 'the heuristic scan still runs and finds the component');
+  assert.deepEqual(gizmo.sources, ['code-scan']);
+});
+
+test('a compound directory (parts namespaced under the folder) stays one component', () => {
+  const inv = inventory(CODESCAN);
+  const folders = inv.components.map((c) => c.folder);
+  // ui/tabs/ has TabsList.tsx + TabsPanel.tsx (both prefixed with the folder) → one component.
+  assert.ok(folders.includes('tabs'), 'a compound is a single component');
+  assert.ok(
+    !folders.includes('tabs-list') && !folders.includes('tabs-panel'),
+    'its namespaced parts are not split into phantom components',
+  );
+});
+
+test('loose files at a mixed bucket root (with sibling subdirs) are still discovered', () => {
+  const inv = inventory(CODESCAN);
+  const providers = inv.components.find((c) => c.folder === 'providers');
+  assert.ok(providers, 'ui/Providers.tsx is emitted even though ui/ also has component subdirs');
+  assert.equal(providers.bucket, 'ui');
+  assert.equal(providers.domain, null);
+});
+
+test('flat siblings that normalize to the same key warn and keep one', () => {
+  const inv = inventory(CODESCAN);
+  const topNavs = inv.components.filter((c) => c.folder === 'top-nav');
+  assert.equal(topNavs.length, 1, 'ui/nav/{TopNav,top_nav}.tsx collapse to one');
+  const dupMsgs = inv.warnings.filter((w) => w.code === 'duplicate-component').map((w) => w.message);
+  assert.ok(dupMsgs.some((m) => /top_nav/.test(m)), 'the collision is surfaced, not dropped silently');
+});
+
+test('co-located test/spec files are not treated as components', () => {
+  const inv = inventory(CODESCAN);
+  const dialog = inv.components.find((c) => c.folder === 'dialog');
+  assert.ok(dialog, 'the real Dialog.tsx is discovered');
+  assert.equal(dialog.entry, 'src/components/ui/dialog/Dialog.tsx', 'entry points at the source, not a .test.tsx');
+  assert.ok(!inv.components.some((c) => /(^|-)test(-|$)/.test(c.folder)), 'no phantom components from test files');
+  // ui/dialog/hooks/ holds only test files, so it must neither spawn a component nor drop dialog.
+  assert.ok(!inv.components.some((c) => c.folder === 'use-dialog-test'), 'a test-only subdir spawns no phantom');
 });
 
 test('a missing project directory exits 3, not 1', () => {

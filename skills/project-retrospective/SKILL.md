@@ -72,7 +72,7 @@ Create the directory and state the resolved paths before running anything. If an
 node <skill>/scripts/inventory.cjs --project <Project> --out <Output>/inventory.json --pretty
 ```
 
-Report the `mode` and the `warnings` array verbatim — they become the report's Gaps section. If `mode` is `code-scan`, read [`references/code-scan-mode.md`](references/code-scan-mode.md) before continuing; its evidence cap changes every verdict downstream.
+Report the `mode` and the `warnings` array verbatim — they become the report's Gaps section. Discovery is stack-aware: `stackAdapter` selects the component file extensions and roots, a filesystem scan of those roots is unioned with `component-index.json` in **both** modes (so components the index omitted are still found), and Storybook is counted where the stack uses it; an unrecognized adapter falls back to a broad default with an `unknown-adapter` warning. If `mode` is `code-scan`, read [`references/code-scan-mode.md`](references/code-scan-mode.md) before continuing — its evidence cap, and the discovery mechanics, change every verdict downstream.
 
 `Scope: inventory` skips steps 2 and 3, and step 4 writes only the Run, Summary, Inventory, and Gaps sections of `report.md`.
 

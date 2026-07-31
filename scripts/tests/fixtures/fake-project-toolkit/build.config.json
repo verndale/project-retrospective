@@ -1,0 +1,6 @@
+{
+  "stackAdapter": "toolkit",
+  "artifactsRoot": "artifacts",
+  "reusableComponentsBase": "frontend/src/html/components",
+  "e2eTestFramework": "playwright"
+}
