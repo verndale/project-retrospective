@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 72,
-    "edges": 168,
+    "nodes": 74,
+    "edges": 175,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 5,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 10,
-      "wiki-plan": 3,
+      "wiki-journal": 11,
+      "wiki-plan": 4,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 18,
       "covers": 16,
-      "links-to": 78,
-      "plan": 3,
+      "links-to": 82,
+      "plan": 4,
       "requires": 26,
       "tests": 6,
-      "topic": 21
+      "topic": 23
     }
   },
   "nodes": [
@@ -193,7 +193,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 15218,
+      "bytes": 17680,
       "degree": 2
     },
     {
@@ -421,7 +421,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 5812,
+      "bytes": 6144,
       "degree": 2
     },
     {
@@ -589,7 +589,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 32691,
+      "bytes": 34016,
       "degree": 5
     },
     {
@@ -649,8 +649,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 5654,
-      "degree": 20
+      "bytes": 5939,
+      "degree": 21
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -807,6 +807,22 @@
       "degree": 3
     },
     {
+      "id": "wiki/journal/2026-07-31-shallow-scan-sibling-folders.md",
+      "label": "Read a grouping folder the same way at both scan granularities",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "26"
+      ],
+      "bytes": 3858,
+      "degree": 4
+    },
+    {
       "id": "wiki/journal/2026-07-31-stack-aware-inventory-discovery.md",
       "label": "Make inventory discovery stack-aware",
       "type": "wiki-journal",
@@ -871,6 +887,20 @@
       "degree": 8
     },
     {
+      "id": "wiki/plans/2026-07-31-fix-the-shallow-scan-folder-collapse-in-inventory-cjs.md",
+      "label": "Fix the shallow-scan folder collapse in inventory.cjs",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 8609,
+      "degree": 4
+    },
+    {
       "id": "wiki/plans/2026-07-31-stack-aware-inventory-discovery.md",
       "label": "Make inventory discovery stack-aware and comprehensive",
       "type": "wiki-plan",
@@ -898,8 +928,8 @@
         "24"
       ],
       "issues": [],
-      "bytes": 1758,
-      "degree": 5
+      "bytes": 1947,
+      "degree": 6
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -992,8 +1022,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 5769,
-      "degree": 19
+      "bytes": 6292,
+      "degree": 23
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1489,6 +1519,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-07-31-shallow-scan-sibling-folders.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-07-31-stack-aware-inventory-discovery.md",
       "type": "links-to",
       "count": 1,
@@ -1574,6 +1611,13 @@
     {
       "source": "wiki/plans/INDEX.md",
       "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-07-31-fix-the-shallow-scan-folder-collapse-in-inventory-cjs.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -1678,6 +1722,13 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/journal/2026-07-31-shallow-scan-sibling-folders.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "wiki/journal/2026-07-31-stack-aware-inventory-discovery.md",
       "type": "links-to",
       "count": 1,
@@ -1688,6 +1739,13 @@
       "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
       "type": "links-to",
       "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/plans/2026-07-31-fix-the-shallow-scan-folder-collapse-in-inventory-cjs.md",
+      "type": "links-to",
+      "count": 1,
       "anchors": []
     },
     {
@@ -1740,6 +1798,11 @@
     {
       "source": "wiki/journal/2026-07-26-knowledge-graph-wiki-subsystem.md",
       "target": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
+      "type": "plan"
+    },
+    {
+      "source": "wiki/journal/2026-07-31-shallow-scan-sibling-folders.md",
+      "target": "wiki/plans/2026-07-31-fix-the-shallow-scan-folder-collapse-in-inventory-cjs.md",
       "type": "plan"
     },
     {
@@ -1983,6 +2046,11 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-07-31-shallow-scan-sibling-folders.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/journal/2026-07-31-stack-aware-inventory-discovery.md",
       "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
@@ -2005,6 +2073,11 @@
     {
       "source": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
       "target": "wiki/topics/skill-authoring.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-07-31-fix-the-shallow-scan-folder-collapse-in-inventory-cjs.md",
+      "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },
     {

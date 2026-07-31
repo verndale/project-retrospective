@@ -138,7 +138,61 @@ test('a toolkit (Handlebars + Storybook) project discovers markup and stories', 
   assert.ok(!codes.includes('empty-bucket'), 'the declared toolkit roots exist');
 
   const folders = inv.components.map((c) => c.folder).sort();
-  assert.deepEqual(folders, ['badge', 'cta-banner', 'generic-card', 'homepage', 'toast']);
+  assert.deepEqual(folders, [
+    'badge', 'brand-mark', 'cart-button', 'cta-banner', 'generic-card',
+    'homepage', 'locale-switch', 'panel', 'toast',
+  ]);
+});
+
+test('a shallow-scanned folder of independent siblings yields one component per file', () => {
+  const inv = inventory(TOOLKIT);
+  const byFolder = Object.fromEntries(inv.components.map((c) => [c.folder, c]));
+
+  for (const [slug, file] of [['brand-mark', 'brand-mark'], ['cart-button', 'cart_button'], ['locale-switch', 'locale-switch']]) {
+    assert.ok(byFolder[slug], `components/chrome/${file}.hbs is its own component`);
+    assert.equal(byFolder[slug].bucket, 'ui');
+    assert.equal(
+      byFolder[slug].entry,
+      `frontend/src/html/components/chrome/${file}.hbs`,
+      'each sibling is keyed to its own file, not the folder',
+    );
+  }
+});
+
+test('a shallow-scanned sibling keys on the normalized stem but keeps the raw file stem as its name', () => {
+  const inv = inventory(TOOLKIT);
+  const cartButton = inv.components.find((c) => c.folder === 'cart-button');
+  assert.ok(cartButton, 'components/chrome/cart_button.hbs normalizes to the "cart-button" key');
+  assert.equal(cartButton.name, 'cart_button', 'the raw file stem names the component');
+});
+
+test('the grouping folder itself is not emitted as a component', () => {
+  const inv = inventory(TOOLKIT);
+  const folders = inv.components.map((c) => c.folder);
+  assert.ok(!folders.includes('chrome'), 'a folder of independent siblings is not a component');
+});
+
+test('a barrel among shallow-scanned siblings is not itself a component', () => {
+  const inv = inventory(TOOLKIT);
+  const folders = inv.components.map((c) => c.folder);
+  assert.ok(!folders.includes('index'), 'components/chrome/index.hbs re-exports the siblings');
+});
+
+test('shallow-scanned siblings carry the grouping folder as their domain', () => {
+  const inv = inventory(TOOLKIT);
+  const brandMark = inv.components.find((c) => c.folder === 'brand-mark');
+  assert.equal(brandMark.domain, 'chrome');
+});
+
+test('a namespaced-compound folder still collapses to one component', () => {
+  const inv = inventory(TOOLKIT);
+  const panel = inv.components.find((c) => c.folder === 'panel');
+  assert.ok(panel, 'components/panel/{panel-header,panel-body}.hbs is one component');
+  assert.equal(panel.bucket, 'ui');
+
+  const folders = inv.components.map((c) => c.folder);
+  assert.ok(!folders.includes('panel-header'), 'a namespaced part is not its own component');
+  assert.ok(!folders.includes('panel-body'), 'a namespaced part is not its own component');
 });
 
 test('toolkit .hbs markup is discovered across components, modules, and templates', () => {

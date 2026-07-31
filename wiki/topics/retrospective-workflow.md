@@ -18,6 +18,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-07-31 — Both scanners share one `classifyComponentDir` rule for whether a directory is one component or a folder of siblings, rather than the shallow scan collapsing every subfolder to a folder-named component. Ruled out making `toolkit` recursive: same result on the trees measured, but it discards the boundary that keeps template stacks out of partial trees ([journal](../journal/2026-07-31-shallow-scan-sibling-folders.md), [plan](../plans/2026-07-31-fix-the-shallow-scan-folder-collapse-in-inventory-cjs.md))
 - 2026-07-31 — feat(project-retrospective): Add new components and update graph data ([PR #24](https://github.com/verndale/project-retrospective/pull/24))
 - 2026-07-31 — Made discovery stack-aware (`stackAdapter` → extensions/roots/Storybook) and unioned a filesystem scan with the index in both modes; demoted `renderingDomains` to a drift check and gated Storybook to the stacks that use it, rather than trusting the index or keying discovery on declared domains ([journal](../journal/2026-07-31-stack-aware-inventory-discovery.md), [plan](../plans/2026-07-31-stack-aware-inventory-discovery.md))
 - 2026-07-31 — feat(project-retrospective): Enhance proposal validation logic ([PR #21](https://github.com/verndale/project-retrospective/pull/21))

@@ -292,6 +292,37 @@ function readFingerprint(projectDir, componentPath, warnings) {
   return read.ok ? read.value : null;
 }
 
+// A barrel (any-extension `index.*`, not just the component extensions) re-exports a folder's
+// parts, marking the folder as one component rather than a flat container of siblings.
+const isBarrelName = (name) => /^index\.[a-z]+$/i.test(name);
+
+/**
+ * Is a directory of component files ONE component, or a flat set of independent siblings?
+ *
+ * One component when it holds a single file, names a matching entry file (`Modal/Modal.tsx`), or
+ * is a compound whose every part is namespaced under the folder (`accordion/AccordionItem.tsx`,
+ * `AccordionTrigger.tsx`). A flat set of independent siblings (`ui/icons/ArrowIcon.tsx`,
+ * `CloseIcon.tsx`) is NOT — each file is its own component. A barrel (`index.*`) marks neither on
+ * its own: icon sets carry one too.
+ *
+ * Shared by both scanners so a grouping folder is read the same way at any granularity. Callers
+ * apply their own depth guard — the helper does not know where it sits in a tree.
+ */
+function classifyComponentDir(folderName, compFiles, fileRe) {
+  const kebabFolder = normalizeLabel(folderName);
+  const norm = (name) => normalizeLabel(name.replace(fileRe, ''));
+  const nonBarrel = compFiles.filter((e) => !isBarrelName(e.name));
+  const matchesFolder = compFiles.find((e) => norm(e.name) === kebabFolder);
+  const compound =
+    nonBarrel.length > 1 && nonBarrel.every((e) => norm(e.name).startsWith(`${kebabFolder}-`));
+  return {
+    oneComponent: compFiles.length === 1 || Boolean(matchesFolder) || compound,
+    // Prefer the folder-matching file, then a PascalCase entry, then whatever came first.
+    entryFile: matchesFolder || compFiles.find((e) => /^[A-Z]/.test(e.name)) || compFiles[0],
+    nonBarrel,
+  };
+}
+
 /** Walk a bucket root collecting directories that directly hold a component file. */
 function scanBucket(projectDir, rootRel, bucketKey, fileRe, opts, warnings) {
   const rootAbs = path.join(projectDir, rootRel);
@@ -315,9 +346,6 @@ function scanBucket(projectDir, rootRel, bucketKey, fileRe, opts, warnings) {
   };
 
   const rootDepth = rootRel.split('/').filter(Boolean).length;
-  // A barrel (any-extension `index.*`, not just the component extensions) re-exports a folder's
-  // parts, marking the folder as one component rather than a flat container of siblings.
-  const isBarrelName = (name) => /^index\.[a-z]+$/i.test(name);
 
   const walk = (absDir, relDir, depth) => {
     if (depth > MAX_SCAN_DEPTH) return;
@@ -342,24 +370,15 @@ function scanBucket(projectDir, rootRel, bucketKey, fileRe, opts, warnings) {
 
     if (isLeaf) {
       const folder = path.basename(relDir);
-      const kebabFolder = normalizeLabel(folder);
-      const norm = (name) => normalizeLabel(name.replace(fileRe, ''));
-      const nonBarrel = compFiles.filter((e) => !isBarrelName(e.name));
-      // A directory is one component when it names a matching entry file (`Modal/Modal.tsx`), holds
-      // a single file, or is a compound whose every part is namespaced under the folder
-      // (`accordion/AccordionItem.tsx`, `AccordionTrigger.tsx`). A flat set of independent siblings
-      // (`ui/icons/ArrowIcon.tsx`, `CloseIcon.tsx`) is NOT — each file is its own component. A
-      // barrel (`index.*`) marks neither on its own: icon sets carry one too.
-      const matchesFolder = depth > 0 && compFiles.find((e) => norm(e.name) === kebabFolder);
-      const compound =
-        depth > 0 && nonBarrel.length > 1 && nonBarrel.every((e) => norm(e.name).startsWith(`${kebabFolder}-`));
-      const dirPerComponent = depth > 0 && (compFiles.length === 1 || Boolean(matchesFolder) || compound);
+      // Component files at the bucket root itself are always flat siblings — only a nested
+      // directory can be one component, so the classifier applies from depth 1 down.
+      const cls = depth > 0 ? classifyComponentDir(folder, compFiles, fileRe) : null;
 
-      if (dirPerComponent) {
+      if (cls && cls.oneComponent) {
         // A single path segment between the bucket root and the component dir is the domain
-        // (e.g. renderings/<domain>/<component>). Prefer the matching/PascalCase entry file.
+        // (e.g. renderings/<domain>/<component>).
         const between = segments.slice(rootDepth, -1);
-        const entryFile = matchesFolder || compFiles.find((e) => /^[A-Z]/.test(e.name)) || compFiles[0];
+        const entryFile = cls.entryFile;
         found.push({
           folder,
           name: entryFile.name.replace(fileRe, ''),
@@ -413,15 +432,32 @@ function scanBucketShallow(projectDir, rootRel, bucketKey, fileRe, opts, warning
         (e) => !e.dir && fileRe.test(e.name) && !NON_COMPONENT_RE.test(e.name),
       );
       if (inner.length === 0) continue; // a folder with no component file is not a component
-      const match = inner.find((e) => e.name.replace(fileRe, '') === entry.name) || inner[0];
-      found.push({
-        folder: entry.name,
-        name: entry.name,
-        bucket: bucketKey,
-        domain: null,
-        path: `${rootRel}/${entry.name}`,
-        entry: `${rootRel}/${entry.name}/${match.name}`,
-      });
+      const { oneComponent, entryFile, nonBarrel } = classifyComponentDir(entry.name, inner, fileRe);
+      if (oneComponent) {
+        found.push({
+          folder: entry.name,
+          name: entry.name,
+          bucket: bucketKey,
+          domain: null,
+          path: `${rootRel}/${entry.name}`,
+          entry: `${rootRel}/${entry.name}/${entryFile.name}`,
+        });
+      } else {
+        // A grouping folder, not a component: each file inside it is its own component, and the
+        // folder names their shared domain. Collapsing here would drop every leaf but one and
+        // emit a component named after the folder, which nothing declares.
+        for (const e of nonBarrel) {
+          const stem = e.name.replace(fileRe, '');
+          found.push({
+            folder: normalizeLabel(stem),
+            name: stem,
+            bucket: bucketKey,
+            domain: entry.name,
+            path: `${rootRel}/${entry.name}`,
+            entry: `${rootRel}/${entry.name}/${e.name}`,
+          });
+        }
+      }
     } else if (fileRe.test(entry.name) && !NON_COMPONENT_RE.test(entry.name)) {
       const stem = entry.name.replace(fileRe, '');
       found.push({
