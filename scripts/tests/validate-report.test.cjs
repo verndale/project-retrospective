@@ -207,6 +207,27 @@ test('an applied proposal whose alias its own now-existing canonical claims does
   );
 });
 
+test('an applied proposal still warns on an alias a different canonical claims', () => {
+  const dir = tempOutput();
+  // Applied, but the alias "Chip" belongs to Badge, not to this proposal's own Modal:
+  // the "## Applied" gate must not suppress a genuine cross-canonical collision.
+  const applied =
+    readFile(dir, 'proposals/logo-ribbon.md')
+      .replace(/"name": "Logo ribbon"/, '"name": "Modal"')
+      .replace(/"slug": "logo-ribbon"/, '"slug": "modal"')
+      .replace(/"file": "patterns\/logo-ribbon\.md"/, '"file": "patterns/modal.md"')
+      .replace('## Logo ribbon', '## Modal')
+      .replace('"aliases": ["Logo bar", "Logo cloud"]', '"aliases": ["Chip"]') +
+    '\n## Applied\n\n2026-07-30 — promoted to ui-design-brain.\n';
+  writeFile(dir, 'proposals/logo-ribbon.md', applied);
+  const result = validate(dir, ['--manifest', MANIFEST, '--json']);
+  assert.equal(result.status, 0, 'a duplicate alias is a warning, not a failure');
+  assert.ok(
+    result.json.warnings.some((w) => w.check === 'proposal-alias-duplicate'),
+    'a cross-canonical alias collision must warn even when the proposal is applied',
+  );
+});
+
 test('an excluded-category proposal name warns without failing', () => {
   const dir = tempOutput();
   // Rename the Promote candidate and its proposal so both still agree.
