@@ -1,3 +1,33 @@
+# v1.6.0 — 2026-07-31
+
+## Summary (AI, bounded)
+- Updated graph data and enhanced validation tests in the project-retrospective feature (commit 664595e)
+- Synced wiki content including journal, topics, and plans (commit 0e4e4f8)
+- Merged pull request related to wiki synchronization (commit 84068b6)
+
+## Highlights
+- feat(project-retrospective): Update graph data and enhance validation tests (664595e)
+- commit: Merge pull request #22 from verndale/bot/wiki-sync/21 (84068b6)
+- docs(wiki): sync journal, topics, and plans for #21 (0e4e4f8)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Update graph data and enhance validation tests (664595e)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #21 (0e4e4f8)
+
+### Other (unknown)
+- commit: Merge pull request #22 from verndale/bot/wiki-sync/21 (84068b6)
+
+## Full commit list
+- 664595e feat(project-retrospective): Update graph data and enhance validation tests
+- 84068b6 commit: Merge pull request #22 from verndale/bot/wiki-sync/21
+- 0e4e4f8 docs(wiki): sync journal, topics, and plans for #21
+
 # v1.5.0 — 2026-07-31
 
 ## Summary (AI, bounded)
