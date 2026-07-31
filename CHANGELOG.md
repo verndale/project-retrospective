@@ -1,3 +1,37 @@
+# v1.5.0 — 2026-07-31
+
+## Summary (AI, bounded)
+- Enhanced proposal validation logic in the project-retrospective feature (commit d415966)
+- Synchronized wiki content including journal, topics, and plans (commit 3af696e)
+- Integrated downstream wiki feed improvements (commit c248264)
+- Included updates from bot wiki synchronization (commit 81bc19a)
+
+## Highlights
+- commit: Merge pull request #21 from verndale/feat/downstream-wiki-feed (c248264)
+- feat(project-retrospective): Enhance proposal validation logic (d415966)
+- commit: Merge pull request #20 from verndale/bot/wiki-sync/19 (81bc19a)
+- docs(wiki): sync journal, topics, and plans for #19 (3af696e)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Enhance proposal validation logic (d415966)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #19 (3af696e)
+
+### Other (unknown)
+- commit: Merge pull request #20 from verndale/bot/wiki-sync/19 (81bc19a)
+- commit: Merge pull request #21 from verndale/feat/downstream-wiki-feed (c248264)
+
+## Full commit list
+- c248264 commit: Merge pull request #21 from verndale/feat/downstream-wiki-feed
+- d415966 feat(project-retrospective): Enhance proposal validation logic
+- 81bc19a commit: Merge pull request #20 from verndale/bot/wiki-sync/19
+- 3af696e docs(wiki): sync journal, topics, and plans for #19
+
 # v1.4.0 — 2026-07-30
 
 ## Summary (AI, bounded)
