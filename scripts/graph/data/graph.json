@@ -815,11 +815,13 @@
         "retrospective-workflow"
       ],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "27"
+      ],
       "issues": [
         "26"
       ],
-      "bytes": 3858,
+      "bytes": 3908,
       "degree": 4
     },
     {
@@ -895,9 +897,11 @@
         "retrospective-workflow"
       ],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "27"
+      ],
       "issues": [],
-      "bytes": 8609,
+      "bytes": 8697,
       "degree": 4
     },
     {
@@ -925,10 +929,11 @@
       "aliases": [],
       "prs": [
         "1",
-        "24"
+        "24",
+        "27"
       ],
       "issues": [],
-      "bytes": 1947,
+      "bytes": 2011,
       "degree": 6
     },
     {
@@ -1012,6 +1017,7 @@
         "promote watch reject"
       ],
       "prs": [
+        "27",
         "24",
         "21",
         "19",
@@ -1022,7 +1028,7 @@
         "1"
       ],
       "issues": [],
-      "bytes": 6292,
+      "bytes": 6452,
       "degree": 23
     },
     {
