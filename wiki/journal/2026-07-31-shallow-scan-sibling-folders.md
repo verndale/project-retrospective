@@ -2,7 +2,7 @@
 date: 2026-07-31
 topics: [retrospective-workflow]
 plan: plans/2026-07-31-fix-the-shallow-scan-folder-collapse-in-inventory-cjs.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/27
 issue: https://github.com/verndale/project-retrospective/issues/26
 ---
 # Read a grouping folder the same way at both scan granularities
