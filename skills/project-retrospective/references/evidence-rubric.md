@@ -31,7 +31,7 @@ A label naming one of these is Reject with the exclusion cited. Composite names 
 
 Also never promote:
 
-- **Child parts.** A `Tab`, `Slide`, `AccordionItem`, or `CarouselSlide` is a child of an existing canonical, not a catalog entry. The catalog deliberately leaves child modules unresolved so downstream specs can smart-link to them. Reject, and say which canonical owns the part.
+- **Child parts.** A `Tab`, `Slide`, `AccordionItem`, or `CarouselSlide` is a child of an existing canonical, not a catalog entry. The catalog deliberately leaves child modules unresolved so downstream specs can smart-link to them. Reject, and say which canonical owns the part. When a component's `fingerprint.json` declares `partOf`, the inventory records that parent link on the component (`partOf`) as a deterministic child-part signal — composition is never inferred from names.
 - **Thin wrappers.** A label that is an existing canonical plus a project prefix, suffix, or styling word (`SiteHeader` → Header, `PrimaryButton` → Button, `HeroBannerLarge` → Hero) is not new vocabulary. Reject and name the canonical it should have resolved to — if the project genuinely used a different word for that canonical, that is an **alias** proposal, not a pattern.
 
 ## Evidence sources

@@ -289,7 +289,18 @@ function readFingerprint(projectDir, componentPath, warnings) {
   const fpPath = path.join(componentDir, 'fingerprint.json');
   if (!isFile(fpPath)) return null;
   const read = readJsonSafe(fpPath);
-  return read.ok ? read.value : null;
+  if (!read.ok) {
+    warnings.add('unreadable-json', `fingerprint.json for "${componentPath}" could not be parsed: ${read.error}`);
+    return null;
+  }
+  // A fingerprint that parses to something other than an object (an array, string, or
+  // number) is not a usable API surface — warn and ignore it rather than counting it as
+  // evidence, matching how loadComponentIndex/loadConfig treat malformed JSON.
+  if (!read.value || typeof read.value !== 'object' || Array.isArray(read.value)) {
+    warnings.add('unreadable-json', `fingerprint.json for "${componentPath}" is not a JSON object — ignored.`);
+    return null;
+  }
+  return read.value;
 }
 
 /**
@@ -317,6 +328,22 @@ function liftFacets(fingerprint) {
     variants: arr(fingerprint.variants),
     notes: str(fingerprint.notes),
   };
+}
+
+/**
+ * Lift a declared composition parent from a fingerprint. Composition is never inferred from
+ * names — real projects prove that unreliable (`button-group` is not a part of `button`) — so
+ * it is recorded only when the pipeline DECLARES it via `fingerprint.partOf`. Returns the
+ * normalized parent slug; the caller validates it against the discovered component set.
+ */
+function liftPartOf(fingerprint) {
+  if (!fingerprint || typeof fingerprint !== 'object' || Array.isArray(fingerprint)) return null;
+  const raw = fingerprint.partOf;
+  if (typeof raw !== 'string' || !raw.trim()) return null;
+  // A value that normalizes to empty (all separators/punctuation) is not a usable parent —
+  // treat it as no declaration rather than emitting an unvalidated empty slug.
+  const slug = normalizeLabel(raw);
+  return slug || null;
 }
 
 // A dir-style build pack's leaf files are per-component contracts (dom-contract, interaction,
@@ -789,6 +816,7 @@ function main() {
   }
 
   let fingerprintCount = 0;
+  const componentKeys = new Set(byKey.keys());
   const components = [...byKey.entries()]
     .map(([key, component]) => {
       const sources = new Set(component.sources);
@@ -816,6 +844,18 @@ function main() {
         sources.add('memory');
       }
 
+      // Composition is recorded only when a fingerprint declares it, and only when the declared
+      // parent is itself a discovered component (and not this component) — a dangling or
+      // self-referential partOf is dropped with a warning rather than written as a broken edge.
+      let partOf = liftPartOf(fingerprint);
+      if (partOf && (partOf === key || !componentKeys.has(partOf))) {
+        warnings.add(
+          'part-of-unresolved',
+          `Component "${component.folder}" declares partOf "${partOf}" — ${partOf === key ? 'a self-reference' : 'not a discovered component'}; dropped.`,
+        );
+        partOf = null;
+      }
+
       return {
         name: component.name,
         folder: component.folder,
@@ -825,6 +865,7 @@ function main() {
         entry: component.entry,
         sources: [...sources].sort(),
         facets: liftFacets(fingerprint),
+        partOf,
         buildPack: pack ? { style: pack.style, files: pack.files, facets: buildPackFacets(pack) } : null,
         fingerprint,
       };

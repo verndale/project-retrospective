@@ -20,6 +20,8 @@
       "path": "src/components/ui/cards",
       "entry": "src/components/ui/cards/Cards.tsx",
       "sources": ["component-index"],
+      "facets": null,
+      "partOf": null,
       "buildPack": null,
       "fingerprint": null
     },
@@ -31,6 +33,8 @@
       "path": "src/components/renderings/marketing/checkout-panel",
       "entry": "src/components/renderings/marketing/checkout-panel/CheckoutPanel.tsx",
       "sources": ["component-index"],
+      "facets": null,
+      "partOf": null,
       "buildPack": null,
       "fingerprint": null
     },
@@ -42,7 +46,9 @@
       "path": "src/components/renderings/marketing/logo-ribbon",
       "entry": "src/components/renderings/marketing/logo-ribbon/LogoRibbon.tsx",
       "sources": ["build-pack", "component-index", "memory"],
-      "buildPack": { "style": "flat", "files": ["logo-ribbon.md"] },
+      "facets": null,
+      "partOf": null,
+      "buildPack": { "style": "flat", "files": ["logo-ribbon.md"], "facets": [] },
       "fingerprint": null
     },
     {
@@ -53,7 +59,9 @@
       "path": "src/components/ui/modal",
       "entry": "src/components/ui/modal/Modal.tsx",
       "sources": ["build-pack", "component-index", "fingerprint"],
-      "buildPack": { "style": "dir", "files": ["dom-contract.md", "master.md"] },
+      "facets": { "role": "dialog", "affordance": "overlay", "slots": ["title", "body", "actions"], "variants": ["default", "wide"], "notes": null },
+      "partOf": null,
+      "buildPack": { "style": "dir", "files": ["dom-contract.md", "master.md"], "facets": ["dom-contract"] },
       "fingerprint": { "slots": ["title", "body", "actions"], "affordance": "overlay", "role": "dialog", "variants": ["default", "wide"] }
     }
   ],

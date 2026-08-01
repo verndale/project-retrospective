@@ -9,6 +9,7 @@ const BARE = fixture('fake-project-bare');
 const TOOLKIT = fixture('fake-project-toolkit');
 const CODESCAN = fixture('fake-project-codescan');
 const EMPTYINDEX = fixture('fake-project-emptyindex');
+const PARTOF = fixture('fake-project-partof');
 
 function inventory(project) {
   const result = runJson('inventory.cjs', ['--project', project]);
@@ -387,6 +388,40 @@ test('co-located test/spec files are not treated as components', () => {
   assert.ok(!inv.components.some((c) => /(^|-)test(-|$)/.test(c.folder)), 'no phantom components from test files');
   // ui/dialog/hooks/ holds only test files, so it must neither spawn a component nor drop dialog.
   assert.ok(!inv.components.some((c) => c.folder === 'use-dialog-test'), 'a test-only subdir spawns no phantom');
+});
+
+test('a malformed fingerprint.json is warned and ignored, not counted as evidence', () => {
+  const inv = inventory(CODESCAN);
+  // ui/button/fingerprint.json is a JSON array; ui/dialog/fingerprint.json is unparseable.
+  const bad = inv.warnings.filter((w) => w.code === 'unreadable-json');
+  assert.equal(bad.length, 2, 'both a non-object and an unparseable fingerprint warn');
+  assert.ok(bad.some((w) => /button/.test(w.message)), 'the non-object fingerprint is named');
+  assert.ok(bad.some((w) => /dialog/.test(w.message)), 'the unparseable fingerprint is named');
+
+  const button = inv.components.find((c) => c.folder === 'button');
+  assert.ok(!button.sources.includes('fingerprint'), 'a malformed fingerprint adds no fingerprint source');
+  assert.equal(button.facets, null, 'and yields no facets');
+  assert.equal(inv.evidence.fingerprints, 0, 'malformed fingerprints are not counted');
+});
+
+test('composition partOf is lifted from a fingerprint declaration and validated', () => {
+  const inv = inventory(PARTOF);
+
+  // A declared partOf that resolves to a discovered component is recorded (normalized).
+  const tab = inv.components.find((c) => c.folder === 'tab');
+  assert.equal(tab.partOf, 'tabs', 'partOf "Tabs" normalizes and resolves to the tabs component');
+  assert.equal(tab.facets.role, 'tab', 'facets and a partOf declaration coexist on one fingerprint');
+
+  // No declaration → null.
+  assert.equal(inv.components.find((c) => c.folder === 'tabs').partOf, null);
+
+  // A partOf pointing at a non-existent component, or at itself, is dropped with a warning.
+  assert.equal(inv.components.find((c) => c.folder === 'ghost').partOf, null);
+  assert.equal(inv.components.find((c) => c.folder === 'loop').partOf, null);
+  // An all-separator partOf normalizes to empty — treated as no declaration, not a broken edge.
+  assert.equal(inv.components.find((c) => c.folder === 'dashy').partOf, null);
+  const unresolved = inv.warnings.filter((w) => w.code === 'part-of-unresolved');
+  assert.equal(unresolved.length, 2, 'only the dangling and self-referential partOf warn (not the empty one)');
 });
 
 test('a missing project directory exits 3, not 1', () => {
