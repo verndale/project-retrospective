@@ -44,7 +44,7 @@ Write `runs/<project-slug>/<date>/meta.json` in Step 4 (the model writes it — 
 ## Step 6 procedure
 
 1. Resolve client identity (above).
-2. Upsert `<Data>/wiki/clients/<client-slug>.md` from the client template: create it if absent; otherwise add the project-slug to `projects[]`, the platform to `platforms[]`, any new alias, and a `## Runs` line. Keep these sets additive.
+2. Upsert `<Data>/wiki/clients/<client-slug>.md` from the client template: create it if absent; otherwise add the project-slug to `projects[]`, the platform to `platforms[]`, any new alias, and a `## Runs` line. Keep these sets additive. Distil the analyzed project's `artifacts/memory/*.md` — architecture and platform decisions, known issues and caveats, naming and coding conventions — into durable `## What we know` bullets: summarize in your own words, attribute to the project memory, and carry only what a sibling project would benefit from.
 3. Append `<Data>/wiki/journal/<date>-<project-slug>.md` from the journal template — never overwrite. Outcomes are grounded in this run's `resolution.json` counts and the report's `## Candidates`/`## Captures` verdicts.
 4. Add exactly one line per new file to `<Data>/wiki/INDEX.md` (Journal always; Clients only when the client page is new). Create a minimal INDEX if it does not exist.
 5. Stop and hand back the wiki paths touched alongside the run paths. Do not commit.
@@ -55,4 +55,4 @@ Write `runs/<project-slug>/<date>/meta.json` in Step 4 (the model writes it — 
 - MUST write client wiki content only under `<Data>/wiki/`, never into this (public) skill repository.
 - MUST be append-only: one journal file per run, additive client pages. Supersede a stale fact with a new entry, not by rewriting an old one.
 - MUST NOT invent outcomes. Every journal Outcome traces to the run's `resolution.json` and the report verdicts.
-- MUST keep journal and client bodies free of client copy, credentials, and customer data. Client name and platform are permitted (the wiki lives only in the private evidence repo); cite report paths, not payloads.
+- MUST keep journal and client bodies free of client copy, credentials, and customer data. Client name and platform are permitted (the wiki lives only in the private evidence repo); cite report paths, not payloads. The project-memory digest is a summary of durable engineering knowledge — never verbatim memory prose, client copy, or customer data.

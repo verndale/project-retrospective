@@ -21,7 +21,9 @@ projects: [<project-slug>, ...]
 
 ## What we know
 - <durable facts learned across this client's runs — platform quirks, recurring
-  components, naming conventions. Cite report paths, not client copy.>
+  components, naming conventions, and durable engineering knowledge distilled from
+  the project's `artifacts/memory/` (architecture, known issues, conventions).
+  Cite the report path or name the memory source; summarize, never copy client prose.>
 
 ## Runs
 - <YYYY-MM-DD> — `<project-slug>` — [journal](../journal/<date>-<project-slug>.md) · [report](../../runs/<project-slug>/<date>/report.md)
@@ -35,5 +37,5 @@ projects: [<project-slug>, ...]
 - `projects[]`, `platforms[]`, and `aliases` are additive sets — never drop a prior run's entry.
 - `## Runs` is newest-first, one line per run, never deleted.
 - Body budget ~150 lines; open with `## Contents` only if it exceeds 100.
-- Every "What we know" bullet traces to a run report. No invented facts.
+- Every "What we know" bullet traces to a run report or the analyzed project's `artifacts/memory/` (cite the report path, or name the memory source). No invented facts.
 - No client copy, credentials, or customer data — this is the private evidence repo, so client name and platform are fine, but bodies cite paths.

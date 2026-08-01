@@ -289,7 +289,73 @@ function readFingerprint(projectDir, componentPath, warnings) {
   const fpPath = path.join(componentDir, 'fingerprint.json');
   if (!isFile(fpPath)) return null;
   const read = readJsonSafe(fpPath);
-  return read.ok ? read.value : null;
+  if (!read.ok) {
+    warnings.add('unreadable-json', `fingerprint.json for "${componentPath}" could not be parsed: ${read.error}`);
+    return null;
+  }
+  // A fingerprint that parses to something other than an object (an array, string, or
+  // number) is not a usable API surface — warn and ignore it rather than counting it as
+  // evidence, matching how loadComponentIndex/loadConfig treat malformed JSON.
+  if (!read.value || typeof read.value !== 'object' || Array.isArray(read.value)) {
+    warnings.add('unreadable-json', `fingerprint.json for "${componentPath}" is not a JSON object — ignored.`);
+    return null;
+  }
+  return read.value;
+}
+
+/**
+ * Normalize a component fingerprint into a stable, queryable facet surface.
+ *
+ * Two fingerprint schemas appear in the wild: a semantic/ARIA shape
+ * (`{ slots[], affordance, role, variants[] }`) and an authoring shape
+ * (`{ slot, primaryAffordance, contentRole, notes }`). Both fold into one surface so a
+ * facet can be queried without knowing which schema a project's pipeline emitted. Missing
+ * fields degrade to null / []; the raw `fingerprint` is kept alongside for anything richer.
+ */
+function liftFacets(fingerprint) {
+  if (!fingerprint || typeof fingerprint !== 'object' || Array.isArray(fingerprint)) return null;
+  // Trim on the way out: this skill turns on exact label matching, so a padded facet
+  // value would silently miss once `facets` is consumed downstream.
+  const str = (v) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+  const arr = (v) =>
+    Array.isArray(v) ? v.filter((x) => typeof x === 'string' && x.trim()).map((x) => x.trim()) : [];
+  const slots = arr(fingerprint.slots);
+  const slot = str(fingerprint.slot);
+  return {
+    role: str(fingerprint.role) ?? str(fingerprint.contentRole),
+    affordance: str(fingerprint.affordance) ?? str(fingerprint.primaryAffordance),
+    slots: slots.length ? slots : slot ? [slot] : [],
+    variants: arr(fingerprint.variants),
+    notes: str(fingerprint.notes),
+  };
+}
+
+/**
+ * Lift a declared composition parent from a fingerprint. Composition is never inferred from
+ * names — real projects prove that unreliable (`button-group` is not a part of `button`) — so
+ * it is recorded only when the pipeline DECLARES it via `fingerprint.partOf`. Returns the
+ * normalized parent slug; the caller validates it against the discovered component set.
+ */
+function liftPartOf(fingerprint) {
+  if (!fingerprint || typeof fingerprint !== 'object' || Array.isArray(fingerprint)) return null;
+  const raw = fingerprint.partOf;
+  if (typeof raw !== 'string' || !raw.trim()) return null;
+  // A value that normalizes to empty (all separators/punctuation) is not a usable parent —
+  // treat it as no declaration rather than emitting an unvalidated empty slug.
+  const slug = normalizeLabel(raw);
+  return slug || null;
+}
+
+// A dir-style build pack's leaf files are per-component contracts (dom-contract, interaction,
+// state-machine, …); `master.md` is the pack index, not a facet. A flat pack is a single file
+// that IS the pack, so it declares no facets.
+const BUILD_PACK_INDEX = 'master.md';
+function buildPackFacets(pack) {
+  if (!pack || pack.style !== 'dir' || !Array.isArray(pack.files)) return [];
+  return pack.files
+    .filter((f) => typeof f === 'string' && f.endsWith('.md') && f !== BUILD_PACK_INDEX)
+    .map((f) => f.slice(0, -3))
+    .sort();
 }
 
 // A barrel (any-extension `index.*`, not just the component extensions) re-exports a folder's
@@ -750,6 +816,7 @@ function main() {
   }
 
   let fingerprintCount = 0;
+  const componentKeys = new Set(byKey.keys());
   const components = [...byKey.entries()]
     .map(([key, component]) => {
       const sources = new Set(component.sources);
@@ -777,6 +844,18 @@ function main() {
         sources.add('memory');
       }
 
+      // Composition is recorded only when a fingerprint declares it, and only when the declared
+      // parent is itself a discovered component (and not this component) — a dangling or
+      // self-referential partOf is dropped with a warning rather than written as a broken edge.
+      let partOf = liftPartOf(fingerprint);
+      if (partOf && (partOf === key || !componentKeys.has(partOf))) {
+        warnings.add(
+          'part-of-unresolved',
+          `Component "${component.folder}" declares partOf "${partOf}" — ${partOf === key ? 'a self-reference' : 'not a discovered component'}; dropped.`,
+        );
+        partOf = null;
+      }
+
       return {
         name: component.name,
         folder: component.folder,
@@ -785,7 +864,9 @@ function main() {
         path: component.path,
         entry: component.entry,
         sources: [...sources].sort(),
-        buildPack: pack ? { style: pack.style, files: pack.files } : null,
+        facets: liftFacets(fingerprint),
+        partOf,
+        buildPack: pack ? { style: pack.style, files: pack.files, facets: buildPackFacets(pack) } : null,
         fingerprint,
       };
     })
