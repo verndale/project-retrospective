@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-08-01 — [feat(project-retrospective): Enhance fingerprint normalization and testi](journal/2026-08-01-feat-project-retrospective-enhance-fingerprint-normalization.md) — AI-drafted, revise
 - 2026-07-31 — [Read a grouping folder the same way at both scan granularities](journal/2026-07-31-shallow-scan-sibling-folders.md) — the shallow scan collapsed every subfolder to one folder-named component, dropping leaves and emitting phantoms; both scanners now share one rule.
 - 2026-07-31 — [Make inventory discovery stack-aware](journal/2026-07-31-stack-aware-inventory-discovery.md) — `stackAdapter` now drives extensions/roots, a filesystem scan unions with the index in both modes, and Storybook counts only where the stack uses it.
 - 2026-07-31 — [feat(project-retrospective): Enhance proposal validation logic](journal/2026-07-31-feat-project-retrospective-enhance-proposal-validation-logic.md) — AI-drafted, revise
