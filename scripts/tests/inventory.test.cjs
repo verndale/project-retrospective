@@ -58,7 +58,52 @@ test('a fingerprint on disk wins over a null in the component index', () => {
   assert.ok(modal.fingerprint, 'fingerprint.json exists on disk and must be read');
   assert.equal(modal.fingerprint.role, 'dialog');
   assert.ok(modal.sources.includes('fingerprint'));
-  assert.equal(inv.evidence.fingerprints, 1);
+  assert.equal(inv.evidence.fingerprints, 2, 'modal (V1 schema) + banner (V2 schema)');
+});
+
+test('fingerprint facets are lifted into a normalized surface (both schemas)', () => {
+  const inv = inventory(PROJECT);
+
+  // V1 semantic/ARIA schema: { slots[], affordance, role, variants[] }.
+  const modal = inv.components.find((c) => c.folder === 'modal');
+  assert.deepEqual(modal.facets, {
+    role: 'dialog',
+    affordance: 'overlay',
+    slots: ['title', 'body', 'actions'],
+    variants: ['default', 'wide'],
+    notes: null,
+  });
+
+  // V2 authoring schema: { slot, primaryAffordance, contentRole, notes } → the same surface.
+  const banner = inv.components.find((c) => c.folder === 'banner');
+  assert.deepEqual(banner.facets, {
+    role: 'marketing-banner', // from contentRole
+    affordance: 'static', // from primaryAffordance
+    slots: ['hero'], // singular slot promoted to an array
+    variants: [],
+    notes: 'Full-width promotional banner with an optional call-to-action.',
+  });
+
+  // No fingerprint → facets is null, not a phantom object.
+  const ribbon = inv.components.find((c) => c.folder === 'logo-ribbon');
+  assert.equal(ribbon.facets, null);
+});
+
+test('build-pack facet presence is distilled from the pack files (dir only)', () => {
+  const inv = inventory(PROJECT);
+
+  // A dir-style pack lists its leaf contracts sorted, minus the master.md index.
+  const modal = inv.components.find((c) => c.folder === 'modal');
+  assert.deepEqual(modal.buildPack.facets, ['dom-contract', 'state-machine']);
+
+  // A dir pack with only master.md declares no facets.
+  const orphan = inv.components.find((c) => c.folder === 'orphan-pack');
+  assert.deepEqual(orphan.buildPack.facets, []);
+
+  // A flat pack is a single file that IS the pack, so it declares no facets.
+  const ribbon = inv.components.find((c) => c.folder === 'logo-ribbon');
+  assert.equal(ribbon.buildPack.style, 'flat');
+  assert.deepEqual(ribbon.buildPack.facets, []);
 });
 
 test('project memory naming a component counts as an evidence source', () => {

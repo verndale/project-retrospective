@@ -292,6 +292,45 @@ function readFingerprint(projectDir, componentPath, warnings) {
   return read.ok ? read.value : null;
 }
 
+/**
+ * Normalize a component fingerprint into a stable, queryable facet surface.
+ *
+ * Two fingerprint schemas appear in the wild: a semantic/ARIA shape
+ * (`{ slots[], affordance, role, variants[] }`) and an authoring shape
+ * (`{ slot, primaryAffordance, contentRole, notes }`). Both fold into one surface so a
+ * facet can be queried without knowing which schema a project's pipeline emitted. Missing
+ * fields degrade to null / []; the raw `fingerprint` is kept alongside for anything richer.
+ */
+function liftFacets(fingerprint) {
+  if (!fingerprint || typeof fingerprint !== 'object' || Array.isArray(fingerprint)) return null;
+  // Trim on the way out: this skill turns on exact label matching, so a padded facet
+  // value would silently miss once `facets` is consumed downstream.
+  const str = (v) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+  const arr = (v) =>
+    Array.isArray(v) ? v.filter((x) => typeof x === 'string' && x.trim()).map((x) => x.trim()) : [];
+  const slots = arr(fingerprint.slots);
+  const slot = str(fingerprint.slot);
+  return {
+    role: str(fingerprint.role) ?? str(fingerprint.contentRole),
+    affordance: str(fingerprint.affordance) ?? str(fingerprint.primaryAffordance),
+    slots: slots.length ? slots : slot ? [slot] : [],
+    variants: arr(fingerprint.variants),
+    notes: str(fingerprint.notes),
+  };
+}
+
+// A dir-style build pack's leaf files are per-component contracts (dom-contract, interaction,
+// state-machine, …); `master.md` is the pack index, not a facet. A flat pack is a single file
+// that IS the pack, so it declares no facets.
+const BUILD_PACK_INDEX = 'master.md';
+function buildPackFacets(pack) {
+  if (!pack || pack.style !== 'dir' || !Array.isArray(pack.files)) return [];
+  return pack.files
+    .filter((f) => typeof f === 'string' && f.endsWith('.md') && f !== BUILD_PACK_INDEX)
+    .map((f) => f.slice(0, -3))
+    .sort();
+}
+
 // A barrel (any-extension `index.*`, not just the component extensions) re-exports a folder's
 // parts, marking the folder as one component rather than a flat container of siblings.
 const isBarrelName = (name) => /^index\.[a-z]+$/i.test(name);
@@ -785,7 +824,8 @@ function main() {
         path: component.path,
         entry: component.entry,
         sources: [...sources].sort(),
-        buildPack: pack ? { style: pack.style, files: pack.files } : null,
+        facets: liftFacets(fingerprint),
+        buildPack: pack ? { style: pack.style, files: pack.files, facets: buildPackFacets(pack) } : null,
         fingerprint,
       };
     })

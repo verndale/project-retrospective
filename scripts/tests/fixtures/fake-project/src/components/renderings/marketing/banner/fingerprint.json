@@ -1,0 +1,1 @@
+{ "component": "Banner", "slot": "hero", "primaryAffordance": "static", "contentRole": "marketing-banner", "notes": "Full-width promotional banner with an optional call-to-action." }
