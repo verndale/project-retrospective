@@ -1,3 +1,48 @@
+# v1.9.0 — 2026-08-01
+
+## Summary (AI, bounded)
+- Enhanced fingerprint normalization and testing in the project retrospective module (commit 7b22064).
+- Updated project retrospective documentation with necessary fixes (commit a6e9f98).
+- Improved fingerprint handling and updated related test cases (commit 9eabe5a).
+- Synced wiki journal, topics, and plans to ensure up-to-date documentation (commit a49653a).
+- Merged significant pull requests to integrate organizational memory features and wiki synchronization (commits 0b87060, 4326bc9).
+
+## Highlights
+- commit: Merge pull request #30 from verndale/feat/retro-org-memory (0b87060)
+- fix(project-retrospective): Update project retrospective documentation (a6e9f98)
+- chore(project-retrospective): Update fingerprint handling and test cases (9eabe5a)
+- feat(project-retrospective): Enhance fingerprint normalization and testing (7b22064)
+- commit: Merge pull request #28 from verndale/bot/wiki-sync/27 (4326bc9)
+- docs(wiki): sync journal, topics, and plans for #27 (a49653a)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Enhance fingerprint normalization and testing (7b22064)
+
+### Fixes
+- fix(project-retrospective): Update project retrospective documentation (a6e9f98)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #27 (a49653a)
+
+### Chore
+- chore(project-retrospective): Update fingerprint handling and test cases (9eabe5a)
+
+### Other (unknown)
+- commit: Merge pull request #28 from verndale/bot/wiki-sync/27 (4326bc9)
+- commit: Merge pull request #30 from verndale/feat/retro-org-memory (0b87060)
+
+## Full commit list
+- 0b87060 commit: Merge pull request #30 from verndale/feat/retro-org-memory
+- a6e9f98 fix(project-retrospective): Update project retrospective documentation
+- 9eabe5a chore(project-retrospective): Update fingerprint handling and test cases
+- 7b22064 feat(project-retrospective): Enhance fingerprint normalization and testing
+- 4326bc9 commit: Merge pull request #28 from verndale/bot/wiki-sync/27
+- a49653a docs(wiki): sync journal, topics, and plans for #27
+
 # v1.8.0 — 2026-07-31
 
 ## Summary (AI, bounded)
