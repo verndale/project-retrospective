@@ -32,6 +32,7 @@ const {
   isFile,
   listEntries,
   normalizeLabel,
+  resolveArtifactsRoot,
   Warnings,
   writeOut,
   usage,
@@ -124,24 +125,26 @@ function makeFileRe(exts) {
 }
 
 function loadConfig(projectDir, warnings) {
-  const configPath = path.join(projectDir, 'build.config.json');
-  if (!isFile(configPath)) {
+  // The artifacts-root read + "artifacts" default are shared with archive-memory.cjs
+  // via resolveArtifactsRoot so the two scripts can never disagree on where pipeline
+  // evidence lives; the contextual warnings stay here.
+  const resolved = resolveArtifactsRoot(projectDir);
+  if (resolved.status === 'absent') {
     warnings.add(
       'no-build-config',
       'No build.config.json at the project root — artifacts root assumed to be "artifacts" and component buckets discovered heuristically.',
     );
-    return { present: false, path: null, artifactsRoot: 'artifacts' };
+    return { present: false, path: null, artifactsRoot: resolved.artifactsRoot };
   }
-  const read = readJsonSafe(configPath);
-  if (!read.ok) {
-    warnings.add('unreadable-json', `build.config.json could not be parsed: ${read.error}`);
-    return { present: false, path: configPath, artifactsRoot: 'artifacts' };
+  if (resolved.status === 'unreadable') {
+    warnings.add('unreadable-json', `build.config.json could not be parsed: ${resolved.error}`);
+    return { present: false, path: resolved.path, artifactsRoot: resolved.artifactsRoot };
   }
-  const cfg = read.value || {};
+  const cfg = resolved.config;
   return {
     present: true,
-    path: configPath,
-    artifactsRoot: typeof cfg.artifactsRoot === 'string' ? cfg.artifactsRoot : 'artifacts',
+    path: resolved.path,
+    artifactsRoot: resolved.artifactsRoot,
     stackAdapter: cfg.stackAdapter ?? null,
     componentBuckets: cfg.componentBuckets ?? null,
     renderingDomains: cfg.renderingDomains ?? null,

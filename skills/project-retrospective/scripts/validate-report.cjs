@@ -201,6 +201,100 @@ function checkMeta(dir, scope, result) {
   return meta;
 }
 
+/**
+ * Did this run preserve the project's memory, or say why it could not?
+ *
+ * "Did the project have memory?" comes from inventory's evidence block. The
+ * archive step (archive-memory.cjs) runs on every analyze run — record-only when
+ * there is no evidence checkout — and always drops a self-describing
+ * memory-archive.json into the run output. So a missing manifest means the step
+ * never ran; if the project carried memory, that memory was dropped, which is the
+ * exact regression this check exists to catch. The manifest's own status carries
+ * the rest: an empty "archived", a "no-memory" that disagrees with inventory, or
+ * a legitimate "skipped-no-data" home-fallback.
+ */
+function checkMemoryArchive(dir, result) {
+  // inventory.json is validated by checkInventory; read it quietly here and treat
+  // an unreadable inventory as "unknown" rather than double-reporting its failure.
+  const invRead = readJsonSafe(path.join(dir, 'inventory.json'));
+  const inv = invRead.ok && invRead.value && typeof invRead.value === 'object' ? invRead.value : null;
+  const evidence = inv && inv.evidence && typeof inv.evidence === 'object' ? inv.evidence : {};
+  const hadMemory =
+    (Array.isArray(evidence.memoryShards) && evidence.memoryShards.length > 0) || evidence.memoryIndex === true;
+
+  const file = path.join(dir, 'memory-archive.json');
+  if (!isFile(file)) {
+    // The archive step runs on EVERY analyze run (record-only when there is no
+    // evidence checkout) and always writes a manifest — even for a no-memory
+    // project. So an absent manifest means the step never ran, and this must NOT
+    // lean on inventory's top-level-only signal: memory organized under
+    // memory/<subdir>/ is invisible to evidence.memoryShards, so a hadMemory gate
+    // here would let a subdir-only project drop its memory with a green validator.
+    // Fail unconditionally; hadMemory only sharpens the message.
+    result.fail(
+      'memory-archive-missing',
+      hadMemory
+        ? 'inventory.json reports project memory but memory-archive.json is absent — the archive step (archive-memory.cjs) did not run, so memory was dropped'
+        : 'memory-archive.json is absent — archive-memory.cjs must run on every analyze run (it records even a no-memory project)',
+    );
+    return null;
+  }
+  const read = readJsonSafe(file);
+  if (!read.ok) {
+    result.fail('memory-archive-parses', `memory-archive.json could not be parsed: ${read.error}`);
+    return null;
+  }
+  const manifest = read.value;
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    result.fail('memory-archive-parses', 'memory-archive.json is not a JSON object');
+    return null;
+  }
+  if (manifest.schemaVersion !== 1) {
+    result.fail('memory-archive-schema', `memory-archive.json schemaVersion is ${manifest.schemaVersion}, expected 1`);
+  }
+  const files = Array.isArray(manifest.files) ? manifest.files : null;
+  if (!files) result.fail('memory-archive-schema', 'memory-archive.json has no files array');
+
+  const STATUSES = ['archived', 'no-memory', 'skipped-no-data'];
+  if (!STATUSES.includes(manifest.status)) {
+    result.fail('memory-archive-status', `memory-archive.json status "${manifest.status}" is not one of: ${STATUSES.join(', ')}`);
+    return manifest;
+  }
+
+  if (manifest.status === 'archived') {
+    if (files && files.length === 0) {
+      result.fail('memory-archive-empty', 'memory-archive.json status is "archived" but no files were archived');
+    }
+  } else if (manifest.status === 'no-memory') {
+    // inventory lists the shards it found by filename; the archive can legitimately
+    // report no-memory when those shards were all empty placeholders (skippedEmpty).
+    // Only warn on a genuine disagreement — inventory has memory, archive found none.
+    const skippedEmpty = Array.isArray(manifest.skippedEmpty) ? manifest.skippedEmpty : [];
+    if (hadMemory && skippedEmpty.length === 0) {
+      result.warn(
+        'memory-archive-mismatch',
+        'memory-archive.json reports "no-memory" but inventory.json lists project memory — the scripts may have read different artifacts roots',
+      );
+    }
+  } else if (manifest.status === 'skipped-no-data') {
+    result.warn(
+      'memory-not-preserved',
+      'project memory was found but not archived (no ui-design-evidence Data checkout) — re-run with Data pointing at ui-design-evidence to preserve it',
+    );
+  }
+
+  // Surface a partial loss the status hides: some files copied, others failed, so
+  // status stays "archived" with a non-empty list. Without this, the dropped shards
+  // pass unflagged — the same silent-drop this check exists to prevent.
+  if ((Array.isArray(manifest.warnings) ? manifest.warnings : []).some((w) => w && w.code === 'memory-file-unreadable')) {
+    result.warn(
+      'memory-archive-incomplete',
+      'memory-archive.json recorded unreadable memory files — some shards were not archived; see its warnings',
+    );
+  }
+  return manifest;
+}
+
 function checkReport(dir, scope, noBrain, result) {
   const file = path.join(dir, 'report.md');
   const text = isFile(file) ? readTextSafe(file) : null;
@@ -572,6 +666,9 @@ function main() {
   // Identity is required wherever the run has candidates (full and candidates
   // scopes); an inventory-only run has no client wiki to feed.
   if (scope !== 'inventory') checkMeta(dir, scope, result);
+  // Every analyze run that reaches Step 6 (full and candidates) must preserve
+  // project memory or record why it could not; an inventory-only run has no Step 6.
+  if (scope !== 'inventory') checkMemoryArchive(dir, result);
 
   const { promoted, captured, capturesSectionPresent } = checkReport(dir, scope, noBrain, result);
 

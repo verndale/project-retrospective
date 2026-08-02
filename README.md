@@ -21,7 +21,7 @@ completed project  (read-only — the retrospective never writes here)
         │  /project-retrospective  Action: analyze
         ▼
 a run in the `ui-design-evidence` repo:
-report.md · inventory.json · resolution.json · proposals/ · captures/ · orchestration-drafts.md
+report.md · inventory.json · resolution.json · memory-archive.json · proposals/ · captures/ · orchestration-drafts.md
         │  human review
         ├── proposals/  → Action: promote → ui-design-brain working tree → verify → stop
         ├── captures/   → Action: capture → ui-design-library working tree → verify → stop
@@ -99,7 +99,7 @@ Brain: /path/to/ui-design-brain
 | `Captures:` | for capture | Path to a run's `captures/` directory. Applied as a set. |
 | `Library:` | for capture | Absolute path to a local `ui-design-library` checkout. |
 
-Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, and `orchestration-drafts.md`. Full parameter and output detail: [`skills/project-retrospective/README.md`](skills/project-retrospective/README.md).
+Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json`, `memory-archive.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, and `orchestration-drafts.md`. Full parameter and output detail: [`skills/project-retrospective/README.md`](skills/project-retrospective/README.md).
 
 **Client data stays with the client.** The analyzed project is read-only — a retrospective never leaves artifacts in the repository it analyzed. Run output goes to `Data:` or `Output:`, and is never committed to this public repo.
 

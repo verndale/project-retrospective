@@ -1,16 +1,16 @@
 {
   "counts": {
-    "nodes": 75,
-    "edges": 177,
+    "nodes": 77,
+    "edges": 181,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
       "tooling-doc": 1,
-      "test": 7,
+      "test": 8,
       "authoring-spec": 1,
       "skill-readme": 1,
       "skill-reference": 14,
-      "skill-script": 5,
+      "skill-script": 6,
       "skill": 1,
       "wiki-index": 3,
       "wiki-journal": 12,
@@ -18,12 +18,12 @@
       "wiki-topic": 5
     },
     "byEdgeType": {
-      "contracts": 18,
+      "contracts": 19,
       "covers": 16,
       "links-to": 83,
       "plan": 4,
-      "requires": 26,
-      "tests": 6,
+      "requires": 28,
+      "tests": 7,
       "topic": 24
     }
   },
@@ -73,7 +73,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 11192,
+      "bytes": 11238,
       "degree": 8
     },
     {
@@ -149,6 +149,18 @@
       "degree": 1
     },
     {
+      "id": "scripts/tests/archive-memory.test.cjs",
+      "label": "archive-memory.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 5579,
+      "degree": 2
+    },
+    {
       "id": "scripts/tests/build-graph.test.cjs",
       "label": "build-graph.test.cjs",
       "type": "test",
@@ -182,7 +194,7 @@
       "prs": [],
       "issues": [],
       "bytes": 1900,
-      "degree": 5
+      "degree": 6
     },
     {
       "id": "scripts/tests/inventory.test.cjs",
@@ -229,7 +241,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 23359,
+      "bytes": 28448,
       "degree": 2
     },
     {
@@ -397,7 +409,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 20175,
+      "bytes": 20973,
       "degree": 4
     },
     {
@@ -541,7 +553,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 1799,
+      "bytes": 2063,
       "degree": 2
     },
     {
@@ -553,7 +565,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 4513,
+      "bytes": 7479,
       "degree": 3
     },
     {
@@ -567,6 +579,18 @@
       "issues": [],
       "bytes": 1713,
       "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/scripts/archive-memory.cjs",
+      "label": "archive-memory.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 8699,
+      "degree": 3
     },
     {
       "id": "skills/project-retrospective/scripts/capture-preflight.cjs",
@@ -589,7 +613,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 38168,
+      "bytes": 38382,
       "degree": 5
     },
     {
@@ -601,8 +625,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10049,
-      "degree": 4
+      "bytes": 12697,
+      "degree": 5
     },
     {
       "id": "skills/project-retrospective/scripts/resolve.cjs",
@@ -625,7 +649,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 26209,
+      "bytes": 31434,
       "degree": 4
     },
     {
@@ -637,8 +661,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 23458,
-      "degree": 36
+      "bytes": 24921,
+      "degree": 37
     },
     {
       "id": "wiki/INDEX.md",
@@ -1141,6 +1165,11 @@
     },
     {
       "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/scripts/archive-memory.cjs",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/scripts/capture-preflight.cjs",
       "type": "contracts"
     },
@@ -1467,7 +1496,7 @@
       "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/wiki-feed.md",
       "type": "links-to",
-      "count": 4,
+      "count": 5,
       "anchors": []
     },
     {
@@ -1856,6 +1885,11 @@
       "type": "requires"
     },
     {
+      "source": "scripts/tests/archive-memory.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
       "source": "scripts/tests/build-graph.test.cjs",
       "target": "scripts/graph/build-graph.cjs",
       "type": "requires"
@@ -1951,6 +1985,11 @@
       "type": "requires"
     },
     {
+      "source": "skills/project-retrospective/scripts/archive-memory.cjs",
+      "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
       "source": "skills/project-retrospective/scripts/capture-preflight.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
@@ -1969,6 +2008,11 @@
       "source": "skills/project-retrospective/scripts/validate-report.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
+    },
+    {
+      "source": "scripts/tests/archive-memory.test.cjs",
+      "target": "skills/project-retrospective/scripts/archive-memory.cjs",
+      "type": "tests"
     },
     {
       "source": "scripts/tests/capture-preflight.test.cjs",

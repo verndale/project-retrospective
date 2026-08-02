@@ -138,6 +138,29 @@ function listEntries(dirPath) {
 }
 
 /**
+ * Every file under `dir`, recursively, as forward-slash paths relative to `dir`.
+ *
+ * Returns [] when `dir` is unreadable, so a caller archiving project memory
+ * records "nothing to copy" instead of crashing. Symlinked directories are
+ * followed (via listEntries, which resolves them), matching how these scripts
+ * treat monorepo symlinks; `maxDepth` bounds a pathological or cyclic tree so
+ * the walk always terminates.
+ */
+function listFilesRecursive(dir, { maxDepth = 32 } = {}) {
+  const out = [];
+  const walk = (current, rel, depth) => {
+    if (depth > maxDepth) return;
+    for (const entry of listEntries(current)) {
+      const childRel = rel ? `${rel}/${entry.name}` : entry.name;
+      if (entry.dir) walk(entry.path, childRel, depth + 1);
+      else out.push(childRel);
+    }
+  };
+  walk(dir, '', 0);
+  return out;
+}
+
+/**
  * Normalize a design label for exact matching: case, word separators, and
  * camelCase boundaries only.
  *
@@ -299,6 +322,52 @@ function writeOut(obj, outPath, pretty) {
   }
 }
 
+/**
+ * Copy a single file to `dest`, creating parent directories as needed.
+ *
+ * Returns { ok, error, bytes } instead of throwing so one unreadable file degrades
+ * to a warning rather than aborting a multi-file archive mid-copy.
+ */
+function copyFileTo(src, dest) {
+  try {
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(src, dest);
+    return { ok: true, error: null, bytes: fs.statSync(dest).size };
+  } catch (err) {
+    return { ok: false, error: err.message, bytes: 0 };
+  }
+}
+
+/**
+ * Resolve a project's artifacts root from its build.config.json.
+ *
+ * The root folder name is project-configurable, and every script that reads
+ * pipeline evidence (inventory, the memory archive) MUST agree on where it is —
+ * so the read and the "artifacts" default live here, once, rather than being
+ * copied per script where they could drift. Emits no warnings: the caller maps
+ * `status` ("ok" | "absent" | "unreadable") to its own contextual message.
+ * `config` is the parsed object (null unless "ok"), so a caller that needs more
+ * fields reads the file only once.
+ */
+function resolveArtifactsRoot(projectDir) {
+  const configPath = path.join(projectDir, 'build.config.json');
+  if (!isFile(configPath)) {
+    return { status: 'absent', path: null, artifactsRoot: 'artifacts', config: null, error: null };
+  }
+  const read = readJsonSafe(configPath);
+  if (!read.ok) {
+    return { status: 'unreadable', path: configPath, artifactsRoot: 'artifacts', config: null, error: read.error };
+  }
+  const config = read.value || {};
+  return {
+    status: 'ok',
+    path: configPath,
+    artifactsRoot: typeof config.artifactsRoot === 'string' ? config.artifactsRoot : 'artifacts',
+    config,
+    error: null,
+  };
+}
+
 /** Fail with a usage message on exit code 2. */
 function usage(message, lines) {
   process.stderr.write(`error: ${message}\n\n${lines.join('\n')}\n`);
@@ -323,6 +392,7 @@ module.exports = {
   isDir,
   isFile,
   listEntries,
+  listFilesRecursive,
   normalizeLabel,
   kebab,
   sections,
@@ -330,5 +400,7 @@ module.exports = {
   parseCanonicalLine,
   Warnings,
   writeOut,
+  copyFileTo,
+  resolveArtifactsRoot,
   usage,
 };

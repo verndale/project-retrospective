@@ -21,8 +21,9 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Wiki feed](../../skills/project-retrospective/references/wiki-feed.md)
 - [wiki journal entry template](../../skills/project-retrospective/references/wiki-journal-template.md)
 
-## Scripts (4)
+## Scripts (5)
 
+- [archive-memory.cjs](../../skills/project-retrospective/scripts/archive-memory.cjs)
 - [capture-preflight.cjs](../../skills/project-retrospective/scripts/capture-preflight.cjs)
 - [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs)
 - [resolve.cjs](../../skills/project-retrospective/scripts/resolve.cjs)
