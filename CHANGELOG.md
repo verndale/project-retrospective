@@ -1,3 +1,37 @@
+# v1.10.0 — 2026-08-02
+
+## Summary (AI, bounded)
+- Added archive memory functionality and tests to project retrospective (commit 653ce10).
+- Synced journal, topics, and plans documentation in the wiki (commit 8cbf1c5).
+- Merged pull request #33 related to capturing project memory (commit ecf31bd).
+- Merged pull request #31 for wiki synchronization updates (commit 5986457).
+
+## Highlights
+- commit: Merge pull request #33 from verndale/feat/32-capture-project-memory (ecf31bd)
+- feat(project-retrospective): Add archive memory functionality and tests (653ce10)
+- commit: Merge pull request #31 from verndale/bot/wiki-sync/30 (5986457)
+- docs(wiki): sync journal, topics, and plans for #30 (8cbf1c5)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Add archive memory functionality and tests (653ce10)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #30 (8cbf1c5)
+
+### Other (unknown)
+- commit: Merge pull request #31 from verndale/bot/wiki-sync/30 (5986457)
+- commit: Merge pull request #33 from verndale/feat/32-capture-project-memory (ecf31bd)
+
+## Full commit list
+- ecf31bd commit: Merge pull request #33 from verndale/feat/32-capture-project-memory
+- 653ce10 feat(project-retrospective): Add archive memory functionality and tests
+- 5986457 commit: Merge pull request #31 from verndale/bot/wiki-sync/30
+- 8cbf1c5 docs(wiki): sync journal, topics, and plans for #30
+
 # v1.9.0 — 2026-08-01
 
 ## Summary (AI, bounded)
