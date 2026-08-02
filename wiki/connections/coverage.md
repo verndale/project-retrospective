@@ -6,6 +6,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 
 ## Test → script
 
+- [archive-memory.test.cjs](../../scripts/tests/archive-memory.test.cjs) → [archive-memory.cjs](../../skills/project-retrospective/scripts/archive-memory.cjs)
 - [capture-preflight.test.cjs](../../scripts/tests/capture-preflight.test.cjs) → [capture-preflight.cjs](../../skills/project-retrospective/scripts/capture-preflight.cjs)
 - [inventory.test.cjs](../../scripts/tests/inventory.test.cjs) → [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs)
 - [resolve.test.cjs](../../scripts/tests/resolve.test.cjs) → [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs), [resolve.cjs](../../skills/project-retrospective/scripts/resolve.cjs)
@@ -16,6 +17,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 
 - [evals/graph-check.cjs](../../scripts/evals/graph-check.cjs) → [graph/build-graph.cjs](../../scripts/graph/build-graph.cjs), [graph/routing.cjs](../../scripts/graph/routing.cjs)
 - [graph/build-graph.cjs](../../scripts/graph/build-graph.cjs) → [wiki/lib/frontmatter.cjs](../../scripts/wiki/lib/frontmatter.cjs)
+- [archive-memory.test.cjs](../../scripts/tests/archive-memory.test.cjs) → [helpers.cjs](../../scripts/tests/helpers.cjs)
 - [build-graph.test.cjs](../../scripts/tests/build-graph.test.cjs) → [graph/build-graph.cjs](../../scripts/graph/build-graph.cjs)
 - [capture-preflight.test.cjs](../../scripts/tests/capture-preflight.test.cjs) → [helpers.cjs](../../scripts/tests/helpers.cjs)
 - [inventory.test.cjs](../../scripts/tests/inventory.test.cjs) → [helpers.cjs](../../scripts/tests/helpers.cjs)
@@ -28,6 +30,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [wiki/navigate.cjs](../../scripts/wiki/navigate.cjs) → [graph/build-graph.cjs](../../scripts/graph/build-graph.cjs), [graph/routing.cjs](../../scripts/graph/routing.cjs)
 - [wiki/on-merge-sync.cjs](../../scripts/wiki/on-merge-sync.cjs) → [wiki/lib/ai.cjs](../../scripts/wiki/lib/ai.cjs), [wiki/lib/frontmatter.cjs](../../scripts/wiki/lib/frontmatter.cjs), [wiki/lib/substantive.cjs](../../scripts/wiki/lib/substantive.cjs), [wiki/lib/wiki-io.cjs](../../scripts/wiki/lib/wiki-io.cjs)
 - [wiki/pre-commit-journal.cjs](../../scripts/wiki/pre-commit-journal.cjs) → [wiki/lib/substantive.cjs](../../scripts/wiki/lib/substantive.cjs)
+- [archive-memory.cjs](../../skills/project-retrospective/scripts/archive-memory.cjs) → [util.cjs](../../skills/project-retrospective/scripts/lib/util.cjs)
 - [capture-preflight.cjs](../../skills/project-retrospective/scripts/capture-preflight.cjs) → [util.cjs](../../skills/project-retrospective/scripts/lib/util.cjs)
 - [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs) → [util.cjs](../../skills/project-retrospective/scripts/lib/util.cjs)
 - [resolve.cjs](../../skills/project-retrospective/scripts/resolve.cjs) → [util.cjs](../../skills/project-retrospective/scripts/lib/util.cjs)

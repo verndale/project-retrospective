@@ -49,7 +49,7 @@ Data: /Users/you/Projects/ui-design-evidence
 
 `Data` is what puts the run in the evidence repo. Without it, output lands in `~/project-retrospective/runs/` and the skill tells you so.
 
-Output goes to `<Data>/runs/<project-slug>/<YYYY-MM-DD>/`. **Done when:** that directory holds `meta.json`, `report.md`, `inventory.json`, `resolution.json`, `orchestration-drafts.md`, plus `proposals/` and `captures/` if anything qualified — the validator exits 0 — and (because `Data` is set) the client wiki under `<Data>/wiki/` gained a journal entry and its client page.
+Output goes to `<Data>/runs/<project-slug>/<YYYY-MM-DD>/`. **Done when:** that directory holds `meta.json`, `report.md`, `inventory.json`, `resolution.json`, `memory-archive.json`, `orchestration-drafts.md`, plus `proposals/` and `captures/` if anything qualified — the validator exits 0 — and (because `Data` is set) the client wiki under `<Data>/wiki/` gained a journal entry, its client page, and the project's memory archive under `<Data>/wiki/memory/`.
 
 ### Step 2 — Read the report
 
@@ -168,6 +168,7 @@ Written to `Output`, never into this skill's repository:
 |---|---|
 | `meta.json` | Machine-readable run identity: client, project, platform, date, scope, priorReports. Grounds the client wiki. |
 | `report.md` | The human-readable retrospective: summary, inventory, resolution, candidates with verdicts and evidence, learnings, gaps, next steps. |
+| `memory-archive.json` | Manifest proving the project's memory was preserved: `status` (`archived` / `skipped-no-data` / `no-memory`), the files archived, and `skippedEmpty` (empty placeholder shards dropped). Written every run; the validator fails a run that had memory but no archive. |
 | `inventory.json` | Every component found, with its evidence sources, build pack, and fingerprint. |
 | `resolution.json` | Resolved labels with how they resolved; unresolved labels with occurrences and locations. |
 | `proposals/<slug>.md` | One per Promote candidate — a ready-to-apply catalog change with its evidence. |
@@ -176,7 +177,7 @@ Written to `Output`, never into this skill's repository:
 
 **The analyzed project is never written to.** Runs land in the private `ui-design-evidence` repo (`Data`) or, failing that, a user-level directory — never in the client repo. That keeps a retrospective from leaving artifacts a project team has to review, and keeps cross-project evidence out of any single client's tree.
 
-**The client wiki (Step 6).** When `Data` is the `ui-design-evidence` checkout, an analyze run also feeds that repo's client wiki: it creates/updates `<Data>/wiki/clients/<client-slug>.md` (durable client knowledge) and appends `<Data>/wiki/journal/<date>-<project-slug>.md` (what happened this run), so the evidence repo answers "who is this client and what have we run for them." Skipped when the run lands in the home fallback. See [`references/wiki-feed.md`](references/wiki-feed.md).
+**The client wiki (Step 6).** When `Data` is the `ui-design-evidence` checkout, an analyze run also feeds that repo's client wiki: it creates/updates `<Data>/wiki/clients/<client-slug>.md` (durable client knowledge) and appends `<Data>/wiki/journal/<date>-<project-slug>.md` (what happened this run), so the evidence repo answers "who is this client and what have we run for them." It also preserves the project's engineering memory near-raw at `<Data>/wiki/memory/<client-slug>/<project-slug>/` (a byte-copied `source/` plus an `index.md` digest), so a wrapped project's learnings outlive it. Skipped when the run lands in the home fallback. See [`references/wiki-feed.md`](references/wiki-feed.md).
 
 **Two modes.** A project that went through the build pipeline has normalized evidence (build packs, component index, fingerprints, project memory) — that is `artifacts` mode. A project without it degrades to `code-scan`: directory walking only, which yields names but no contract, so verdicts cap at Watch. The report says which mode ran, in the Run and Gaps sections.
 
@@ -186,6 +187,7 @@ Runnable directly, which is useful for debugging a run:
 
 ```bash
 node scripts/inventory.cjs --project <path> --out inventory.json --pretty
+node scripts/archive-memory.cjs --project <path> --out memory-archive.json --pretty
 node scripts/resolve.cjs --inventory inventory.json --brain <brain-path> --out resolution.json --pretty
 node scripts/validate-report.cjs --output <output-dir> --scope full
 node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <library-path> --brain <brain-path> --pretty
@@ -194,6 +196,7 @@ node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <l
 | Script | Exit codes |
 |---|---|
 | `inventory.cjs` | 0 success (including degraded) · 1 unexpected · 2 bad invocation · 3 `--project` is not a directory |
+| `archive-memory.cjs` | 0 success (including degraded) · 1 unexpected · 2 bad invocation · 3 `--project` is not a directory |
 | `resolve.cjs` | 0 · 1 · 2 · 3 inventory missing/unreadable/wrong schema · 4 manifest missing/unreadable/invalid |
 | `validate-report.cjs` | 0 pass · 1 failures · 2 bad invocation · 3 `--output` is not a directory |
 | `capture-preflight.cjs` | 0 all ready or already applied · 1 one or more blocked, or unexpected · 2 bad invocation · 3 `--captures` is not a directory · 4 `--library` is not a library checkout · 5 manifest missing/unreadable/invalid · 6 none blocked, but one or more deferred (canonical only proposed this run — promote first, then re-run) |

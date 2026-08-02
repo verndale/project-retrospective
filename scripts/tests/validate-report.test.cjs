@@ -571,3 +571,125 @@ test('meta.json must agree with a real run directory', () => {
   fs.writeFileSync(path.join(runDir, 'meta.json'), JSON.stringify(meta, null, 2));
   assertFails(runDir, 'meta-dir');
 });
+
+// --- memory-archive.json (the "no run silently drops project memory" gate) ---
+
+/** Assert the run passed (exit 0) and raised the given warning. */
+function assertWarns(dir, check, args = []) {
+  const result = validate(dir, [...args, '--json']);
+  assert.equal(
+    result.status,
+    0,
+    `expected pass with a warning, got status ${result.status}:\n${JSON.stringify(result.json, null, 2)}`,
+  );
+  const checks = result.json.warnings.map((w) => w.check);
+  assert.ok(
+    checks.includes(check),
+    `expected a "${check}" warning, got: ${JSON.stringify(result.json.warnings, null, 2)}`,
+  );
+}
+
+test('project memory with no memory-archive.json fails', () => {
+  // The golden inventory reports memory shards, so a missing manifest means the
+  // archive step never ran and that memory was dropped.
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'memory-archive.json'));
+  assertFails(dir, 'memory-archive-missing');
+});
+
+test('a missing memory-archive.json fails even when no memory was detected', () => {
+  // The archive step runs on every analyze run, so an absent manifest is always a
+  // gap — and inventory's top-level memoryShards cannot see subdir-only memory, so
+  // this must not be softened to a warning when memoryShards happens to be empty.
+  const dir = tempOutput();
+  const inv = JSON.parse(readFile(dir, 'inventory.json'));
+  inv.evidence.memoryShards = [];
+  inv.evidence.memoryIndex = false;
+  writeFile(dir, 'inventory.json', JSON.stringify(inv, null, 2));
+  fs.rmSync(path.join(dir, 'memory-archive.json'));
+  assertFails(dir, 'memory-archive-missing');
+});
+
+test('a home-fallback archive (skipped-no-data) warns but passes', () => {
+  const dir = tempOutput();
+  const m = JSON.parse(readFile(dir, 'memory-archive.json'));
+  m.status = 'skipped-no-data';
+  m.destination = null;
+  writeFile(dir, 'memory-archive.json', JSON.stringify(m, null, 2));
+  assertWarns(dir, 'memory-not-preserved');
+});
+
+test('a "no-memory" archive that disagrees with inventory warns', () => {
+  const dir = tempOutput(); // inventory still lists memory shards
+  const m = JSON.parse(readFile(dir, 'memory-archive.json'));
+  m.status = 'no-memory';
+  m.files = [];
+  writeFile(dir, 'memory-archive.json', JSON.stringify(m, null, 2));
+  assertWarns(dir, 'memory-archive-mismatch');
+});
+
+test('a "no-memory" archive whose shards were all empty does not warn mismatch', () => {
+  // inventory lists shards by filename, but the archive found them all empty — that
+  // is expected, not a root disagreement, so no mismatch warning should fire.
+  const dir = tempOutput();
+  const m = JSON.parse(readFile(dir, 'memory-archive.json'));
+  m.status = 'no-memory';
+  m.files = [];
+  m.skippedEmpty = ['architecture.md', 'design-system.md'];
+  writeFile(dir, 'memory-archive.json', JSON.stringify(m, null, 2));
+  const result = validate(dir, ['--json']);
+  assert.equal(result.status, 0, `expected pass, got:\n${JSON.stringify(result.json, null, 2)}`);
+  assert.ok(
+    !result.json.warnings.map((w) => w.check).includes('memory-archive-mismatch'),
+    'all-empty shards should not read as an artifacts-root mismatch',
+  );
+});
+
+test('an "archived" manifest with no files fails', () => {
+  const dir = tempOutput();
+  const m = JSON.parse(readFile(dir, 'memory-archive.json'));
+  m.files = [];
+  writeFile(dir, 'memory-archive.json', JSON.stringify(m, null, 2));
+  assertFails(dir, 'memory-archive-empty');
+});
+
+test('a memory-archive.json with the wrong schemaVersion fails', () => {
+  const dir = tempOutput();
+  const m = JSON.parse(readFile(dir, 'memory-archive.json'));
+  m.schemaVersion = 2;
+  writeFile(dir, 'memory-archive.json', JSON.stringify(m, null, 2));
+  assertFails(dir, 'memory-archive-schema');
+});
+
+test('an archive that recorded unreadable files warns of incompleteness', () => {
+  const dir = tempOutput();
+  const m = JSON.parse(readFile(dir, 'memory-archive.json'));
+  m.warnings = [{ code: 'memory-file-unreadable', message: 'could not copy components/hero.md' }];
+  writeFile(dir, 'memory-archive.json', JSON.stringify(m, null, 2));
+  assertWarns(dir, 'memory-archive-incomplete');
+});
+
+test('an unrecognized archive status fails', () => {
+  const dir = tempOutput();
+  const m = JSON.parse(readFile(dir, 'memory-archive.json'));
+  m.status = 'copied';
+  writeFile(dir, 'memory-archive.json', JSON.stringify(m, null, 2));
+  assertFails(dir, 'memory-archive-status');
+});
+
+test('a malformed memory-archive.json fails', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'memory-archive.json', '{ not json');
+  assertFails(dir, 'memory-archive-parses');
+});
+
+test('scope inventory does not require memory-archive.json', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'memory-archive.json'));
+  fs.rmSync(path.join(dir, 'meta.json'));
+  fs.rmSync(path.join(dir, 'resolution.json'));
+  fs.rmSync(path.join(dir, 'proposals'), { recursive: true });
+  fs.rmSync(path.join(dir, 'orchestration-drafts.md'));
+  const result = validate(dir, ['--scope', 'inventory']);
+  assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
