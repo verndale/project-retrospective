@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 77,
-    "edges": 181,
+    "nodes": 78,
+    "edges": 183,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 6,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 12,
+      "wiki-journal": 13,
       "wiki-plan": 4,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 19,
       "covers": 16,
-      "links-to": 83,
+      "links-to": 84,
       "plan": 4,
       "requires": 28,
       "tests": 7,
-      "topic": 24
+      "topic": 25
     }
   },
   "nodes": [
@@ -673,8 +673,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 6138,
-      "degree": 22
+      "bytes": 6336,
+      "degree": 23
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -883,6 +883,22 @@
       "degree": 2
     },
     {
+      "id": "wiki/journal/2026-08-02-feat-project-retrospective-add-archive-memory-functionality-.md",
+      "label": "feat(project-retrospective): Add archive memory functionality and tests",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [
+        "33"
+      ],
+      "issues": [],
+      "bytes": 1685,
+      "degree": 2
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -1057,6 +1073,7 @@
         "promote watch reject"
       ],
       "prs": [
+        "33",
         "30",
         "27",
         "24",
@@ -1069,8 +1086,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 6612,
-      "degree": 24
+      "bytes": 6771,
+      "degree": 25
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1586,6 +1603,13 @@
     {
       "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-08-01-feat-project-retrospective-enhance-fingerprint-normalization.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-02-feat-project-retrospective-add-archive-memory-functionality-.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2131,6 +2155,11 @@
     },
     {
       "source": "wiki/journal/2026-08-01-feat-project-retrospective-enhance-fingerprint-normalization.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-08-02-feat-project-retrospective-add-archive-memory-functionality-.md",
       "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },
