@@ -77,9 +77,10 @@ Report the `mode` and the `warnings` array verbatim — they become the report's
 
 `Scope: inventory` skips steps 2 and 3, and step 4 writes only the Run, Summary, Inventory, and Gaps sections of `report.md`.
 
-**1b. Specs (optional).** When a `Specs` input is given (a Confluence space + labels, or an approvals-page URL), capture the project's **approved** functional specs per [`references/spec-capture.md`](references/spec-capture.md). Scripts stay offline, so the model fetches the pages via the Atlassian MCP into `<Output>/specs-raw.json`, then structures them:
+**1b. Specs (optional).** When a `Specs` input is given (a Confluence space + labels, or an approvals-page URL), capture the project's **approved** functional specs per [`references/spec-capture.md`](references/spec-capture.md). Scripts stay offline, so the model does the network fetch — from the **Atlassian REST API** (id-addressed and reliable; MCP is a fallback), pulling each page as ADF and rendering it deterministically with `scripts/adf-to-markdown.cjs` — then assembles `<Output>/specs-raw.json` and structures it:
 
 ```bash
+node <skill>/scripts/adf-to-markdown.cjs --adf-dir <adf-dir> --out-dir <bodies-dir>
 node <skill>/scripts/normalize-specs.cjs --raw <Output>/specs-raw.json [--archive <Data>/wiki/specs/<client-slug>/<project-slug>/source] --out <Output>/specs.json --pretty
 ```
 

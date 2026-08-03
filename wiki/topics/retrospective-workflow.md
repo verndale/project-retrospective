@@ -1,6 +1,6 @@
 ---
 aliases: [analyze path, retrospective run, component inventory, label resolution, evidence triage, promote watch reject]
-covers: [skills/project-retrospective/SKILL.md, skills/project-retrospective/scripts/inventory.cjs, skills/project-retrospective/scripts/resolve.cjs, skills/project-retrospective/scripts/validate-report.cjs]
+covers: [skills/project-retrospective/SKILL.md, skills/project-retrospective/scripts/inventory.cjs, skills/project-retrospective/scripts/resolve.cjs, skills/project-retrospective/scripts/validate-report.cjs, skills/project-retrospective/scripts/normalize-specs.cjs, skills/project-retrospective/scripts/adf-to-markdown.cjs, skills/project-retrospective/references/spec-capture.md]
 ---
 # Retrospective workflow — Design History
 
@@ -20,6 +20,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 - 2026-08-03 — feat(project-retrospective): Add specs input handling to project retrosp ([PR #38](https://github.com/verndale/project-retrospective/pull/38))
 - 2026-08-03 — fix(project-retrospective): Update memory archive logic to exclude index ([PR #36](https://github.com/verndale/project-retrospective/pull/36))
+- 2026-08-02 — Spec capture fetches from the Atlassian REST API (id-addressed — no truncated searches or wrong-page returns) as ADF rendered by the vendored `adf-to-markdown.cjs`, and `normalize-specs.cjs` reconciles the capture against a per-batch enumeration (`source.batches`) so completeness is a deterministic script warning, not a prose count. MCP stays a documented fallback ([journal](../journal/2026-08-02-spec-capture-rest-api.md))
 - 2026-08-02 — feat(project-retrospective): Add archive memory functionality and tests ([PR #33](https://github.com/verndale/project-retrospective/pull/33))
 - 2026-08-01 — feat(project-retrospective): Enhance fingerprint normalization and testi ([PR #30](https://github.com/verndale/project-retrospective/pull/30))
 - 2026-07-31 — feat(project-retrospective): Add new components for brand mark and cart  ([PR #27](https://github.com/verndale/project-retrospective/pull/27))

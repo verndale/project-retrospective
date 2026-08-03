@@ -1,30 +1,30 @@
 {
   "counts": {
-    "nodes": 83,
-    "edges": 194,
+    "nodes": 86,
+    "edges": 205,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
       "tooling-doc": 1,
-      "test": 9,
+      "test": 10,
       "authoring-spec": 1,
       "skill-readme": 1,
       "skill-reference": 15,
-      "skill-script": 7,
+      "skill-script": 8,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 15,
+      "wiki-journal": 16,
       "wiki-plan": 4,
       "wiki-topic": 5
     },
     "byEdgeType": {
-      "contracts": 21,
-      "covers": 16,
-      "links-to": 87,
+      "contracts": 22,
+      "covers": 19,
+      "links-to": 89,
       "plan": 4,
-      "requires": 30,
-      "tests": 9,
-      "topic": 27
+      "requires": 33,
+      "tests": 10,
+      "topic": 28
     }
   },
   "nodes": [
@@ -149,6 +149,18 @@
       "degree": 1
     },
     {
+      "id": "scripts/tests/adf-to-markdown.test.cjs",
+      "label": "adf-to-markdown.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 4958,
+      "degree": 3
+    },
+    {
       "id": "scripts/tests/archive-memory.test.cjs",
       "label": "archive-memory.test.cjs",
       "type": "test",
@@ -194,7 +206,7 @@
       "prs": [],
       "issues": [],
       "bytes": 1900,
-      "degree": 7
+      "degree": 8
     },
     {
       "id": "scripts/tests/inventory.test.cjs",
@@ -565,8 +577,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 6960,
-      "degree": 2
+      "bytes": 9124,
+      "degree": 3
     },
     {
       "id": "skills/project-retrospective/references/wiki-client-template.md",
@@ -603,6 +615,18 @@
       "issues": [],
       "bytes": 2027,
       "degree": 2
+    },
+    {
+      "id": "skills/project-retrospective/scripts/adf-to-markdown.cjs",
+      "label": "adf-to-markdown.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 9255,
+      "degree": 5
     },
     {
       "id": "skills/project-retrospective/scripts/archive-memory.cjs",
@@ -650,7 +674,7 @@
       "prs": [],
       "issues": [],
       "bytes": 12697,
-      "degree": 6
+      "degree": 7
     },
     {
       "id": "skills/project-retrospective/scripts/normalize-specs.cjs",
@@ -662,7 +686,7 @@
       "prs": [],
       "issues": [],
       "bytes": 19045,
-      "degree": 4
+      "degree": 5
     },
     {
       "id": "skills/project-retrospective/scripts/resolve.cjs",
@@ -697,8 +721,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 27400,
-      "degree": 40
+      "bytes": 27656,
+      "degree": 41
     },
     {
       "id": "wiki/INDEX.md",
@@ -709,8 +733,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 6734,
-      "degree": 25
+      "bytes": 7047,
+      "degree": 26
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -935,6 +959,20 @@
       "degree": 2
     },
     {
+      "id": "wiki/journal/2026-08-02-spec-capture-rest-api.md",
+      "label": "Spec capture: deterministic completeness + REST-API fetch",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 2681,
+      "degree": 3
+    },
+    {
       "id": "wiki/journal/2026-08-03-feat-project-retrospective-add-specs-input-handling-to-proje.md",
       "label": "feat(project-retrospective): Add specs input handling to project retrosp",
       "type": "wiki-journal",
@@ -1156,8 +1194,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 7091,
-      "degree": 27
+      "bytes": 7710,
+      "degree": 32
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1257,6 +1295,11 @@
     },
     {
       "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/scripts/adf-to-markdown.cjs",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/scripts/archive-memory.cjs",
       "type": "contracts"
     },
@@ -1337,7 +1380,22 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/references/spec-capture.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/scripts/adf-to-markdown.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "skills/project-retrospective/scripts/inventory.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/scripts/normalize-specs.cjs",
       "type": "covers"
     },
     {
@@ -1703,6 +1761,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-02-spec-capture-rest-api.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-08-03-feat-project-retrospective-add-specs-input-handling-to-proje.md",
       "type": "links-to",
       "count": 1,
@@ -1920,6 +1985,13 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/journal/2026-08-02-spec-capture-rest-api.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
       "type": "links-to",
       "count": 2,
@@ -2007,6 +2079,16 @@
     {
       "source": "scripts/graph/build-graph.cjs",
       "target": "scripts/wiki/lib/frontmatter.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/adf-to-markdown.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/adf-to-markdown.test.cjs",
+      "target": "skills/project-retrospective/scripts/adf-to-markdown.cjs",
       "type": "requires"
     },
     {
@@ -2115,6 +2197,11 @@
       "type": "requires"
     },
     {
+      "source": "skills/project-retrospective/scripts/adf-to-markdown.cjs",
+      "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
       "source": "skills/project-retrospective/scripts/archive-memory.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
@@ -2143,6 +2230,11 @@
       "source": "skills/project-retrospective/scripts/validate-report.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
+    },
+    {
+      "source": "scripts/tests/adf-to-markdown.test.cjs",
+      "target": "skills/project-retrospective/scripts/adf-to-markdown.cjs",
+      "type": "tests"
     },
     {
       "source": "scripts/tests/archive-memory.test.cjs",
@@ -2281,6 +2373,11 @@
     },
     {
       "source": "wiki/journal/2026-08-02-feat-project-retrospective-add-archive-memory-functionality-.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-08-02-spec-capture-rest-api.md",
       "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },
