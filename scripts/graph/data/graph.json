@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 87,
-    "edges": 208,
+    "nodes": 88,
+    "edges": 210,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 8,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 17,
+      "wiki-journal": 18,
       "wiki-plan": 4,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 22,
       "covers": 19,
-      "links-to": 91,
+      "links-to": 92,
       "plan": 4,
       "requires": 33,
       "tests": 10,
-      "topic": 29
+      "topic": 30
     }
   },
   "nodes": [
@@ -733,8 +733,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7365,
-      "degree": 27
+      "bytes": 7564,
+      "degree": 28
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -975,6 +975,22 @@
       "degree": 3
     },
     {
+      "id": "wiki/journal/2026-08-03-chore-project-retrospective-update-report-template-and-valid.md",
+      "label": "chore(project-retrospective): Update report template and validation test",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [
+        "45"
+      ],
+      "issues": [],
+      "bytes": 875,
+      "degree": 2
+    },
+    {
       "id": "wiki/journal/2026-08-03-feat-project-retrospective-add-specs-input-handling-to-proje.md",
       "label": "feat(project-retrospective): Add specs input handling to project retrosp",
       "type": "wiki-journal",
@@ -1197,6 +1213,7 @@
         "promote watch reject"
       ],
       "prs": [
+        "45",
         "43",
         "40",
         "38",
@@ -1214,8 +1231,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 8628,
-      "degree": 34
+      "bytes": 8788,
+      "degree": 35
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1782,6 +1799,13 @@
     {
       "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-08-02-spec-capture-rest-api.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-03-chore-project-retrospective-update-report-template-and-valid.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2412,6 +2436,11 @@
     },
     {
       "source": "wiki/journal/2026-08-02-spec-capture-rest-api.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-08-03-chore-project-retrospective-update-report-template-and-valid.md",
       "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },
