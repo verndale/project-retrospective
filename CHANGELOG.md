@@ -1,3 +1,37 @@
+# v1.11.0 — 2026-08-03
+
+## Summary (AI, bounded)
+- Added specs input handling to project retrospective feature (commit 829064f)
+- Synchronized journal, topics, and plans in the wiki documentation (commit 0dcd400)
+- Merged pull request for capturing confluence specs (commit f2009a2)
+- Merged wiki sync pull request for improvements (commit 00b64c7)
+
+## Highlights
+- commit: Merge pull request #38 from verndale/feat/35-capture-confluence-specs (f2009a2)
+- feat(project-retrospective): Add specs input handling to project retrospective (829064f)
+- commit: Merge pull request #37 from verndale/bot/wiki-sync/36 (00b64c7)
+- docs(wiki): sync journal, topics, and plans for #36 (0dcd400)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Add specs input handling to project retrospective (829064f)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #36 (0dcd400)
+
+### Other (unknown)
+- commit: Merge pull request #37 from verndale/bot/wiki-sync/36 (00b64c7)
+- commit: Merge pull request #38 from verndale/feat/35-capture-confluence-specs (f2009a2)
+
+## Full commit list
+- f2009a2 commit: Merge pull request #38 from verndale/feat/35-capture-confluence-specs
+- 829064f feat(project-retrospective): Add specs input handling to project retrospective
+- 00b64c7 commit: Merge pull request #37 from verndale/bot/wiki-sync/36
+- 0dcd400 docs(wiki): sync journal, topics, and plans for #36
+
 # v1.10.1 — 2026-08-03
 
 ## Summary (AI, bounded)
