@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 82,
-    "edges": 192,
+    "nodes": 83,
+    "edges": 194,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 7,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 14,
+      "wiki-journal": 15,
       "wiki-plan": 4,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 21,
       "covers": 16,
-      "links-to": 86,
+      "links-to": 87,
       "plan": 4,
       "requires": 30,
       "tests": 9,
-      "topic": 26
+      "topic": 27
     }
   },
   "nodes": [
@@ -709,8 +709,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 6535,
-      "degree": 24
+      "bytes": 6734,
+      "degree": 25
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -935,6 +935,22 @@
       "degree": 2
     },
     {
+      "id": "wiki/journal/2026-08-03-feat-project-retrospective-add-specs-input-handling-to-proje.md",
+      "label": "feat(project-retrospective): Add specs input handling to project retrosp",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [
+        "38"
+      ],
+      "issues": [],
+      "bytes": 1935,
+      "degree": 2
+    },
+    {
       "id": "wiki/journal/2026-08-03-fix-project-retrospective-update-memory-archive-logic-to-exc.md",
       "label": "fix(project-retrospective): Update memory archive logic to exclude index",
       "type": "wiki-journal",
@@ -1125,6 +1141,7 @@
         "promote watch reject"
       ],
       "prs": [
+        "38",
         "36",
         "33",
         "30",
@@ -1139,8 +1156,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 6931,
-      "degree": 26
+      "bytes": 7091,
+      "degree": 27
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1680,6 +1697,13 @@
     {
       "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-08-02-feat-project-retrospective-add-archive-memory-functionality-.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-03-feat-project-retrospective-add-specs-input-handling-to-proje.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2257,6 +2281,11 @@
     },
     {
       "source": "wiki/journal/2026-08-02-feat-project-retrospective-add-archive-memory-functionality-.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-08-03-feat-project-retrospective-add-specs-input-handling-to-proje.md",
       "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },
