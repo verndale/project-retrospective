@@ -18,6 +18,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-08-03 — fix(project-retrospective): Update memory archive logic to exclude index ([PR #36](https://github.com/verndale/project-retrospective/pull/36))
 - 2026-08-02 — feat(project-retrospective): Add archive memory functionality and tests ([PR #33](https://github.com/verndale/project-retrospective/pull/33))
 - 2026-08-01 — feat(project-retrospective): Enhance fingerprint normalization and testi ([PR #30](https://github.com/verndale/project-retrospective/pull/30))
 - 2026-07-31 — feat(project-retrospective): Add new components for brand mark and cart  ([PR #27](https://github.com/verndale/project-retrospective/pull/27))
