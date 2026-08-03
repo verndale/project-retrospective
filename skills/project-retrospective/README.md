@@ -155,6 +155,7 @@ PriorReports: /Users/you/Projects/ui-design-evidence/runs/site-a/2026-05-02/repo
 | `Client` | no | derived | Human-readable client name; sets the wiki client-slug (distinct from the project-slug — one client may own several projects). Resolution order in [`references/wiki-feed.md`](references/wiki-feed.md). |
 | `Scope` | no | `full` | `inventory` (what was built), `candidates` (adds resolution and verdicts), `full` (adds proposals and drafts). |
 | `PriorReports` | no | — | Comma-separated paths to earlier `report.md` files. A Watch candidate that recurs is elevated to Promote. |
+| `Specs` | no | — | Confluence source for the project's functional specs — a space key + label(s), or an approvals-page URL. Enables spec capture (Step 1b). |
 | `Action` | no | `analyze` | `analyze`, `promote`, or `capture`. |
 | `Proposal` | for promote | — | Path to the approved proposal file to apply. |
 | `Captures` | for capture | — | Path to a run's `captures/` directory. Applied as a set — one invocation covers every capture in it. |
@@ -174,6 +175,7 @@ Written to `Output`, never into this skill's repository:
 | `proposals/<slug>.md` | One per Promote candidate — a ready-to-apply catalog change with its evidence. |
 | `captures/<slug>.md` | Implementations mature enough to seed `ui-design-library`, with the de-clienting work each needs. Often drawn from components whose labels already resolve. |
 | `orchestration-drafts.md` | Pipeline-shaped findings as paste-ready drafts for ai-orchestration. |
+| `specs-raw.json` / `specs.json` | Only when a `Specs` input was given: the model's raw Confluence capture, and the structured, approved-only spec pack (`normalize-specs.cjs`) that feeds `resolve.cjs --specs`. |
 
 **The analyzed project is never written to.** Runs land in the private `ui-design-evidence` repo (`Data`) or, failing that, a user-level directory — never in the client repo. That keeps a retrospective from leaving artifacts a project team has to review, and keeps cross-project evidence out of any single client's tree.
 

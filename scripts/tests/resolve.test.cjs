@@ -149,3 +149,42 @@ test('omitting both --brain and --manifest exits 2', () => {
   assert.equal(result.status, 2);
   assert.match(result.stderr, /--brain or --manifest/);
 });
+
+// --specs: authored functional specs as a cross-referenced evidence source.
+const SPECS = path.join(tmp, 'specs.json');
+test.before(() => {
+  const r = run('normalize-specs.cjs', ['--raw', fixture('fake-specs', 'specs-raw.json'), '--out', SPECS]);
+  assert.equal(r.status, 0, `normalize-specs failed: ${r.stderr}`);
+});
+
+test('without --specs the output has no specs key (baseline is unchanged)', () => {
+  const res = resolve();
+  assert.ok(!('specs' in res), 'a spec-unaware run must not carry a specs block');
+  const ribbon = findUnresolved(res, 'logo-ribbon');
+  assert.ok(!ribbon.sources.includes('spec'));
+});
+
+test('--specs adds spec as a second evidence source on a matched novel label', () => {
+  const res = resolve(['--brain', BRAIN, '--specs', SPECS]);
+  const ribbon = findUnresolved(res, 'logo-ribbon');
+  assert.ok(ribbon.sources.includes('spec'), 'the approved Logo Ribbon spec should back the novel label');
+});
+
+test('--specs joins each spec to the as-built resolution and counts spec-only intent', () => {
+  const res = resolve(['--brain', BRAIN, '--specs', SPECS]);
+  assert.equal(res.specs.counts.total, 3);
+  assert.equal(res.specs.counts.specOnly, 1, 'Highlight Panel is specced but not built');
+  const modal = res.specs.entries.find((e) => e.label === 'Modal');
+  assert.equal(modal.matchedResolution, 'Modal');
+  assert.equal(res.specs.counts.matched, 2, 'Modal and Logo Ribbon are both built; Highlight Panel is not');
+  const highlight = res.specs.entries.find((e) => e.label === 'Highlight Panel');
+  assert.equal(highlight.specOnly, true);
+});
+
+test('a malformed --specs degrades to a warning, not a failure', () => {
+  const bad = path.join(tmp, 'not-a-spec-pack.json');
+  fs.writeFileSync(bad, JSON.stringify({ hello: 'world' }), 'utf8');
+  const res = resolve(['--brain', BRAIN, '--specs', bad]);
+  assert.ok(!('specs' in res), 'a broken pack yields no specs block');
+  assert.ok(res.warnings.map((w) => w.code).includes('specs-unreadable'));
+});

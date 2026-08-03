@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-01-01T00:00:00.000Z",
+  "source": { "raw": "/tmp/fake-output/specs-raw.json" },
+  "mode": "approved-only",
+  "statusGate": "APPROVED",
+  "specs": [
+    {
+      "pageId": "1",
+      "title": "Acme Rebuild | Modal",
+      "url": "https://example.test/wiki/1",
+      "label": "Modal",
+      "normalized": "modal",
+      "documentStatus": "APPROVED",
+      "baseType": "_component",
+      "overview": "A modal dialog.",
+      "fields": [{ "name": "Heading", "type": "string", "required": true, "notes": "h2" }],
+      "variants": ["Small", "Large"],
+      "a11y": ["role=\"dialog\" with focus trapped while open"],
+      "composition": { "parents": [], "children": ["ModalItem"] },
+      "dynamicData": [],
+      "novelLabels": [],
+      "containsPII": false,
+      "batch": "1"
+    }
+  ],
+  "skipped": [],
+  "counts": { "specs": 1, "skipped": 0, "fields": 1, "novel": 0, "archived": 0 },
+  "warnings": []
+}

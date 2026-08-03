@@ -42,11 +42,12 @@ const {
 } = require('./lib/util.cjs');
 
 const USAGE = [
-  'Usage: node resolve.cjs --inventory <file> (--brain <dir> | --manifest <file>) [--out <file>] [--pretty]',
+  'Usage: node resolve.cjs --inventory <file> (--brain <dir> | --manifest <file>) [--specs <file>] [--out <file>] [--pretty]',
   '',
   '  --inventory  inventory.json produced by inventory.cjs (required)',
   '  --brain      Path to a ui-design-brain checkout (resolves the manifest inside it)',
   '  --manifest   Path to patterns-manifest.json directly (alternative to --brain)',
+  '  --specs      specs.json produced by normalize-specs.cjs (optional authored-spec evidence)',
   '  --out        Write JSON here instead of stdout',
   '  --pretty     Indent the JSON output',
 ];
@@ -175,9 +176,71 @@ function resolveLabel(label, lookups) {
   return null;
 }
 
+/**
+ * Cross-reference an approved-spec pack against the inventory resolution.
+ *
+ * A ba-spec-writer spec is authored-intent evidence: an approved spec is a second,
+ * independent source for a label the as-built inventory also shows. This appends
+ * `spec` to a matched novel label's sources, and returns a per-spec join — the
+ * spec's own brain resolution beside the as-built resolution — so triage can act on
+ * corroboration, spec-only intent, and the novel elements the spec flagged. It never
+ * changes the resolved/unresolved shape beyond that one appended source.
+ */
+function crossReferenceSpecs(pack, { resolved, unresolved, lookups }) {
+  const approved = (Array.isArray(pack.specs) ? pack.specs : []).filter(
+    (s) => s && String(s.documentStatus || '').toUpperCase() === 'APPROVED',
+  );
+  const byNorm = new Set(approved.map((s) => s.normalized || normalizeLabel(s.label || '')).filter(Boolean));
+
+  // A novel label with an approved spec behind it gains `spec` as a second source.
+  for (const u of unresolved) {
+    if (byNorm.has(u.normalized) && !u.sources.includes('spec')) {
+      u.sources = [...u.sources, 'spec'].sort();
+    }
+  }
+
+  const entries = approved.map((s) => {
+    const norm = s.normalized || normalizeLabel(s.label || '');
+    const own = resolveLabel(s.label || '', lookups);
+    const invResolved = resolved.find((r) => normalizeLabel(r.label) === norm) || null;
+    const invUnresolved = unresolved.find((u) => u.normalized === norm) || null;
+    const matchedResolution = invResolved
+      ? invResolved.ambiguous
+        ? 'ambiguous'
+        : invResolved.canonical
+      : invUnresolved
+        ? 'novel'
+        : null;
+    return {
+      label: s.label,
+      normalized: norm,
+      documentStatus: s.documentStatus || null,
+      novelLabels: Array.isArray(s.novelLabels) ? s.novelLabels : [],
+      resolution: own ? { canonical: own.canonical, slug: own.slug, via: own.via, ambiguous: own.ambiguous } : null,
+      inventoryMatch: invResolved
+        ? invResolved.component
+        : invUnresolved
+          ? invUnresolved.locations[0]?.component ?? null
+          : null,
+      matchedResolution,
+      specOnly: !invResolved && !invUnresolved,
+    };
+  });
+
+  return {
+    entries,
+    counts: {
+      total: entries.length,
+      matched: entries.filter((e) => !e.specOnly).length,
+      specOnly: entries.filter((e) => e.specOnly).length,
+      novel: entries.filter((e) => e.resolution === null).length,
+    },
+  };
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2), {
-    keys: ['inventory', 'brain', 'manifest', 'out'],
+    keys: ['inventory', 'brain', 'manifest', 'specs', 'out'],
     flags: ['pretty'],
   });
   const { values } = args;
@@ -287,6 +350,22 @@ function main() {
 
   const ambiguous = resolved.filter((r) => r.ambiguous).length;
 
+  // Optional authored-spec evidence. Absent --specs leaves the output byte-identical
+  // to a spec-unaware run; a malformed pack degrades to a warning, never a failure.
+  let specsBlock = null;
+  if (values.specs) {
+    const specsPath = path.resolve(values.specs);
+    const specsRead = readJsonSafe(specsPath);
+    if (!specsRead.ok) {
+      warnings.add('specs-unreadable', `--specs could not be parsed: ${specsRead.error} — spec evidence skipped.`);
+    } else if (!specsRead.value || specsRead.value.schemaVersion !== SUPPORTED_SCHEMA || !Array.isArray(specsRead.value.specs)) {
+      warnings.add('specs-unreadable', '--specs is not a schemaVersion 1 spec pack — spec evidence skipped.');
+    } else {
+      const crossRef = crossReferenceSpecs(specsRead.value, { resolved, unresolved, lookups });
+      specsBlock = { path: specsPath, entries: crossRef.entries, counts: crossRef.counts };
+    }
+  }
+
   writeOut(
     {
       schemaVersion: 1,
@@ -303,6 +382,7 @@ function main() {
         unresolved: unresolved.reduce((sum, u) => sum + u.occurrences, 0),
         unresolvedLabels: unresolved.length,
       },
+      ...(specsBlock ? { specs: specsBlock } : {}),
       warnings: warnings.toJSON(),
     },
     values.out,

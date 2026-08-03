@@ -1,16 +1,16 @@
 {
   "counts": {
-    "nodes": 79,
-    "edges": 185,
+    "nodes": 82,
+    "edges": 192,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
       "tooling-doc": 1,
-      "test": 8,
+      "test": 9,
       "authoring-spec": 1,
       "skill-readme": 1,
-      "skill-reference": 14,
-      "skill-script": 6,
+      "skill-reference": 15,
+      "skill-script": 7,
       "skill": 1,
       "wiki-index": 3,
       "wiki-journal": 14,
@@ -18,12 +18,12 @@
       "wiki-topic": 5
     },
     "byEdgeType": {
-      "contracts": 19,
+      "contracts": 21,
       "covers": 16,
-      "links-to": 85,
+      "links-to": 86,
       "plan": 4,
-      "requires": 28,
-      "tests": 7,
+      "requires": 30,
+      "tests": 9,
       "topic": 26
     }
   },
@@ -73,7 +73,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 11238,
+      "bytes": 11487,
       "degree": 8
     },
     {
@@ -194,7 +194,7 @@
       "prs": [],
       "issues": [],
       "bytes": 1900,
-      "degree": 6
+      "degree": 7
     },
     {
       "id": "scripts/tests/inventory.test.cjs",
@@ -209,6 +209,18 @@
       "degree": 2
     },
     {
+      "id": "scripts/tests/normalize-specs.test.cjs",
+      "label": "normalize-specs.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 7893,
+      "degree": 2
+    },
+    {
       "id": "scripts/tests/resolve.test.cjs",
       "label": "resolve.test.cjs",
       "type": "test",
@@ -217,8 +229,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 5946,
-      "degree": 3
+      "bytes": 7929,
+      "degree": 4
     },
     {
       "id": "scripts/tests/skill-conformance.test.cjs",
@@ -241,7 +253,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 28448,
+      "bytes": 29784,
       "degree": 2
     },
     {
@@ -409,7 +421,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 20973,
+      "bytes": 21350,
       "degree": 4
     },
     {
@@ -457,7 +469,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 8569,
+      "bytes": 9515,
       "degree": 2
     },
     {
@@ -545,6 +557,18 @@
       "degree": 2
     },
     {
+      "id": "skills/project-retrospective/references/spec-capture.md",
+      "label": "Spec capture",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 4523,
+      "degree": 2
+    },
+    {
       "id": "skills/project-retrospective/references/wiki-client-template.md",
       "label": "wiki client page template",
       "type": "skill-reference",
@@ -553,7 +577,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 2063,
+      "bytes": 2251,
       "degree": 2
     },
     {
@@ -565,7 +589,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7600,
+      "bytes": 9026,
       "degree": 3
     },
     {
@@ -577,7 +601,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 1713,
+      "bytes": 2027,
       "degree": 2
     },
     {
@@ -626,7 +650,19 @@
       "prs": [],
       "issues": [],
       "bytes": 12697,
-      "degree": 5
+      "degree": 6
+    },
+    {
+      "id": "skills/project-retrospective/scripts/normalize-specs.cjs",
+      "label": "normalize-specs.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 15683,
+      "degree": 4
     },
     {
       "id": "skills/project-retrospective/scripts/resolve.cjs",
@@ -637,7 +673,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10904,
+      "bytes": 14474,
       "degree": 4
     },
     {
@@ -649,7 +685,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 31434,
+      "bytes": 33964,
       "degree": 4
     },
     {
@@ -661,8 +697,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 24921,
-      "degree": 37
+      "bytes": 27400,
+      "degree": 40
     },
     {
       "id": "wiki/INDEX.md",
@@ -1184,6 +1220,11 @@
     },
     {
       "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/spec-capture.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/wiki-client-template.md",
       "type": "contracts"
     },
@@ -1210,6 +1251,11 @@
     {
       "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/scripts/inventory.cjs",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/scripts/normalize-specs.cjs",
       "type": "contracts"
     },
     {
@@ -1515,6 +1561,13 @@
     {
       "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/report-template.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/spec-capture.md",
       "type": "links-to",
       "count": 2,
       "anchors": []
@@ -1953,6 +2006,11 @@
       "type": "requires"
     },
     {
+      "source": "scripts/tests/normalize-specs.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
       "source": "scripts/tests/resolve.test.cjs",
       "target": "scripts/tests/helpers.cjs",
       "type": "requires"
@@ -2048,6 +2106,11 @@
       "type": "requires"
     },
     {
+      "source": "skills/project-retrospective/scripts/normalize-specs.cjs",
+      "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
       "source": "skills/project-retrospective/scripts/resolve.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
@@ -2073,8 +2136,18 @@
       "type": "tests"
     },
     {
+      "source": "scripts/tests/normalize-specs.test.cjs",
+      "target": "skills/project-retrospective/scripts/normalize-specs.cjs",
+      "type": "tests"
+    },
+    {
       "source": "scripts/tests/resolve.test.cjs",
       "target": "skills/project-retrospective/scripts/inventory.cjs",
+      "type": "tests"
+    },
+    {
+      "source": "scripts/tests/resolve.test.cjs",
+      "target": "skills/project-retrospective/scripts/normalize-specs.cjs",
       "type": "tests"
     },
     {

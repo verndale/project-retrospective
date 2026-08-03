@@ -8,6 +8,7 @@ How an `analyze` run feeds the client/project knowledge wiki in the `ui-design-e
 - Identity resolution
 - meta.json
 - Project-memory archive
+- Specs archive
 - Step 6 procedure
 - Guardrails
 
@@ -61,11 +62,17 @@ node <skill>/scripts/archive-memory.cjs --project <Project> \
 
 **Fidelity carve-out.** The `source/` copy is verbatim and `index.md` is a fuller paraphrase — both permitted **only because they live in the private, client-scoped evidence repo**, never in this public repo or the client-agnostic downstream repos. They carry engineering knowledge only; end-customer PII is out of scope by the nature of `artifacts/memory/`. This does not relax the `## What we know` rule — those bullets stay a summary.
 
+## Specs archive
+
+When the run captured Confluence functional specs (a `Specs` input — Step 1b), preserve them beside the memory archive. `normalize-specs.cjs --archive <Data>/wiki/specs/<client-slug>/<project-slug>/source` byte-copies each **approved** spec's near-raw markdown there; the structured `specs.json` stays in `Output`. Under the home fallback (no `Data`), omit `--archive`: the pack is still written to `Output`, nothing is copied.
+
+Then author `index.md` beside `source/` — a short digest: the specced components, their canonical resolution, any specced-but-not-built (`specOnly`) gaps against the as-built inventory, and the novel labels worth watching. It reads as knowledge, not a file list, and is linked from the client page's `## Runs` line. Same fidelity carve-out as memory: the near-raw copy lives **only** in the private evidence repo, carries engineering/authoring knowledge, and never client copy or PII beyond what an approved spec already states.
+
 ## Step 6 procedure
 
 1. Resolve client identity (above).
-2. Upsert `<Data>/wiki/clients/<client-slug>.md` from the client template: create it if absent; otherwise add the project-slug to `projects[]`, the platform to `platforms[]`, any new alias, and a `## Runs` line. Keep these sets additive. Distil the analyzed project's `artifacts/memory/*.md` — architecture and platform decisions, known issues and caveats, naming and coding conventions — into durable `## What we know` bullets: summarize in your own words, attribute to the project memory, and carry only what a sibling project would benefit from. Link the per-project memory archive (`../memory/<client-slug>/<project-slug>/`) from the client page, and author its `index.md` digest (see Project-memory archive).
-3. Append `<Data>/wiki/journal/<date>-<project-slug>.md` from the journal template — never overwrite. Outcomes are grounded in this run's `resolution.json` counts and the report's `## Candidates`/`## Captures` verdicts.
+2. Upsert `<Data>/wiki/clients/<client-slug>.md` from the client template: create it if absent; otherwise add the project-slug to `projects[]`, the platform to `platforms[]`, any new alias, and a `## Runs` line. Keep these sets additive. Distil the analyzed project's `artifacts/memory/*.md` — architecture and platform decisions, known issues and caveats, naming and coding conventions — into durable `## What we know` bullets: summarize in your own words, attribute to the project memory, and carry only what a sibling project would benefit from. Link the per-project memory archive (`../memory/<client-slug>/<project-slug>/`) from the client page, and author its `index.md` digest (see Project-memory archive). When the run captured specs, add the specs archive link (`../specs/<client-slug>/<project-slug>/`) to the same `## Runs` line and fold any durable, client-neutral component-contract facts (a recurring a11y pattern, a field-model convention) into `## What we know`.
+3. Append `<Data>/wiki/journal/<date>-<project-slug>.md` from the journal template — never overwrite. Outcomes are grounded in this run's `resolution.json` counts and the report's `## Candidates`/`## Captures` verdicts; the `Specs` outcome line and the Specs archive link trace to `specs.json` and `resolution.json`'s `specs` block, and are omitted when the run had no `Specs` input.
 4. Add exactly one line per new file to `<Data>/wiki/INDEX.md` (Journal always; Clients only when the client page is new). Create a minimal INDEX if it does not exist.
 5. Stop and hand back the wiki paths touched alongside the run paths. Do not commit.
 

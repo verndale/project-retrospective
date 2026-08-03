@@ -295,6 +295,52 @@ function checkMemoryArchive(dir, result) {
   return manifest;
 }
 
+/**
+ * If this run captured Confluence functional specs, is the spec pack well-formed?
+ *
+ * specs.json is an OPTIONAL input (normalize-specs.cjs): a run with no Specs: input
+ * has none, and that is not a failure — unlike memory, which every run must record.
+ * When present it must be a schemaVersion 1 pack whose counts reconcile, and —
+ * because the skill captures approved specs only — every included spec must carry
+ * Document Status APPROVED. A draft that slipped in is authored-but-unsigned intent
+ * masquerading as evidence, the exact thing the approved-only gate exists to keep out.
+ */
+function checkSpecPack(dir, result) {
+  const file = path.join(dir, 'specs.json');
+  if (!isFile(file)) return null; // optional input — absence is not a failure
+  const read = readJsonSafe(file);
+  if (!read.ok) {
+    result.fail('specs-parses', `specs.json could not be parsed: ${read.error}`);
+    return null;
+  }
+  const pack = read.value;
+  if (!pack || typeof pack !== 'object' || Array.isArray(pack)) {
+    result.fail('specs-parses', 'specs.json is not a JSON object');
+    return null;
+  }
+  if (pack.schemaVersion !== 1) result.fail('specs-schema', `specs.json schemaVersion is ${pack.schemaVersion}, expected 1`);
+  const specs = Array.isArray(pack.specs) ? pack.specs : null;
+  if (!specs) result.fail('specs-schema', 'specs.json has no specs array');
+  if (!Array.isArray(pack.warnings)) result.fail('specs-schema', 'specs.json has no warnings array');
+  if (!pack.counts || typeof pack.counts !== 'object') result.fail('specs-schema', 'specs.json has no counts object');
+
+  if (specs) {
+    if (pack.counts && pack.counts.specs !== specs.length) {
+      result.fail('specs-counts', `specs.json counts.specs (${pack.counts?.specs}) does not match specs.length (${specs.length})`);
+    }
+    // The skill is approved-only; the validator enforces that contract regardless of
+    // the pack's own statusGate.
+    const offenders = specs.filter((s) => String(s && s.documentStatus).toUpperCase() !== 'APPROVED');
+    if (offenders.length) {
+      result.fail(
+        'specs-approved',
+        `specs.json includes ${offenders.length} spec(s) whose Document Status is not APPROVED (e.g. "${offenders[0]?.label || '?'}") — the pack must contain only approved specs`,
+      );
+    }
+  }
+  return pack;
+}
+
 function checkReport(dir, scope, noBrain, result) {
   const file = path.join(dir, 'report.md');
   const text = isFile(file) ? readTextSafe(file) : null;
@@ -669,6 +715,9 @@ function main() {
   // Every analyze run that reaches Step 6 (full and candidates) must preserve
   // project memory or record why it could not; an inventory-only run has no Step 6.
   if (scope !== 'inventory') checkMemoryArchive(dir, result);
+  // Confluence functional specs are an optional evidence input; when a run captured
+  // them, the spec pack must be well-formed and approved-only.
+  if (scope !== 'inventory') checkSpecPack(dir, result);
 
   const { promoted, captured, capturesSectionPresent } = checkReport(dir, scope, noBrain, result);
 

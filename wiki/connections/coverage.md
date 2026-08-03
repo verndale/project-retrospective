@@ -9,7 +9,8 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [archive-memory.test.cjs](../../scripts/tests/archive-memory.test.cjs) → [archive-memory.cjs](../../skills/project-retrospective/scripts/archive-memory.cjs)
 - [capture-preflight.test.cjs](../../scripts/tests/capture-preflight.test.cjs) → [capture-preflight.cjs](../../skills/project-retrospective/scripts/capture-preflight.cjs)
 - [inventory.test.cjs](../../scripts/tests/inventory.test.cjs) → [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs)
-- [resolve.test.cjs](../../scripts/tests/resolve.test.cjs) → [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs), [resolve.cjs](../../skills/project-retrospective/scripts/resolve.cjs)
+- [normalize-specs.test.cjs](../../scripts/tests/normalize-specs.test.cjs) → [normalize-specs.cjs](../../skills/project-retrospective/scripts/normalize-specs.cjs)
+- [resolve.test.cjs](../../scripts/tests/resolve.test.cjs) → [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs), [normalize-specs.cjs](../../skills/project-retrospective/scripts/normalize-specs.cjs), [resolve.cjs](../../skills/project-retrospective/scripts/resolve.cjs)
 - [skill-conformance.test.cjs](../../scripts/tests/skill-conformance.test.cjs) → [project-retrospective](../../skills/project-retrospective/SKILL.md)
 - [validate-report.test.cjs](../../scripts/tests/validate-report.test.cjs) → [validate-report.cjs](../../skills/project-retrospective/scripts/validate-report.cjs)
 
@@ -21,6 +22,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [build-graph.test.cjs](../../scripts/tests/build-graph.test.cjs) → [graph/build-graph.cjs](../../scripts/graph/build-graph.cjs)
 - [capture-preflight.test.cjs](../../scripts/tests/capture-preflight.test.cjs) → [helpers.cjs](../../scripts/tests/helpers.cjs)
 - [inventory.test.cjs](../../scripts/tests/inventory.test.cjs) → [helpers.cjs](../../scripts/tests/helpers.cjs)
+- [normalize-specs.test.cjs](../../scripts/tests/normalize-specs.test.cjs) → [helpers.cjs](../../scripts/tests/helpers.cjs)
 - [resolve.test.cjs](../../scripts/tests/resolve.test.cjs) → [helpers.cjs](../../scripts/tests/helpers.cjs)
 - [skill-conformance.test.cjs](../../scripts/tests/skill-conformance.test.cjs) → [graph/build-graph.cjs](../../scripts/graph/build-graph.cjs), [helpers.cjs](../../scripts/tests/helpers.cjs)
 - [validate-report.test.cjs](../../scripts/tests/validate-report.test.cjs) → [helpers.cjs](../../scripts/tests/helpers.cjs)
@@ -33,6 +35,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [archive-memory.cjs](../../skills/project-retrospective/scripts/archive-memory.cjs) → [util.cjs](../../skills/project-retrospective/scripts/lib/util.cjs)
 - [capture-preflight.cjs](../../skills/project-retrospective/scripts/capture-preflight.cjs) → [util.cjs](../../skills/project-retrospective/scripts/lib/util.cjs)
 - [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs) → [util.cjs](../../skills/project-retrospective/scripts/lib/util.cjs)
+- [normalize-specs.cjs](../../skills/project-retrospective/scripts/normalize-specs.cjs) → [util.cjs](../../skills/project-retrospective/scripts/lib/util.cjs)
 - [resolve.cjs](../../skills/project-retrospective/scripts/resolve.cjs) → [util.cjs](../../skills/project-retrospective/scripts/lib/util.cjs)
 - [validate-report.cjs](../../skills/project-retrospective/scripts/validate-report.cjs) → [util.cjs](../../skills/project-retrospective/scripts/lib/util.cjs)
 
