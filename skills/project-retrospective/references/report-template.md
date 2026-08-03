@@ -99,7 +99,7 @@ Implementations the next project should start from rather than rebuild. Drafted 
 
 ## Learnings
 
-Pipeline-shaped findings that belong in ai-orchestration rather than the catalog. Drafted in `orchestration-drafts.md`.
+Pipeline-shaped findings that belong in ai-orchestration rather than the catalog. Drafted in `orchestration-drafts.md`. Optionally group them under `### Gotchas` (a pitfall to avoid) and `### Tips` (a practice to adopt) — see Rules.
 
 - **<Short title>** — <one line>. Suggested destination: `<path in ai-orchestration>`.
 
@@ -130,5 +130,6 @@ What this run could not see. Script warnings verbatim, then anything the mode it
 - **Every `### <Canonical Name>` under `## Captures` needs a matching file** at `captures/<kebab-canonical>.md`, and every file needs an entry. Validation fails in both directions — a capture the report does not list is how a component reaches the library with no evidence behind it.
 - **Capture entries carry no `Verdict:` line.** There is no triage axis: the entry's presence is the assertion. *Verdict* stays reserved for Candidates.
 - **`## Captures` is required at `full` scope even when nothing qualified.** Keep the heading and say so in a sentence, with no `### ` entries under it.
+- **`### Gotchas` / `### Tips` under `## Learnings` are optional.** Use them to separate a pitfall the next project should avoid from a practice it should adopt from the start; a finding that is neither, or both, stays a bare bullet under `## Learnings`. Never force the split. These H3s carry no `Verdict:` line and need no proposal or capture file — the downstream start pack surfaces them verbatim.
 - **No numeric scores** — evidence and a verdict, nothing in between.
 - Write for a reviewer who was not on the project: name paths, not impressions.
