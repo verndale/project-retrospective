@@ -1,3 +1,37 @@
+# v1.10.1 — 2026-08-03
+
+## Summary (AI, bounded)
+- Updated memory archive logic to exclude the index file in the project retrospective feature (commit d38352b).
+- Synced journal, topics, and plans documentation in the wiki (commit 07fee73).
+- Merged feature branch for memory archive improvements (commit b0aa9ac).
+- Integrated automated wiki synchronization updates (commit aff8d91).
+
+## Highlights
+- commit: Merge pull request #36 from verndale/feat/memory-archive (b0aa9ac)
+- fix(project-retrospective): Update memory archive logic to exclude index file (d38352b)
+- commit: Merge pull request #34 from verndale/bot/wiki-sync/33 (aff8d91)
+- docs(wiki): sync journal, topics, and plans for #33 (07fee73)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Fixes
+- fix(project-retrospective): Update memory archive logic to exclude index file (d38352b)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #33 (07fee73)
+
+### Other (unknown)
+- commit: Merge pull request #34 from verndale/bot/wiki-sync/33 (aff8d91)
+- commit: Merge pull request #36 from verndale/feat/memory-archive (b0aa9ac)
+
+## Full commit list
+- b0aa9ac commit: Merge pull request #36 from verndale/feat/memory-archive
+- d38352b fix(project-retrospective): Update memory archive logic to exclude index file
+- aff8d91 commit: Merge pull request #34 from verndale/bot/wiki-sync/33
+- 07fee73 docs(wiki): sync journal, topics, and plans for #33
+
 # v1.10.0 — 2026-08-02
 
 ## Summary (AI, bounded)
