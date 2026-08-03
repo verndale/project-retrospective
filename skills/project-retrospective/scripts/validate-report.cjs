@@ -14,7 +14,11 @@
  *
  * Usage:
  *   node validate-report.cjs --output <dir> [--scope full|inventory|candidates]
- *                            [--no-brain] [--manifest <file>] [--json]
+ *                            [--no-brain] [--manifest <file>] [--data <dir>] [--json]
+ *
+ * With --data (a ui-design-evidence checkout), it also flags a capture or proposal this
+ * run drafts that an earlier run already made — the prior-art dedup the analyze draft
+ * step otherwise lacks. Advisory: duplicates warn, they do not fail the run.
  *
  * Exit codes:
  *   0  pass (warnings are allowed)
@@ -42,12 +46,13 @@ const {
 } = require('./lib/util.cjs');
 
 const USAGE = [
-  'Usage: node validate-report.cjs --output <dir> [--scope full|inventory|candidates] [--no-brain] [--manifest <file>] [--json]',
+  'Usage: node validate-report.cjs --output <dir> [--scope full|inventory|candidates] [--no-brain] [--manifest <file>] [--data <dir>] [--json]',
   '',
   '  --output    Run output directory to validate (required)',
   '  --scope     Scope the run used: full (default), inventory, or candidates',
   '  --no-brain  The run had no Brain path, so resolution.json is not expected',
   '  --manifest  patterns-manifest.json to check new-pattern proposals against',
+  '  --data      ui-design-evidence checkout; warn on captures/proposals a prior run already made',
   '  --json      Emit a JSON result instead of PASS/FAIL lines',
 ];
 
@@ -675,9 +680,91 @@ function checkOrchestrationDrafts(dir, result) {
   }
 }
 
+/**
+ * The canonical slug a proposal or capture targets — the dedup key. new-pattern names
+ * it in the manifest entry; capture, new-alias, and guidance-edit name it on the
+ * Canonical/Target line as an inline-code slug.
+ */
+function canonicalSlugOf(text) {
+  if (!text) return null;
+  const manifest = text.match(/"slug"\s*:\s*"([a-z0-9][a-z0-9-]*)"/);
+  if (manifest) return manifest[1];
+  const line = text.match(/(?:Canonical|Target)[^\n]*?\(`([a-z0-9][a-z0-9-]*)`/i);
+  if (line) return line[1];
+  const bold = text.match(/\*\*[^*\n]+\*\*\s*\(`([a-z0-9][a-z0-9-]*)`\)/);
+  if (bold) return bold[1];
+  return null;
+}
+
+/**
+ * When --data (a ui-design-evidence checkout) is given, flag a run whose capture or
+ * proposal duplicates one an EARLIER run already made — the guard the Breadcrumbs
+ * re-capture incident showed the analyze draft step lacks. Advisory (warnings, not
+ * failures) and deterministic: a captured canonical already sits in the library, and a
+ * canonical proposed by a prior run should be promoted rather than proposed a second
+ * time. It keys on prior ARTIFACTS, so cross-run recurrence that was never captured or
+ * promoted stays legitimate evidence rather than a false duplicate.
+ */
+function checkPriorArt(dir, dataRoot, result) {
+  const runsDir = path.join(dataRoot, 'runs');
+  if (!isDir(runsDir)) {
+    result.warn('prior-art-data', `--data ${dataRoot} has no runs/ directory; prior-art dedup skipped`);
+    return;
+  }
+  const currentRun = path.relative(runsDir, dir).split(path.sep).slice(0, 2).join('/');
+
+  const priorCaptures = new Map();
+  const priorProposals = new Map();
+  for (const proj of listEntries(runsDir).filter((e) => e.dir)) {
+    for (const d of listEntries(path.join(runsDir, proj.name)).filter((e) => e.dir)) {
+      const run = `${proj.name}/${d.name}`;
+      if (run === currentRun) continue;
+      const capDir = path.join(runsDir, proj.name, d.name, 'captures');
+      if (isDir(capDir)) {
+        for (const f of listEntries(capDir).filter((e) => !e.dir && e.name.endsWith('.md'))) {
+          const slug = path.basename(f.name, '.md'); // capture files are named by canonical
+          if (!priorCaptures.has(slug)) priorCaptures.set(slug, run);
+        }
+      }
+      const propDir = path.join(runsDir, proj.name, d.name, 'proposals');
+      if (isDir(propDir)) {
+        for (const f of listEntries(propDir).filter((e) => !e.dir && e.name.endsWith('.md'))) {
+          const slug = canonicalSlugOf(readTextSafe(f.path)) || path.basename(f.name, '.md');
+          if (!priorProposals.has(slug)) priorProposals.set(slug, run);
+        }
+      }
+    }
+  }
+
+  const capDir = path.join(dir, 'captures');
+  if (isDir(capDir)) {
+    for (const f of listEntries(capDir).filter((e) => !e.dir && e.name.endsWith('.md'))) {
+      const slug = path.basename(f.name, '.md');
+      if (priorCaptures.has(slug)) {
+        result.warn(
+          'capture-duplicate',
+          `captures/${f.name} duplicates a capture already made in ${priorCaptures.get(slug)} — the library already holds "${slug}"; drop it unless this run's implementation is materially better`,
+        );
+      }
+    }
+  }
+  const propDir = path.join(dir, 'proposals');
+  if (isDir(propDir)) {
+    for (const f of listEntries(propDir).filter((e) => !e.dir && e.name.endsWith('.md'))) {
+      const slug = canonicalSlugOf(readTextSafe(f.path)) || path.basename(f.name, '.md');
+      if (priorProposals.has(slug)) {
+        result.warn(
+          'proposal-duplicate',
+          `proposals/${f.name} proposes "${slug}", already proposed in ${priorProposals.get(slug)} — promote the existing proposal rather than filing a second (cross-run recurrence still elevates it via PriorReports)`,
+        );
+      }
+    }
+  }
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2), {
-    keys: ['output', 'scope', 'manifest'],
+    keys: ['output', 'scope', 'manifest', 'data'],
     flags: ['no-brain', 'json'],
   });
   const { values } = args;
@@ -725,6 +812,13 @@ function main() {
     checkProposals(dir, promoted, manifestEntries, result);
     checkCaptures(dir, captured, capturesSectionPresent, result);
     checkOrchestrationDrafts(dir, result);
+  }
+
+  // Prior-art dedup: when a ui-design-evidence checkout is given, flag a capture or
+  // proposal this run drafts that an earlier run already made. Runs on scopes that
+  // draft proposals/captures (full, candidates); harmless when neither exists.
+  if (values.data && scope !== 'inventory') {
+    checkPriorArt(dir, path.resolve(values.data), result);
   }
 
   const pass = result.failures.length === 0;

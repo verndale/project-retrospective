@@ -47,11 +47,12 @@ Fetch each enumerated page as ADF, straight to disk, then render the directory t
 # one per page id — id-addressed, so the right page comes back every time
 curl -s -u "$ATLASSIAN_USER_EMAIL:$ATLASSIAN_API_TOKEN" \
   "https://<site>.atlassian.net/wiki/api/v2/pages/<id>?body-format=atlas_doc_format" > <adf-dir>/<id>.json
-# render all fetched pages to markdown deterministically
-node <skill>/scripts/adf-to-markdown.cjs --adf-dir <adf-dir> --out-dir <bodies-dir>
+# render all fetched pages to markdown deterministically (pass --base-url so the
+# wireframe/design-flat images embedded in a spec become absolute, clickable links)
+node <skill>/scripts/adf-to-markdown.cjs --adf-dir <adf-dir> --out-dir <bodies-dir> --base-url https://<site>.atlassian.net
 ```
 
-Because the REST API is addressed by id, it never returns a different page or a truncated body — no id-verification loop is needed (that guard is only for the MCP fallback). `adf-to-markdown.cjs` renders exactly the structures `normalize-specs.cjs` parses: the **Page Properties table** (so `| Document Status | … |` survives — it is the gate), Overview (+ `baseType`), Used By, Component Elements (ba-spec-writer's numbered bold leads are promoted to `### N. Name` element headings, carrying the ARIA/keyboard bullets), Style Options (**bold** variants), and the Editable Fields / Dynamic Data tables. Curl writes the ADF straight to a file, so the page bodies never pass through your context.
+Because the REST API is addressed by id, it never returns a different page or a truncated body — no id-verification loop is needed (that guard is only for the MCP fallback). `adf-to-markdown.cjs` renders exactly the structures `normalize-specs.cjs` parses: the **Page Properties table** (so `| Document Status | … |` survives — it is the gate), Overview (+ `baseType`), Used By, Component Elements (ba-spec-writer's numbered bold leads are promoted to `### N. Name` element headings, carrying the ARIA/keyboard bullets), Style Options (**bold** variants), and the Editable Fields / Dynamic Data tables. Embedded **images** — the Wireframes / Design Flats a spec carries when it has no Figma link — render as markdown **links** (`[alt](…/wiki/download/attachments/<pageId>/<file>)`), not image embeds: the figures live in the private Confluence, which a git viewer cannot authenticate to, and the binaries are not mirrored into the repo — a link keeps the reference and resolves for a logged-in reader. `--base-url` makes those links absolute. Curl writes the ADF straight to a file, so the page bodies never pass through your context.
 
 **MCP fallback (no REST token):** call `getConfluencePage` with `contentFormat: "markdown"` per page; **verify the returned id equals the requested id and re-fetch on a mismatch**, and cross-check counts per Step 1 — the MCP can truncate and mis-return. Write each body verbatim; do not summarize, trim, or reword.
 

@@ -25,6 +25,8 @@
  *               doc; writes markdown to --out or stdout.
  *   --adf-dir   Convert every *.json in the directory to <out-dir>/<basename>.md.
  *   --out-dir   Destination for --adf-dir (required with it).
+ *   --base-url  Site origin (e.g. https://acme.atlassian.net) used to build absolute
+ *               Confluence attachment image links; omit for site-relative /wiki/... URLs.
  *
  * Exit codes:
  *   0  success        2  invalid invocation        3  input missing / unreadable / not ADF
@@ -43,7 +45,22 @@ const USAGE = [
   '  --adf      A v2 API page response or a bare ADF doc → markdown on --out/stdout',
   '  --adf-dir  Convert every *.json in the dir to <out-dir>/<basename>.md',
   '  --out-dir  Destination directory (required with --adf-dir)',
+  '  --base-url Site origin for absolute Confluence attachment image links (optional)',
 ];
+
+/**
+ * Wrap `text` in a delimiter with any surrounding whitespace kept OUTSIDE the
+ * delimiters. ADF often includes the trailing space inside a strong run
+ * ("Description & layout: "), and CommonMark will not close emphasis when whitespace
+ * sits against the closing delimiter — so `**…layout: **` renders as literal
+ * asterisks. Moving the whitespace out (`**…layout:** `) makes it valid and
+ * deterministic regardless of how the ADF split the run.
+ */
+function wrapMark(text, open, close) {
+  const m = text.match(/^(\s*)([\s\S]*?)(\s*)$/);
+  const [, lead, core, trail] = m;
+  return core ? `${lead}${open}${core}${close}${trail}` : text;
+}
 
 /** Inline text for a node, applying the marks normalize cares about. */
 function inline(node) {
@@ -51,10 +68,10 @@ function inline(node) {
   if (node.type === 'text') {
     let t = node.text || '';
     for (const m of node.marks || []) {
-      if (m.type === 'strong') t = `**${t}**`;
-      else if (m.type === 'em') t = `*${t}*`;
-      else if (m.type === 'code') t = `\`${t}\``;
-      else if (m.type === 'link' && m.attrs && m.attrs.href) t = `[${t}](${m.attrs.href})`;
+      if (m.type === 'strong') t = wrapMark(t, '**', '**');
+      else if (m.type === 'em') t = wrapMark(t, '*', '*');
+      else if (m.type === 'code') t = wrapMark(t, '`', '`');
+      else if (m.type === 'link' && m.attrs && m.attrs.href) t = wrapMark(t, '[', `](${m.attrs.href})`);
     }
     return t;
   }
@@ -64,7 +81,40 @@ function inline(node) {
   if (node.type === 'inlineCard') return (node.attrs && node.attrs.url) || '';
   if (node.type === 'date') return (node.attrs && node.attrs.timestamp) || '';
   if (node.type === 'emoji') return (node.attrs && (node.attrs.text || node.attrs.shortName)) || '';
+  if (node.type === 'mediaInline' || node.type === 'media') return renderMediaInline(node);
   return (node.content || []).map(inline).join('');
+}
+
+// Base URL used to build Confluence attachment download links; set per conversion.
+let mediaBaseUrl = '';
+
+/**
+ * The best URL for a media node. Confluence embeds images as file attachments — the
+ * node carries the attachment id, the `contentId-<pageId>` collection, and the
+ * filename in `alt`, from which a `/wiki/download/attachments/<pageId>/<file>` link is
+ * built. External media carry a direct `url`.
+ */
+function mediaUrl(attrs) {
+  const a = attrs || {};
+  if (a.type === 'external' && a.url) return a.url;
+  if (a.id && typeof a.collection === 'string' && a.collection.startsWith('contentId-')) {
+    const pageId = a.collection.slice('contentId-'.length);
+    return `${mediaBaseUrl}/wiki/download/attachments/${pageId}/${encodeURIComponent(a.alt || a.id)}`;
+  }
+  return a.url || '';
+}
+
+/**
+ * A media node as an inline markdown LINK — not an image embed. The figures live in
+ * the private Confluence, which a git markdown viewer cannot authenticate to, and we
+ * do not mirror the binaries into the repo; an embed would render as a broken icon.
+ * A link keeps the reference and resolves for a logged-in reader who clicks through.
+ */
+function renderMediaInline(node) {
+  const a = node.attrs || {};
+  const alt = a.alt || 'image';
+  const url = mediaUrl(a);
+  return url ? `[${alt}](${url})` : alt;
 }
 
 /** Flatten a table cell's blocks to a single line — pipe tables cannot hold newlines. */
@@ -144,17 +194,24 @@ function block(node) {
     case 'extension':
       // Unwrap: the Page Properties "details" macro holds its table as inner content.
       return (node.content || []).map(block).join('');
+    case 'media':
+      return `${renderMediaInline(node)}\n\n`;
     case 'mediaSingle':
     case 'mediaGroup':
-    case 'media':
-      return ''; // images are not textual evidence
+      // Walk the group so each media renders as an image and any caption follows it.
+      return (node.content || []).map(block).join('');
+    case 'caption': {
+      const t = inline(node).trim();
+      return t ? `*${t}*\n\n` : '';
+    }
     default:
       return (node.content || []).map(block).join('');
   }
 }
 
 /** Convert an ADF document node to markdown. */
-function adfToMarkdown(doc) {
+function adfToMarkdown(doc, opts = {}) {
+  mediaBaseUrl = (opts && opts.baseUrl) || '';
   if (!doc || typeof doc !== 'object' || !Array.isArray(doc.content)) return '';
   return `${(doc.content || [])
     .map(block)
@@ -173,12 +230,12 @@ function extractDoc(value) {
   return value; // already a doc
 }
 
-function convertFile(file) {
+function convertFile(file, opts) {
   const read = readJsonSafe(file);
   if (!read.ok) return { ok: false, error: read.error };
   try {
     const doc = extractDoc(read.value);
-    return { ok: true, md: adfToMarkdown(doc) };
+    return { ok: true, md: adfToMarkdown(doc, opts) };
   } catch (err) {
     return { ok: false, error: err.message };
   }
@@ -186,11 +243,12 @@ function convertFile(file) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2), {
-    keys: ['adf', 'out', 'adf-dir', 'out-dir'],
+    keys: ['adf', 'out', 'adf-dir', 'out-dir', 'base-url'],
     flags: [],
   });
   checkArgs(args, USAGE);
   const { values } = args;
+  const opts = { baseUrl: values['base-url'] || '' };
 
   if (values['adf-dir']) {
     const dir = path.resolve(values['adf-dir']);
@@ -207,7 +265,7 @@ function main() {
     let converted = 0;
     let failed = 0;
     for (const f of files) {
-      const res = convertFile(path.join(dir, f));
+      const res = convertFile(path.join(dir, f), opts);
       if (!res.ok) {
         process.stderr.write(`warn: ${f}: ${res.error}\n`);
         failed += 1;
@@ -226,7 +284,7 @@ function main() {
     process.stderr.write(`error: --adf is not a file: ${file}\n`);
     process.exit(3);
   }
-  const res = convertFile(file);
+  const res = convertFile(file, opts);
   if (!res.ok) {
     process.stderr.write(`error: could not convert ${file}: ${res.error}\n`);
     process.exit(3);
