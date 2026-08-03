@@ -1,3 +1,23 @@
+# v1.13.0 — 2026-08-03
+
+## Summary (AI, bounded)
+- Updated graph data and added tests for ADF in the project retrospective module.
+- Implemented in commit a03ab13.
+- No breaking changes introduced in this release.
+
+## Highlights
+- feat(project-retrospective): Update graph data and add tests for ADF to (a03ab13)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Update graph data and add tests for ADF to (a03ab13)
+
+## Full commit list
+- a03ab13 feat(project-retrospective): Update graph data and add tests for ADF to
+
 # v1.12.0 — 2026-08-03
 
 ## Summary (AI, bounded)
