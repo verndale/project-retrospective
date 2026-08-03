@@ -63,6 +63,26 @@ test('the golden output passes catalog collision checks against a manifest', () 
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
 });
 
+test('optional ### Gotchas / ### Tips subheadings under ## Learnings still validate', () => {
+  const dir = tempOutput();
+  // Insert the optional gotcha/tip split under Learnings (H3s live between Learnings and Gaps).
+  const inject = [
+    '### Gotchas',
+    '',
+    '- **AppPlaceholder remap** — never re-wrap placeholder output. Suggested destination: `the sitecore adapter rules`.',
+    '',
+    '### Tips',
+    '',
+    '- **Section theming** — define `data-header-theme` from the start. Suggested destination: `frontend-ai/skills/implement-build-pack/references/core/`.',
+    '',
+    '',
+  ].join('\n');
+  writeFile(dir, 'report.md', readFile(dir, 'report.md').replace('## Gaps', inject + '## Gaps'));
+  const result = validate(dir);
+  assert.equal(result.status, 0, `expected pass with the optional H3 split, got:\n${result.stdout}`);
+  assert.match(result.stdout, /^PASS /m);
+});
+
 test('a missing report section fails', () => {
   const dir = tempOutput();
   writeFile(dir, 'report.md', readFile(dir, 'report.md').replace('## Candidates', '## Findings'));
