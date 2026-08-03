@@ -94,12 +94,13 @@ Brain: /path/to/ui-design-brain
 | `Output:` | no | Where run output is written. Never inside `Project`. |
 | `Scope:` | no | `full` (default), `inventory`, or `candidates`. |
 | `PriorReports:` | no | Comma-separated paths to earlier `report.md` files. A candidate that recurs across projects is elevated from Watch to Promote. |
+| `Specs:` | no | Confluence source for the project's functional specs (a space + label(s), or an approvals-page URL). Captures approved specs as a `spec` evidence source. |
 | `Action:` | no | `analyze` (default), `promote`, or `capture`. |
 | `Proposal:` | for promote | Path to the approved proposal file to apply. |
 | `Captures:` | for capture | Path to a run's `captures/` directory. Applied as a set. |
 | `Library:` | for capture | Absolute path to a local `ui-design-library` checkout. |
 
-Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json`, `memory-archive.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, and `orchestration-drafts.md`. Full parameter and output detail: [`skills/project-retrospective/README.md`](skills/project-retrospective/README.md).
+Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json`, `memory-archive.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, and `orchestration-drafts.md` — plus `specs-raw.json` and `specs.json` when a `Specs:` input was given. Full parameter and output detail: [`skills/project-retrospective/README.md`](skills/project-retrospective/README.md).
 
 **Client data stays with the client.** The analyzed project is read-only — a retrospective never leaves artifacts in the repository it analyzed. Run output goes to `Data:` or `Output:`, and is never committed to this public repo.
 

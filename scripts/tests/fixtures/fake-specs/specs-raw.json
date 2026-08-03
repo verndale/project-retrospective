@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "source": { "space": "FAKE", "capturedVia": "synthetic-fixture" },
+  "specs": [
+    {
+      "pageId": "1001",
+      "title": "Acme Rebuild | Modal",
+      "url": "https://example.test/wiki/1001",
+      "labels": ["fake-batch1", "requirements"],
+      "documentStatus": "APPROVED",
+      "bodyMarkdown": "| Batch | 1 |\n| --- | --- |\n| Document Status | APPROVED |\n| Contains PII | NO |\n| Document owner | Test Owner |\n\n## Overview\n\nA modal dialog used for confirmations.\n\n`baseType: _component`\n\n## Used By\n\n- [Page Template](https://example.test/page)\n\n## Component Elements\n\n### 1. Wrapper\n\nThe dialog container.\n\n- ARIA: role=\"dialog\" with focus trapped while open; Escape closes it.\n- Keyboard: Tab cycles within the dialog.\n\n## Style Options\n\n**Small** — default width. **Large** — wide width.\n\n## Component Content\n\n### Editable Fields\n\n| Field Name | Field Type | Required | Notes |\n| --- | --- | --- | --- |\n| Heading | string | Yes | Rendered as h2. |\n| Items | content | Yes | allowedTypes: ['ModalItem']. Min 1. |\n\n### Dynamic Data\n\n| Value Name | Description |\n| --- | --- |\n| LD+JSON | A structured-data block per instance. |\n"
+    },
+    {
+      "pageId": "1002",
+      "title": "Acme Rebuild | Logo Ribbon",
+      "url": "https://example.test/wiki/1002",
+      "labels": ["fake-batch1", "requirements"],
+      "documentStatus": "APPROVED",
+      "bodyMarkdown": "| Batch | 1 |\n| --- | --- |\n| Document Status | APPROVED |\n| Contains PII | NO |\n\n## Overview\n\nA row of partner logos.\n\n## Component Elements\n\n### 1. Logo Track\n\nHolds the logos.\n\n- ARIA: each logo image carries descriptive alt text.\n\n### 2. Marquee Effect\n\nAn animated scroll treatment. No canonical primitive matched; used the design's name.\n\n## Style Options\n\n**Static** — no motion. **Animated** — pausable marquee.\n\n## Component Content\n\n### Editable Fields\n\n| Field Name | Field Type | Required | Notes |\n| --- | --- | --- | --- |\n| Logos | content | Yes | allowedTypes: ['LogoItem']. |\n"
+    },
+    {
+      "pageId": "1003",
+      "title": "Acme Rebuild | Highlight Panel",
+      "url": "https://example.test/wiki/1003",
+      "labels": ["fake-batch2", "requirements"],
+      "documentStatus": "APPROVED",
+      "bodyMarkdown": "| Batch | 2 |\n| --- | --- |\n| Document Status | APPROVED |\n\n## Overview\n\nA promotional highlight panel.\n\n`baseType: _component`\n\n## Component Elements\n\n### 1. Panel\n\n- ARIA: labelled by its heading via aria-labelledby.\n\n## Style Options\n\n**Left** — media left. **Right** — media right.\n\n## Component Content\n\n### Editable Fields\n\n| Field Name | Field Type | Required | Notes |\n| --- | --- | --- | --- |\n| Heading | string | Yes | h2. |\n| Body | richtext | No | Optional copy. |\n"
+    },
+    {
+      "pageId": "1004",
+      "title": "Acme Rebuild | Draft Card",
+      "url": "https://example.test/wiki/1004",
+      "labels": ["fake-batch2", "requirements"],
+      "documentStatus": "DRAFT",
+      "bodyMarkdown": "| Document Status | DRAFT |\n| --- | --- |\n\n## Overview\n\nWork in progress.\n"
+    }
+  ]
+}

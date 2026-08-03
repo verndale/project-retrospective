@@ -693,3 +693,39 @@ test('scope inventory does not require memory-archive.json', () => {
   const result = validate(dir, ['--scope', 'inventory']);
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
 });
+
+// specs.json — the optional Confluence functional-spec pack.
+test('a run with no specs.json still passes (specs are an optional input)', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'specs.json'));
+  const result = validate(dir);
+  assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
+test('a non-approved spec in specs.json fails the approved-only gate', () => {
+  const dir = tempOutput();
+  const pack = JSON.parse(readFile(dir, 'specs.json'));
+  pack.specs[0].documentStatus = 'DRAFT';
+  writeFile(dir, 'specs.json', JSON.stringify(pack, null, 2));
+  assertFails(dir, 'specs-approved');
+});
+
+test('a specs.json whose counts do not reconcile fails', () => {
+  const dir = tempOutput();
+  const pack = JSON.parse(readFile(dir, 'specs.json'));
+  pack.counts.specs = 99;
+  writeFile(dir, 'specs.json', JSON.stringify(pack, null, 2));
+  assertFails(dir, 'specs-counts');
+});
+
+test('a specs.json with no specs array fails the schema check', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'specs.json', JSON.stringify({ schemaVersion: 1, counts: {}, warnings: [] }, null, 2));
+  assertFails(dir, 'specs-schema');
+});
+
+test('a malformed specs.json fails to parse', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'specs.json', '{ not json');
+  assertFails(dir, 'specs-parses');
+});

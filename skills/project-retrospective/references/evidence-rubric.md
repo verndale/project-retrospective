@@ -42,12 +42,15 @@ An inventory component carries `sources[]`. These count as **independent** evide
 |---|---|
 | `component-index` | The component exists in the project's own registry. |
 | `build-pack` | It went through the pipeline with a normalized spec (DOM contract, tokens, accessibility, AC). |
+| `spec` | An **approved** ba-spec-writer functional spec covers it — an authored, brain-canonicalized contract (CMS field surface, ARIA/keyboard model, composition, structured data). Comparable in strength to `build-pack`. |
 | `fingerprint` | It has a declared reusable API surface (`slots`, `affordance`, `role`, `variants`). |
 | `design-facts` | It has extracted design evidence behind it. |
 | `memory` | Project memory discusses it by name — it generated durable knowledge. |
 | `code-scan` | It was found by directory heuristics only. **Weak** — see below. |
 
 `code-scan` is a single weak source: it proves a directory exists, nothing about reuse or contract. A candidate evidenced only by `code-scan` caps at **Watch** unless a prior report supplies a second source. See `code-scan-mode.md`.
+
+**Using `spec` evidence (from `resolution.json`'s `specs` block).** An approved spec is a strong, independent source, and it is unusual in also settling Promote **test 3** (describable client-neutrally): the spec's Overview and per-element contract are an authored, near-neutral definition already — the client copy comes out at drafting time. A `specOnly` entry (specced but not found as-built) is authored intent worth a Watch, not a Promote, until a build backs it. ba-spec-writer canonicalizes its element names against the brain when the spec is written, so the richest new-pattern candidates are the elements it flagged as novel (`novelLabels`) — a label it could not name is one the catalog cannot either.
 
 ## Verdicts
 

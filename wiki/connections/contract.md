@@ -4,7 +4,7 @@ Every reference and script `SKILL.md` declares. These edges are the build's inte
 
 Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm evals:graph`.
 
-## References (14)
+## References (15)
 
 - [Brain integrity checklist](../../skills/project-retrospective/references/brain-integrity-checklist.md)
 - [Code-scan mode](../../skills/project-retrospective/references/code-scan-mode.md)
@@ -17,14 +17,16 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Proposal template — new alias](../../skills/project-retrospective/references/proposal-new-alias-template.md)
 - [Proposal template — new pattern](../../skills/project-retrospective/references/proposal-new-pattern-template.md)
 - [report.md template](../../skills/project-retrospective/references/report-template.md)
+- [Spec capture](../../skills/project-retrospective/references/spec-capture.md)
 - [wiki client page template](../../skills/project-retrospective/references/wiki-client-template.md)
 - [Wiki feed](../../skills/project-retrospective/references/wiki-feed.md)
 - [wiki journal entry template](../../skills/project-retrospective/references/wiki-journal-template.md)
 
-## Scripts (5)
+## Scripts (6)
 
 - [archive-memory.cjs](../../skills/project-retrospective/scripts/archive-memory.cjs)
 - [capture-preflight.cjs](../../skills/project-retrospective/scripts/capture-preflight.cjs)
 - [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs)
+- [normalize-specs.cjs](../../skills/project-retrospective/scripts/normalize-specs.cjs)
 - [resolve.cjs](../../skills/project-retrospective/scripts/resolve.cjs)
 - [validate-report.cjs](../../skills/project-retrospective/scripts/validate-report.cjs)

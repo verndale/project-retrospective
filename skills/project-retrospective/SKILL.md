@@ -41,6 +41,7 @@ Operator docs: [README.md](README.md).
 10. [`references/wiki-client-template.md`](references/wiki-client-template.md) — the durable per-client page shape.
 11. [`references/wiki-journal-template.md`](references/wiki-journal-template.md) — the per-run journal entry shape.
 12. [`references/downstream-wiki.md`](references/downstream-wiki.md) — the client-agnostic context-wiki entry in the repo an action touches. Read for `Action: promote` (ui-design-brain) and `Action: capture` (ui-design-library).
+13. [`references/spec-capture.md`](references/spec-capture.md) — the Confluence functional-spec capture recipe: label discovery, the approved-only gate, and the `specs-raw.json` schema. Read for `Action: analyze` when a `Specs` input is given.
 
 ## Workflow
 
@@ -76,15 +77,23 @@ Report the `mode` and the `warnings` array verbatim — they become the report's
 
 `Scope: inventory` skips steps 2 and 3, and step 4 writes only the Run, Summary, Inventory, and Gaps sections of `report.md`.
 
+**1b. Specs (optional).** When a `Specs` input is given (a Confluence space + labels, or an approvals-page URL), capture the project's **approved** functional specs per [`references/spec-capture.md`](references/spec-capture.md). Scripts stay offline, so the model fetches the pages via the Atlassian MCP into `<Output>/specs-raw.json`, then structures them:
+
+```bash
+node <skill>/scripts/normalize-specs.cjs --raw <Output>/specs-raw.json [--archive <Data>/wiki/specs/<client-slug>/<project-slug>/source] --out <Output>/specs.json --pretty
+```
+
+The component label comes from the spec title; step 2 resolves it against the brain. The spec pack is authored-intent evidence — CMS field surface, ARIA/keyboard contract, composition, and the elements ba-spec-writer could not canonicalize (the highest-value novel candidates). Report its `warnings` verbatim. Skip this step, with a note, when no `Specs` input is given.
+
 **2. Resolution.** Requires `Brain`. Without it, skip to step 3, treat no label as novel (you cannot know), and record the missing catalog under Gaps. With it:
 
 ```bash
-node <skill>/scripts/resolve.cjs --inventory <Output>/inventory.json --brain <Brain> --out <Output>/resolution.json --pretty
+node <skill>/scripts/resolve.cjs --inventory <Output>/inventory.json --brain <Brain> [--specs <Output>/specs.json] --out <Output>/resolution.json --pretty
 ```
 
-For any entry with `ambiguous: true`, the manifest scopes that label to more than one canonical and the script deliberately did not pick. Decide from usage evidence — the component's build pack, its `fingerprint.json` (`affordance`, `role`), its bucket and domain. If the evidence does not clearly match one candidate's `context`, treat the label as unresolved rather than guessing. Record which evidence decided it.
+Pass `--specs <Output>/specs.json` when Step 1b produced a spec pack: an approved spec adds a `spec` evidence source to a matched novel label and records the spec-vs-as-built join (`matched`, `specOnly`) under `specs` for triage. For any entry with `ambiguous: true`, the manifest scopes that label to more than one canonical and the script deliberately did not pick. Decide from usage evidence — the component's build pack, its `fingerprint.json` (`affordance`, `role`), its bucket and domain. If the evidence does not clearly match one candidate's `context`, treat the label as unresolved rather than guessing. Record which evidence decided it.
 
-**3. Triage.** Apply [`references/evidence-rubric.md`](references/evidence-rubric.md) to every unresolved label: Promote, Watch, or Reject, each with evidence citing file paths. Check `PriorReports` first — a label that was Watch in an earlier report and recurs here is elevated to Promote. When step 2 was skipped for want of a `Brain`, still emit `## Candidates` with an explicit note that no resolution ran, so the section is present rather than missing.
+**3. Triage.** Apply [`references/evidence-rubric.md`](references/evidence-rubric.md) to every unresolved label: Promote, Watch, or Reject, each with evidence citing file paths. Check `PriorReports` first — a label that was Watch in an earlier report and recurs here is elevated to Promote. A label backed by both an as-built source and an approved `spec` clears the two-source bar with a client-neutral definition already in hand; a `specOnly` entry in `resolution.json`'s `specs` block is authored intent not yet built (a Watch, not a Promote) — feed it into the verdict per the rubric's `spec` source. When step 2 was skipped for want of a `Brain`, still emit `## Candidates` with an explicit note that no resolution ran, so the section is present rather than missing.
 
 `Scope: candidates` writes `report.md` but no `proposals/` and no `orchestration-drafts.md`.
 
@@ -152,14 +161,15 @@ Brain: /abs/path/to/ui-design-brain
 | `Client` | no | derived | Human-readable client name; sets the wiki client-slug. One client may own several project-slugs. Resolution order in [`references/wiki-feed.md`](references/wiki-feed.md). |
 | `Scope` | no | `full` | `full`, `inventory`, or `candidates`. |
 | `PriorReports` | no | — | Comma-separated paths to earlier `report.md` files. |
+| `Specs` | no | — | Confluence source for the project's functional specs — a space key + label(s), or an approvals-page URL. Enables Step 1b. |
 | `Action` | no | `analyze` | `analyze`, `promote`, or `capture`. |
 | `Proposal` | for promote | — | Path to the approved proposal file to apply. |
 | `Captures` | for capture | — | Path to a run's `captures/` directory. Applied as a set. |
 | `Library` | for capture | — | Absolute path to a local ui-design-library checkout. |
 
-**Outputs (analyze)** — all inside `Output`: `meta.json`, `inventory.json`, `resolution.json`, `report.md`, `memory-archive.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, `orchestration-drafts.md`.
+**Outputs (analyze)** — all inside `Output`: `meta.json`, `inventory.json`, `resolution.json`, `report.md`, `memory-archive.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, `orchestration-drafts.md`. Plus, when a `Specs` input was given: `specs-raw.json` (the model's Confluence capture) and `specs.json` (the structured spec pack).
 
-**Side effects (analyze, wiki)** — when `Output` is under a `Data` = ui-design-evidence checkout, the run also preserves the project's memory at `<Data>/wiki/memory/<client-slug>/<project-slug>/` (near-raw `source/` plus an `index.md` digest), creates/updates `<Data>/wiki/clients/<client-slug>.md`, appends `<Data>/wiki/journal/<date>-<project-slug>.md`, and adds `<Data>/wiki/INDEX.md` lines. Skipped in the home fallback — though `memory-archive.json` is still written to `Output`. Nothing is committed.
+**Side effects (analyze, wiki)** — when `Output` is under a `Data` = ui-design-evidence checkout, the run also preserves the project's memory at `<Data>/wiki/memory/<client-slug>/<project-slug>/` (near-raw `source/` plus an `index.md` digest), archives captured specs near-raw at `<Data>/wiki/specs/<client-slug>/<project-slug>/` (when a `Specs` input was given), creates/updates `<Data>/wiki/clients/<client-slug>.md`, appends `<Data>/wiki/journal/<date>-<project-slug>.md`, and adds `<Data>/wiki/INDEX.md` lines. Skipped in the home fallback — though `memory-archive.json` is still written to `Output`. Nothing is committed.
 
 **Side effects (promote)** — edits the ui-design-brain working tree, and regenerates that repo's committed graph artifacts as a by-product of verification. When `<Brain>/wiki/` exists, also authors a client-agnostic wiki entry there — `wiki/journal/<date>-<change-slug>.md`, one `wiki/INDEX.md` line, and (per proposal type) a `wiki/topics/component-catalog.md` Decisions bullet — and rebuilds `wiki/connections*` via the brain's own `scripts/graph/build-graph.cjs`. Skipped when that checkout has no `wiki/`. Nothing is committed anywhere.
 
@@ -201,6 +211,7 @@ Normative rubric: [`references/evidence-rubric.md`](references/evidence-rubric.m
 - MUST NOT invent wiki outcomes. Every journal Outcome traces to this run's `resolution.json` and its report verdicts; every "What we know" bullet traces to a run report or the analyzed project's `artifacts/memory/` (summarized durable engineering knowledge, never copied client prose).
 - MUST run `archive-memory.cjs` on every analyze run so project memory is never silently dropped — record-only in the home fallback, a near-raw byte copy into `<Data>/wiki/memory/<client-slug>/<project-slug>/source/` (plus a fuller `index.md` digest) under a `Data` = evidence checkout. `validate-report.cjs` fails a run whose inventory shows memory but that produced no archive. The `source/` copy and `index.md` carry engineering knowledge only — never end-customer PII — and live only in the private evidence repo; the `## What we know` bullets stay a summary.
 - MUST write `meta.json` for every analyze run, with `project.slug` and `date` equal to the run's own directory, so the wiki, the graph, and captures' `provenance.run` never disagree.
+- MUST capture only **approved** functional specs (Document Status = APPROVED), and treat `specs-raw.json`/`specs.json` and the spec archive as client-derived output — written only under `Output`, or archived under `<Data>/wiki/specs/`, never into this repository. `validate-report.cjs` fails a spec pack carrying a non-approved spec.
 - MUST author the downstream wiki (ui-design-brain on promote, ui-design-library on capture) client-agnostically, per [`references/downstream-wiki.md`](references/downstream-wiki.md): no client display name, no run slug or `provenance.source` path in prose, no client-naming `declienting` string. Ground each entry in recurrence and the catalog/de-client decision — these are shared repos, unlike the private evidence wiki that alone may name the client.
 - MUST read the downstream repo's own `wiki/MECHANICS.md` and follow its per-capture protocol and templates — that repo owns the format; `references/downstream-wiki.md` adds only the data boundary, the skip rule, and the grounding.
 - MUST skip the downstream wiki entry, with a stated message, when the checkout has no `wiki/`; and MUST author a library entry only for a capture actually written (skip `deferred`/`blocked`). Never create a `wiki/` tree the repo lacks.
