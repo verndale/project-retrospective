@@ -18,6 +18,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-08-03 — chore(project-retrospective): Update graph data and enhance wiki documen ([PR #43](https://github.com/verndale/project-retrospective/pull/43))
 - 2026-08-03 — feat(project-retrospective): Update graph data and enhance markdown conv ([PR #40](https://github.com/verndale/project-retrospective/pull/40))
 - 2026-08-03 — feat(project-retrospective): Add specs input handling to project retrosp ([PR #38](https://github.com/verndale/project-retrospective/pull/38))
 - 2026-08-03 — fix(project-retrospective): Update memory archive logic to exclude index ([PR #36](https://github.com/verndale/project-retrospective/pull/36))

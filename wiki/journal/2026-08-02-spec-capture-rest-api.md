@@ -2,7 +2,7 @@
 date: 2026-08-02
 topics: [retrospective-workflow]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/43
 ---
 # Spec capture: deterministic completeness + REST-API fetch
 
