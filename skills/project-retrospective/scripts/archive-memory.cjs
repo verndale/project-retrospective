@@ -3,7 +3,7 @@
  * archive-memory.cjs — preserve a project's engineering memory before it is lost.
  *
  * A completed project carries durable engineering memory under its artifacts
- * root (`<artifactsRoot>/memory/**` plus an optional `MEMORY.md` index). The
+ * root (`<artifactsRoot>/memory/**`). The
  * retrospective otherwise reads it only to name-match components and then drops
  * the prose; once the project is archived, that knowledge is gone. This script
  * byte-copies the memory near-raw into a destination directory (the private
@@ -45,7 +45,6 @@ const {
   parseArgs,
   checkArgs,
   isDir,
-  isFile,
   listFilesRecursive,
   readTextSafe,
   copyFileTo,
@@ -91,8 +90,11 @@ function isSubstantiveMemory(text) {
  * The project's substantive memory files, each as { rel, src }: `rel` is the
  * forward-slash path it should take inside the archive, `src` its absolute source
  * path. `<root>/memory/**` files keep their sub-path (so `components/cards.md`
- * stays nested); the `MEMORY.md` index — a sibling of memory/ at the artifacts
- * root — lands at the archive root. Markdown only: memory is markdown by
+ * stays nested). The sibling `MEMORY.md` index is deliberately NOT archived: it is
+ * navigation (a redundant file list plus a load-map whose source of truth lives in
+ * the skill), not memory content, and once the shards are flattened into the
+ * archive its internal `memory/…` paths no longer resolve — so the digest (skill
+ * Step 6) carries any navigation instead. Markdown only: memory is markdown by
  * convention, and scoping to `.md` keeps this in step with what inventory.cjs
  * treats as memory evidence. Empty placeholder shards are dropped and returned in
  * `skippedEmpty` so the manifest can report them.
@@ -103,8 +105,8 @@ function findMemoryFiles(artifactsDir, warnings) {
     .filter((rel) => rel.toLowerCase().endsWith('.md'))
     .map((rel) => ({ rel, src: path.join(memoryDir, rel) }));
 
-  const indexPath = path.join(artifactsDir, 'MEMORY.md');
-  if (isFile(indexPath)) candidates.push({ rel: 'MEMORY.md', src: indexPath });
+  // The `MEMORY.md` index (a sibling of memory/) is intentionally not collected —
+  // see this function's doc comment: it is navigation, not memory content.
 
   const files = [];
   const skippedEmpty = [];
@@ -167,7 +169,7 @@ function main() {
     // memory (none found, or every shard was an empty placeholder).
     warnings.add(
       'no-memory',
-      `No substantive memory under ${artifactsRoot}/memory/ (or ${artifactsRoot}/MEMORY.md) — nothing to archive.`,
+      `No substantive memory under ${artifactsRoot}/memory/ — nothing to archive.`,
     );
     status = 'no-memory';
   } else if (!archiveDir) {
