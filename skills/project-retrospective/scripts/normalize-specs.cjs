@@ -41,6 +41,13 @@
  * continues. A spec whose Document Status does not clear the gate is dropped into
  * `skipped`, never silently. A missing section degrades the one spec (a
  * `section-missing:<name>` warning) rather than failing the run.
+ *
+ * Fetch completeness is verified deterministically here, not in model prose. When the
+ * capture's `source.batches` records each batch's search `totalCount` and enumerated
+ * `pageIds`, the script dedupes by pageId and reconciles the captured bodies against
+ * that enumeration — emitting `batch-enumeration-incomplete` (search truncated),
+ * `spec-uncaptured` (an enumerated page was never fetched), `spec-unexpected`, and
+ * `duplicate-page` warnings so a partial MCP fetch surfaces instead of passing silently.
  */
 
 'use strict';
@@ -327,9 +334,46 @@ function main() {
 
   const gate = String(values['status-gate'] || 'approved').toUpperCase();
 
+  // Deterministic completeness reconciliation — owned by the script, not model prose.
+  // The MCP fetch is unavoidably the model's job (scripts are offline), but verifying
+  // that the fetch was COMPLETE is mechanical, so it lives here. The model records,
+  // per batch, the search's own `totalCount` and the `pageIds` it enumerated; this
+  // reconciles the captured bodies against that enumeration so a truncated search or a
+  // dropped page surfaces as a warning instead of a silent under-capture.
+  const source = capture.source && typeof capture.source === 'object' ? capture.source : {};
+  const batches = Array.isArray(source.batches) ? source.batches : [];
+  const expectedIds = new Set();
+  for (const b of batches) {
+    if (!b || typeof b !== 'object') continue;
+    const ids = Array.isArray(b.pageIds) ? b.pageIds.map(String) : [];
+    for (const id of ids) expectedIds.add(id);
+    if (typeof b.totalCount === 'number' && ids.length < b.totalCount) {
+      warnings.add(
+        'batch-enumeration-incomplete',
+        `Batch "${b.label != null ? b.label : '?'}" enumerated ${ids.length} of ${b.totalCount} page(s) — the search returned fewer ids than its own totalCount (a transient truncation). Re-run the label query until they agree before capturing bodies.`,
+      );
+    }
+  }
+
+  // Dedupe raw entries by pageId: one page may carry several batch labels, and
+  // normalizeSpec would otherwise emit one record per copy and over-count the pack.
+  const capturedIds = new Set();
+  const rawSpecs = [];
+  let duplicates = 0;
+  for (const raw of capture.specs) {
+    const id = raw && typeof raw === 'object' && raw.pageId != null ? String(raw.pageId) : null;
+    if (id && capturedIds.has(id)) {
+      duplicates += 1;
+      warnings.add('duplicate-page', `Page ${id} ("${(raw && raw.title) || '?'}") appeared more than once (multiple batch labels); kept one copy.`);
+      continue;
+    }
+    if (id) capturedIds.add(id);
+    rawSpecs.push(raw);
+  }
+
   const specs = [];
   const skipped = [];
-  for (const raw of capture.specs) {
+  for (const raw of rawSpecs) {
     if (!raw || typeof raw !== 'object') {
       warnings.add('spec-entry-unreadable', 'A raw spec entry was not an object and was skipped.');
       continue;
@@ -341,6 +385,23 @@ function main() {
     }
     for (const w of specWarnings.items) warnings.add(w.code, w.message);
     specs.push(record);
+  }
+
+  // Reconcile the captured set against the batch enumeration (both directions).
+  // Membership is checked against every captured page — before the status gate — so a
+  // page the model failed to fetch is not confused with one it fetched and the gate
+  // then dropped.
+  if (expectedIds.size) {
+    for (const id of expectedIds) {
+      if (!capturedIds.has(id)) {
+        warnings.add('spec-uncaptured', `Enumerated page ${id} was never captured — re-fetch it (or confirm it was intentionally excluded) before trusting the pack.`);
+      }
+    }
+    for (const id of capturedIds) {
+      if (!expectedIds.has(id)) {
+        warnings.add('spec-unexpected', `Captured page ${id} was not in the batch enumeration — confirm it belongs to this run.`);
+      }
+    }
   }
 
   // Archive the near-raw markdown of every included spec (evidence checkout only).
@@ -383,6 +444,9 @@ function main() {
       counts: {
         specs: specs.length,
         skipped: skipped.length,
+        duplicates,
+        expected: expectedIds.size,
+        captured: capturedIds.size,
         fields: specs.reduce((n, s) => n + s.fields.length, 0),
         novel: specs.reduce((n, s) => n + s.novelLabels.length, 0),
         archived,

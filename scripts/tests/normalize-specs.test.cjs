@@ -18,11 +18,17 @@ function specOf(pack, label) {
 }
 
 /** Write a throwaway raw capture and return its path; caller removes the dir. */
-function tempRaw(specs) {
+function tempRaw(specs, source) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-specs-'));
   const file = path.join(dir, 'specs-raw.json');
-  fs.writeFileSync(file, JSON.stringify({ schemaVersion: 1, specs }), 'utf8');
+  const raw = { schemaVersion: 1, specs };
+  if (source) raw.source = source;
+  fs.writeFileSync(file, JSON.stringify(raw), 'utf8');
   return { dir, file };
+}
+
+function codes(pack) {
+  return pack.warnings.map((w) => w.code);
 }
 
 test('the component label is derived from the page title', () => {
@@ -176,6 +182,67 @@ test('Document Status is read from the properties table even when it is not the 
     // properties, the status would parse empty, and the spec would be skipped.
     assert.equal(r.json.counts.specs, 1);
     assert.equal(r.json.counts.skipped, 0);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('a page carrying several batch labels is deduped, not counted twice', () => {
+  const body = '## Overview\n\n`baseType: _component`\n\nGrid.\n\n## Properties\n\n| Document Status | APPROVED |\n| --- | --- |\n';
+  const { dir, file } = tempRaw([
+    { pageId: '100', title: 'Acme | Cards Grid', documentStatus: 'APPROVED', bodyMarkdown: body },
+    { pageId: '100', title: 'Acme | Cards Grid', documentStatus: 'APPROVED', bodyMarkdown: body },
+  ]);
+  try {
+    const r = normalize(['--raw', file]);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.json.counts.specs, 1, 'the duplicate page must not produce a second record');
+    assert.equal(r.json.counts.duplicates, 1);
+    assert.ok(codes(r.json).includes('duplicate-page'));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('an enumerated page that was never captured warns spec-uncaptured', () => {
+  const { dir, file } = tempRaw(
+    [{ pageId: '1', title: 'Acme | Modal', documentStatus: 'APPROVED', bodyMarkdown: '## Overview\n\nOnly one captured.\n' }],
+    { space: 'ACME', batches: [{ label: 'acme-b1', totalCount: 2, pageIds: ['1', '2'] }] },
+  );
+  try {
+    const r = normalize(['--raw', file]);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.json.counts.expected, 2);
+    assert.equal(r.json.counts.captured, 1);
+    assert.ok(codes(r.json).includes('spec-uncaptured'), 'page 2 was enumerated but not fetched');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('a batch whose enumeration is short of its own totalCount warns', () => {
+  const { dir, file } = tempRaw(
+    [{ pageId: '1', title: 'Acme | Modal', documentStatus: 'APPROVED', bodyMarkdown: '## Overview\n\nx\n' }],
+    { space: 'ACME', batches: [{ label: 'acme-b1', totalCount: 16, pageIds: ['1'] }] },
+  );
+  try {
+    const r = normalize(['--raw', file]);
+    assert.equal(r.status, 0, r.stderr);
+    assert.ok(codes(r.json).includes('batch-enumeration-incomplete'), 'enumerated 1 of 16');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('no source.batches means no reconciliation warnings (opt-in, backward compatible)', () => {
+  const { dir, file } = tempRaw([
+    { pageId: '1', title: 'Acme | Modal', documentStatus: 'APPROVED', bodyMarkdown: '## Overview\n\nx\n' },
+  ]);
+  try {
+    const r = normalize(['--raw', file]);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.json.counts.expected, 0);
+    assert.ok(!codes(r.json).some((c) => ['spec-uncaptured', 'spec-unexpected', 'batch-enumeration-incomplete'].includes(c)));
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
