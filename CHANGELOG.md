@@ -1,3 +1,33 @@
+# v1.12.0 — 2026-08-03
+
+## Summary (AI, bounded)
+- Enhanced project retrospective feature with improved spec normalization and source tracking (commit 9f307e2).
+- Synchronized wiki content including journal, topics, and plans to ensure up-to-date documentation (commit d2ee62f).
+- Merged pull request to update bot wiki synchronization processes (commit 7b4bab2).
+
+## Highlights
+- feat(project-retrospective): Enhance spec normalization with source tracking (9f307e2)
+- commit: Merge pull request #39 from verndale/bot/wiki-sync/38 (7b4bab2)
+- docs(wiki): sync journal, topics, and plans for #38 (d2ee62f)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Enhance spec normalization with source tracking (9f307e2)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #38 (d2ee62f)
+
+### Other (unknown)
+- commit: Merge pull request #39 from verndale/bot/wiki-sync/38 (7b4bab2)
+
+## Full commit list
+- 9f307e2 feat(project-retrospective): Enhance spec normalization with source tracking
+- 7b4bab2 commit: Merge pull request #39 from verndale/bot/wiki-sync/38
+- d2ee62f docs(wiki): sync journal, topics, and plans for #38
+
 # v1.11.0 — 2026-08-03
 
 ## Summary (AI, bounded)
