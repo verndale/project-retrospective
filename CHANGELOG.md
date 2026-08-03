@@ -1,3 +1,33 @@
+# v1.14.0 — 2026-08-03
+
+## Summary (AI, bounded)
+- Introduced enhancements to markdown conversion and updated graph data in the project-retrospective feature (fda55ba).
+- Fixed graph data issues and improved the validation script within the project-retrospective module (031b3ac).
+- Merged pull request for prior art check and specification images (b33be6e).
+
+## Highlights
+- commit: Merge pull request #40 from verndale/feat/prior-art-check-and-spec-images (b33be6e)
+- fix(project-retrospective): Update graph data and enhance validation script (031b3ac)
+- feat(project-retrospective): Update graph data and enhance markdown conversion (fda55ba)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Update graph data and enhance markdown conversion (fda55ba)
+
+### Fixes
+- fix(project-retrospective): Update graph data and enhance validation script (031b3ac)
+
+### Other (unknown)
+- commit: Merge pull request #40 from verndale/feat/prior-art-check-and-spec-images (b33be6e)
+
+## Full commit list
+- b33be6e commit: Merge pull request #40 from verndale/feat/prior-art-check-and-spec-images
+- 031b3ac fix(project-retrospective): Update graph data and enhance validation script
+- fda55ba feat(project-retrospective): Update graph data and enhance markdown conversion
+
 # v1.13.0 — 2026-08-03
 
 ## Summary (AI, bounded)
