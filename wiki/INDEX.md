@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-08-03 — [feat(project-retrospective): Add specs input handling to project retrosp](journal/2026-08-03-feat-project-retrospective-add-specs-input-handling-to-proje.md) — AI-drafted, revise
 - 2026-08-03 — [fix(project-retrospective): Update memory archive logic to exclude index](journal/2026-08-03-fix-project-retrospective-update-memory-archive-logic-to-exc.md) — AI-drafted, revise
 - 2026-08-02 — [feat(project-retrospective): Add archive memory functionality and tests](journal/2026-08-02-feat-project-retrospective-add-archive-memory-functionality-.md) — AI-drafted, revise
 - 2026-08-01 — [feat(project-retrospective): Enhance fingerprint normalization and testi](journal/2026-08-01-feat-project-retrospective-enhance-fingerprint-normalization.md) — AI-drafted, revise
