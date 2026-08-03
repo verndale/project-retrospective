@@ -80,7 +80,7 @@ Report the `mode` and the `warnings` array verbatim — they become the report's
 **1b. Specs (optional).** When a `Specs` input is given (a Confluence space + labels, or an approvals-page URL), capture the project's **approved** functional specs per [`references/spec-capture.md`](references/spec-capture.md). Scripts stay offline, so the model does the network fetch — from the **Atlassian REST API** (id-addressed and reliable; MCP is a fallback), pulling each page as ADF and rendering it deterministically with `scripts/adf-to-markdown.cjs` — then assembles `<Output>/specs-raw.json` and structures it:
 
 ```bash
-node <skill>/scripts/adf-to-markdown.cjs --adf-dir <adf-dir> --out-dir <bodies-dir>
+node <skill>/scripts/adf-to-markdown.cjs --adf-dir <adf-dir> --out-dir <bodies-dir> --base-url https://<site>.atlassian.net
 node <skill>/scripts/normalize-specs.cjs --raw <Output>/specs-raw.json [--archive <Data>/wiki/specs/<client-slug>/<project-slug>/source] --out <Output>/specs.json --pretty
 ```
 
@@ -179,10 +179,10 @@ Brain: /abs/path/to/ui-design-brain
 ## Validation loops
 
 ```bash
-node <skill>/scripts/validate-report.cjs --output <Output> --scope <Scope> [--no-brain] [--manifest <Brain>/skills/ui-design-brain/patterns-manifest.json]
+node <skill>/scripts/validate-report.cjs --output <Output> --scope <Scope> [--no-brain] [--manifest <Brain>/skills/ui-design-brain/patterns-manifest.json] [--data <Data>]
 ```
 
-Exit 0 is the pass; `FAIL [check] detail` lines name what to fix. Pass `--no-brain` when the run had no `Brain`. Warnings do not fail the run but must be read — an exclusion warning usually means a candidate should have been Rejected.
+Exit 0 is the pass; `FAIL [check] detail` lines name what to fix. Pass `--no-brain` when the run had no `Brain`. Pass `--data <Data>` (the ui-design-evidence checkout) so the validator flags a capture or proposal this run drafts that an earlier run already made (`capture-duplicate`/`proposal-duplicate`) — a component already in the library needs no new capture, and a canonical proposed by a prior run should be promoted rather than proposed twice. Warnings do not fail the run but must be read — an exclusion or duplicate warning usually means a candidate should have been dropped.
 
 Fix and re-run. **Cap: 3 attempts.** After the third failure, stop and report the remaining failures verbatim rather than reshaping output to satisfy the validator.
 

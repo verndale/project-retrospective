@@ -57,6 +57,19 @@ test('a numbered bold Component Element lead is promoted to an H3', () => {
   assert.match(md, /The outer section\./);
 });
 
+test('emphasis keeps trailing whitespace outside the delimiters so it renders', () => {
+  // ADF often includes the trailing space inside the strong run; CommonMark renders
+  // literal asterisks unless the whitespace is moved outside the closing delimiter.
+  const md = adfToMarkdown(doc(p(t('Description & layout: ', [{ type: 'strong' }]), t('The form title.'))));
+  assert.match(md, /\*\*Description & layout:\*\* The form title\./);
+  assert.doesNotMatch(md, /layout: \*\*The/);
+});
+
+test('a whitespace-only strong run is not wrapped in empty emphasis', () => {
+  const md = adfToMarkdown(doc(p(t('   ', [{ type: 'strong' }]))));
+  assert.doesNotMatch(md, /\*\*/, 'a run of only whitespace must not become **  **');
+});
+
 test('bold Style Options survive as **bold** for variant extraction', () => {
   const md = adfToMarkdown(doc(p(t('Light', [{ type: 'strong' }])), p(t('Dark', [{ type: 'strong' }]))));
   assert.match(md, /\*\*Light\*\*/);
@@ -95,7 +108,36 @@ test('bullet lists and links convert', () => {
     }),
   );
   assert.match(md, /^- ARIA: role="dialog"$/m);
-  assert.match(md, /\[ docs\]\(https:\/\/x\)/);
+  // The space stays OUTSIDE the link brackets (well-formed), so " docs" → " [docs](…)".
+  assert.match(md, / \[docs\]\(https:\/\/x\)/);
+});
+
+test('a file-attachment media node renders as a markdown link (not an embed) with its caption', () => {
+  const md = adfToMarkdown(
+    doc({
+      type: 'mediaSingle',
+      content: [
+        { type: 'media', attrs: { type: 'file', id: 'abc', collection: 'contentId-999', alt: 'shot.png' } },
+        { type: 'caption', content: [t('Desktop — 4-Column Variation')] },
+      ],
+    }),
+    { baseUrl: 'https://acme.atlassian.net' },
+  );
+  // A link, not an embed — no leading "!" — so a git viewer shows clickable text, not a broken image.
+  assert.match(md, /\[shot\.png\]\(https:\/\/acme\.atlassian\.net\/wiki\/download\/attachments\/999\/shot\.png\)/);
+  assert.doesNotMatch(md, /!\[shot\.png\]/);
+  assert.match(md, /\*Desktop — 4-Column Variation\*/);
+});
+
+test('an external media node uses its own url', () => {
+  const md = adfToMarkdown(doc({ type: 'media', attrs: { type: 'external', url: 'https://img.example/x.png', alt: 'x' } }));
+  assert.match(md, /\[x\]\(https:\/\/img\.example\/x\.png\)/);
+  assert.doesNotMatch(md, /!\[x\]/);
+});
+
+test('without a base url, attachment links are site-relative', () => {
+  const md = adfToMarkdown(doc({ type: 'media', attrs: { type: 'file', id: 'a', collection: 'contentId-5', alt: 'p.png' } }));
+  assert.match(md, /\[p\.png\]\(\/wiki\/download\/attachments\/5\/p\.png\)/);
 });
 
 test('extractDoc unwraps a v2 API response and accepts a bare doc', () => {

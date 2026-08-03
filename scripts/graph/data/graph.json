@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 86,
-    "edges": 205,
+    "nodes": 87,
+    "edges": 208,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 8,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 16,
+      "wiki-journal": 17,
       "wiki-plan": 4,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 22,
       "covers": 19,
-      "links-to": 89,
+      "links-to": 91,
       "plan": 4,
       "requires": 33,
       "tests": 10,
-      "topic": 28
+      "topic": 29
     }
   },
   "nodes": [
@@ -157,7 +157,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 4958,
+      "bytes": 7115,
       "degree": 3
     },
     {
@@ -265,7 +265,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 29784,
+      "bytes": 32422,
       "degree": 2
     },
     {
@@ -577,7 +577,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 9124,
+      "bytes": 9720,
       "degree": 3
     },
     {
@@ -625,7 +625,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 9255,
+      "bytes": 12028,
       "degree": 5
     },
     {
@@ -709,7 +709,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 33964,
+      "bytes": 38466,
       "degree": 4
     },
     {
@@ -721,7 +721,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 27656,
+      "bytes": 28064,
       "degree": 41
     },
     {
@@ -733,8 +733,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7047,
-      "degree": 26
+      "bytes": 7365,
+      "degree": 27
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1005,6 +1005,20 @@
       "degree": 2
     },
     {
+      "id": "wiki/journal/2026-08-03-prior-art-dedup-and-spec-images.md",
+      "label": "Prior-art dedup for captures/proposals, and spec images",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 2409,
+      "degree": 3
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -1194,8 +1208,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 7710,
-      "degree": 32
+      "bytes": 8308,
+      "degree": 34
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1782,6 +1796,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-03-prior-art-dedup-and-spec-images.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -1986,6 +2007,13 @@
     {
       "source": "wiki/topics/retrospective-workflow.md",
       "target": "wiki/journal/2026-08-02-spec-capture-rest-api.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/journal/2026-08-03-prior-art-dedup-and-spec-images.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2388,6 +2416,11 @@
     },
     {
       "source": "wiki/journal/2026-08-03-fix-project-retrospective-update-memory-archive-logic-to-exc.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-08-03-prior-art-dedup-and-spec-images.md",
       "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },

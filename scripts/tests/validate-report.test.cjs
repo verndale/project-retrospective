@@ -3,8 +3,28 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { run, tempOutput, readFile, writeFile, fixture } = require('./helpers.cjs');
+
+/** A throwaway ui-design-evidence-shaped checkout with prior-run artifacts. */
+function tempData(runs) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-data-'));
+  for (const [run, arts] of Object.entries(runs)) {
+    for (const kind of ['proposals', 'captures']) {
+      for (const [name, text] of Object.entries(arts[kind] || {})) {
+        const p = path.join(dir, 'runs', run, kind, name);
+        fs.mkdirSync(path.dirname(p), { recursive: true });
+        fs.writeFileSync(p, text);
+      }
+    }
+  }
+  return dir;
+}
+
+function warns(result, code) {
+  return (result.json?.warnings || []).some((w) => w.check === code);
+}
 
 const MANIFEST = fixture('fake-brain/skills/ui-design-brain/patterns-manifest.json');
 
@@ -728,4 +748,49 @@ test('a malformed specs.json fails to parse', () => {
   const dir = tempOutput();
   writeFile(dir, 'specs.json', '{ not json');
   assertFails(dir, 'specs-parses');
+});
+
+test('--data flags a proposal a prior run already made, without failing', () => {
+  const dir = tempOutput(); // proposes logo-ribbon
+  const data = tempData({
+    'other-client/2020-01-01': { proposals: { 'logo-ribbon.md': readFile(dir, 'proposals/logo-ribbon.md') } },
+  });
+  try {
+    const result = validate(dir, ['--manifest', MANIFEST, '--data', data, '--json']);
+    assert.equal(result.status, 0, `a duplicate warns, it does not fail:\n${result.stdout}`);
+    assert.ok(warns(result, 'proposal-duplicate'), 'expected a proposal-duplicate warning');
+  } finally {
+    fs.rmSync(data, { recursive: true, force: true });
+  }
+});
+
+test('--data flags a capture a prior run already made', () => {
+  const dir = tempOutput(); // captures modal
+  const data = tempData({ 'other-client/2020-01-01': { captures: { 'modal.md': '# Capture: Modal\n' } } });
+  try {
+    const result = validate(dir, ['--manifest', MANIFEST, '--data', data, '--json']);
+    assert.ok(warns(result, 'capture-duplicate'), 'expected a capture-duplicate warning');
+  } finally {
+    fs.rmSync(data, { recursive: true, force: true });
+  }
+});
+
+test('--data with no overlapping prior art produces no duplicate warnings', () => {
+  const dir = tempOutput();
+  const data = tempData({
+    'other-client/2020-01-01': { proposals: { 'unrelated.md': '# Proposal: Unrelated\n\n## Proposal type\n\nnew-pattern\n' } },
+  });
+  try {
+    const result = validate(dir, ['--manifest', MANIFEST, '--data', data, '--json']);
+    assert.equal(result.status, 0);
+    assert.ok(!warns(result, 'proposal-duplicate') && !warns(result, 'capture-duplicate'));
+  } finally {
+    fs.rmSync(data, { recursive: true, force: true });
+  }
+});
+
+test('without --data the prior-art check does not run (backward compatible)', () => {
+  const dir = tempOutput();
+  const result = validate(dir, ['--manifest', MANIFEST, '--json']);
+  assert.ok(!warns(result, 'proposal-duplicate') && !warns(result, 'capture-duplicate'));
 });
