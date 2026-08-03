@@ -46,7 +46,7 @@ Write `runs/<project-slug>/<date>/meta.json` in Step 4 (the model writes it — 
 
 A completed project's `artifacts/memory/` (architecture, caveats, conventions, component notes — durable engineering knowledge the pipeline generated) is otherwise read only to name-match components, then dropped. Preserve it, near-raw, before the project is archived. It is produced in **Step 4** so the `memory-archive.json` manifest lands in `Output` before the Step 5 validator; the copy and digest are gated on the evidence checkout exactly like the rest of the wiki.
 
-`archive-memory.cjs` resolves the artifacts root from `build.config.json` the same way `inventory.cjs` does, walks `<artifactsRoot>/memory/**` (plus a `MEMORY.md` index), **skips empty placeholder shards** (frontmatter + heading only — a migration leaves these for topics the project never filled in; they land in the manifest's `skippedEmpty`), and always writes the manifest to `Output`:
+`archive-memory.cjs` resolves the artifacts root from `build.config.json` the same way `inventory.cjs` does, walks `<artifactsRoot>/memory/**` (the shards only — the `MEMORY.md` index is navigation, not memory content, so it is **not** preserved; the Step 6 digest carries any navigation), **skips empty placeholder shards** (frontmatter + heading only — a migration leaves these for topics the project never filled in; they land in the manifest's `skippedEmpty`), and always writes the manifest to `Output`:
 
 ```bash
 node <skill>/scripts/archive-memory.cjs --project <Project> \

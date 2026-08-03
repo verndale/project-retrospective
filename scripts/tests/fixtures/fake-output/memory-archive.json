@@ -7,13 +7,12 @@
   "memoryDir": "/tmp/fake-project/artifacts/memory",
   "destination": "/tmp/ui-design-evidence/wiki/memory/fake-project/fake-project/source",
   "files": [
-    "MEMORY.md",
     "design-system.md"
   ],
   "skippedEmpty": [],
   "counts": {
-    "files": 2,
-    "bytes": 196
+    "files": 1,
+    "bytes": 146
   },
   "warnings": []
 }

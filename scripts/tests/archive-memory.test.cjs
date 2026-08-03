@@ -7,7 +7,8 @@ const os = require('node:os');
 const path = require('node:path');
 const { run, runJson, fixture } = require('./helpers.cjs');
 
-// fake-project carries artifacts/memory/design-system.md plus an artifacts/MEMORY.md index.
+// fake-project carries artifacts/memory/design-system.md plus an artifacts/MEMORY.md index
+// (the index is navigation, not memory content, so it is intentionally not archived).
 const PROJECT = fixture('fake-project');
 
 function archive(args) {
@@ -28,7 +29,7 @@ test('a record-only run (no --archive) lists memory but copies nothing', () => {
   const r = archive(['--project', PROJECT]);
   assert.equal(r.status, 0, r.stderr);
   assert.equal(r.json.status, 'skipped-no-data');
-  assert.deepEqual(r.json.files, ['MEMORY.md', 'design-system.md']);
+  assert.deepEqual(r.json.files, ['design-system.md']);
   assert.equal(r.json.destination, null);
 });
 
@@ -39,11 +40,12 @@ test('--archive copies the memory near-raw and reports archived', () => {
     const r = archive(['--project', PROJECT, '--archive', source]);
     assert.equal(r.status, 0, r.stderr);
     assert.equal(r.json.status, 'archived');
-    assert.ok(r.json.files.length >= 2, 'expected files to be archived');
+    assert.ok(r.json.files.length >= 1, 'expected files to be archived');
     assert.ok(r.json.counts.bytes > 0, 'expected a non-zero byte count');
     // The bytes actually landed on disk.
     assert.ok(fs.existsSync(path.join(source, 'design-system.md')));
-    assert.ok(fs.existsSync(path.join(source, 'MEMORY.md')));
+    // The MEMORY.md index is navigation, not memory content — it must not be archived.
+    assert.ok(!fs.existsSync(path.join(source, 'MEMORY.md')), 'the MEMORY.md index must not be archived');
   } finally {
     fs.rmSync(dest, { recursive: true, force: true });
   }
@@ -125,7 +127,9 @@ test('a project whose memory is all placeholders reports no-memory', () => {
     assert.equal(r.status, 0, r.stderr);
     assert.equal(r.json.status, 'no-memory');
     assert.deepEqual(r.json.files, []);
-    assert.deepEqual(r.json.skippedEmpty, ['MEMORY.md', 'architecture.md']);
+    // MEMORY.md is ignored entirely (not memory content) — neither archived nor skipped;
+    // only the placeholder shard is reported in skippedEmpty.
+    assert.deepEqual(r.json.skippedEmpty, ['architecture.md']);
   } finally {
     fs.rmSync(proj, { recursive: true, force: true });
   }
