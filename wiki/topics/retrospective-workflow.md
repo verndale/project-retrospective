@@ -18,6 +18,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-08-03 — feat(project-retrospective): Update graph data and enhance markdown conv ([PR #40](https://github.com/verndale/project-retrospective/pull/40))
 - 2026-08-03 — feat(project-retrospective): Add specs input handling to project retrosp ([PR #38](https://github.com/verndale/project-retrospective/pull/38))
 - 2026-08-03 — fix(project-retrospective): Update memory archive logic to exclude index ([PR #36](https://github.com/verndale/project-retrospective/pull/36))
 - 2026-08-03 — `validate-report.cjs --data` flags a capture or proposal a prior run already made (`capture-duplicate` / `proposal-duplicate`) — the analyze-draft dedup the Breadcrumbs re-capture exposed, keyed on prior artifacts so cross-run recurrence stays valid evidence. `adf-to-markdown.cjs` renders spec media as markdown links (private Confluence images, not mirrored into the repo) and keeps whitespace outside emphasis delimiters so an ADF strong run like `**label: **` renders instead of showing literal asterisks ([journal](../journal/2026-08-03-prior-art-dedup-and-spec-images.md))

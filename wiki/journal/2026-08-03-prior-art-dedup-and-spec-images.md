@@ -2,7 +2,7 @@
 date: 2026-08-03
 topics: [retrospective-workflow]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/40
 ---
 # Prior-art dedup for captures/proposals, and spec images
 
