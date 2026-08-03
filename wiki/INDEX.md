@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-08-03 — [chore(project-retrospective): Update report template and validation test](journal/2026-08-03-chore-project-retrospective-update-report-template-and-valid.md) — AI-drafted, revise
 - 2026-08-03 — [feat(project-retrospective): Add specs input handling to project retrosp](journal/2026-08-03-feat-project-retrospective-add-specs-input-handling-to-proje.md) — AI-drafted, revise
 - 2026-08-03 — [Prior-art dedup for captures/proposals, and spec images](journal/2026-08-03-prior-art-dedup-and-spec-images.md) — `validate-report --data` warns on captures/proposals a prior run already made, and the ADF converter renders spec images as links and fixes emphasis that included trailing whitespace.
 - 2026-08-02 — [Spec capture: deterministic completeness + REST-API fetch](journal/2026-08-02-spec-capture-rest-api.md) — spec fetch moved to the id-addressed Atlassian REST API with a vendored ADF→markdown converter, and completeness became a `normalize-specs.cjs` reconciliation instead of a prose count.
