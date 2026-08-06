@@ -72,6 +72,34 @@ Retrospective runs read client repositories and produce client-derived output. N
 
 The skill's `promote` action edits a **local `ui-design-brain` working tree** and stops. It never commits, pushes, or opens a PR there, and it never edits `ai-orchestration` — findings for the pipeline are emitted as paste-ready drafts the maintainer carries over. Brain edits must satisfy that repo's catalog-integrity checklist (manifest + `index.md` + pattern file + README count + context-alias table); `references/brain-integrity-checklist.md` holds the ordered procedure.
 
+## Branch off main before applying repo edits
+
+Every repository the skill *writes* is edited on a working branch off that repo's `main`, never on `main` itself, so `main` never carries uncommitted skill output. Create the branch (`git -C <repo> switch -c <branch>`) before the first write to that repo, and make every edit there:
+
+- **ui-design-evidence** (`Data`) — `Action: analyze` writes the run (`runs/<project>/<date>/`) and the client wiki feed here, and `promote`/`capture` also write `## Applied` markers and regenerate its graph. Branch before the run's first write. This repo is private, so its branch name may name the run/client, matching the established run-branch pattern (e.g. `feat/<project>-<date>-run`).
+- **ui-design-brain** (`Brain`) — `Action: promote` edits the catalog here.
+- **ui-design-library** (`Library`) — `Action: capture` writes components here.
+
+Branch names in the shared catalog/library repos stay **client-agnostic** — name the change, not the client (e.g. `feat/add-<slug>-pattern`). A repo the action only *reads* stays on `main`: the brain during a capture preflight, and the analyzed project (always read-only).
+
+This is *in addition to* the no-commit rule, not a softening of it: still stop at the handback with each branch checked out and nothing committed — the maintainer commits, pushes, and opens the PR.
+
+## File a tracking ticket per repo at the end of a retro
+
+After an `Action: analyze` run, file one **[Feature]** GitHub issue per repo involved, using the `github-issue-creator` skill (which drafts, confirms with the maintainer, and only then files — never silently).
+
+The three shared/public **downstream** repos each get an issue whose body is a checklist itemizing that repo's pending work (skip one with no pending work):
+
+- **ui-design-brain** — the run's catalog proposals (`proposals/*.md`): each new pattern and alias to apply.
+- **ui-design-library** — the run's component captures (`captures/*.md`).
+- **ai-orchestration** — the run's pipeline-rule drafts (`orchestration-drafts.md`).
+
+These are shared/public, so each is **client-agnostic** — describe the pattern, capture, or rule and its recurrence, never the client, the run slug, or client copy (the same data boundary the proposals and downstream wiki follow). Label each with the repo's feature-type label — **`Feature`** on ui-design-brain and ui-design-library, **`enhancement`** on ai-orchestration (which has no `Feature` label) — plus a fitting **area label** in the **`area: <area>`** convention (a space after the colon, lowercase area): e.g. `area: catalog` (ui-design-brain), `area: components` (ui-design-library), `area: rule` (ai-orchestration). Label sets differ per repo, so run `gh label list --repo <owner>/<repo>` first: reuse an existing area label when one fits, create one in the `area: <area>` format when none does, and never apply a label the repo lacks.
+
+**ui-design-evidence** (the private data repo) also gets one — a **client-named hub** issue titled `[Feature] Record the <Client> <date> retrospective run`, labeled `Feature`, matching the existing run-record issues' shape (Summary / What's included / Branch). Because this repo is private, this issue alone may name the client and cite run paths: its body records the run's `runs/<project>/<date>/` outputs and wiki feed, names the run branch, and links the three downstream tickets above.
+
+Filing an issue is the one step here that reaches outside the working tree; get the maintainer's go-ahead first.
+
 ## Commits & release — the maintainer's job, not the agent's
 
 **Permission boundary:** edit files under `skills/`, `scripts/`, and `wiki/` freely without asking — that's the autonomous zone, and capturing a substantive change in `wiki/` is expected rather than optional. Everything in this section is the maintainer's.
