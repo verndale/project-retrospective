@@ -18,6 +18,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-08-08 — feat(project-retrospective): Update triage schema and related documentat ([PR #52](https://github.com/verndale/project-retrospective/pull/52))
 - 2026-08-08 — fix(normalize-specs): Read the gate from a bold or bare Status row ([PR #49](https://github.com/verndale/project-retrospective/pull/49))
 - 2026-08-03 — chore(project-retrospective): Update report template and validation test ([PR #45](https://github.com/verndale/project-retrospective/pull/45))
 - 2026-08-03 — chore(project-retrospective): Update graph data and enhance wiki documen ([PR #43](https://github.com/verndale/project-retrospective/pull/43))
