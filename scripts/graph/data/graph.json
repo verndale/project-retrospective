@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 92,
-    "edges": 219,
+    "nodes": 93,
+    "edges": 221,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 8,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 20,
+      "wiki-journal": 21,
       "wiki-plan": 4,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 24,
       "covers": 19,
-      "links-to": 97,
+      "links-to": 98,
       "plan": 4,
       "requires": 33,
       "tests": 10,
-      "topic": 32
+      "topic": 33
     }
   },
   "nodes": [
@@ -757,8 +757,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7956,
-      "degree": 30
+      "bytes": 8155,
+      "degree": 31
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1063,6 +1063,22 @@
       "degree": 3
     },
     {
+      "id": "wiki/journal/2026-08-08-chore-project-retrospective-update-documentation-for-trackin.md",
+      "label": "chore(project-retrospective): Update documentation for tracking issues p",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [
+        "55"
+      ],
+      "issues": [],
+      "bytes": 1224,
+      "degree": 2
+    },
+    {
       "id": "wiki/journal/2026-08-08-feat-project-retrospective-update-triage-schema-and-related-.md",
       "label": "feat(project-retrospective): Update triage schema and related documentat",
       "type": "wiki-journal",
@@ -1269,6 +1285,7 @@
         "promote watch reject"
       ],
       "prs": [
+        "55",
         "52",
         "49",
         "45",
@@ -1289,8 +1306,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 9102,
-      "degree": 37
+      "bytes": 9262,
+      "degree": 38
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1916,6 +1933,13 @@
     {
       "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-08-03-prior-art-dedup-and-spec-images.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-08-chore-project-retrospective-update-documentation-for-trackin.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2559,6 +2583,11 @@
     },
     {
       "source": "wiki/journal/2026-08-03-prior-art-dedup-and-spec-images.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-08-08-chore-project-retrospective-update-documentation-for-trackin.md",
       "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },
