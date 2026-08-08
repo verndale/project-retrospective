@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 91,
-    "edges": 216,
+    "nodes": 92,
+    "edges": 219,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -9,7 +9,7 @@
       "test": 10,
       "authoring-spec": 1,
       "skill-readme": 1,
-      "skill-reference": 16,
+      "skill-reference": 17,
       "skill-script": 8,
       "skill": 1,
       "wiki-index": 3,
@@ -18,9 +18,9 @@
       "wiki-topic": 5
     },
     "byEdgeType": {
-      "contracts": 23,
+      "contracts": 24,
       "covers": 19,
-      "links-to": 95,
+      "links-to": 97,
       "plan": 4,
       "requires": 33,
       "tests": 10,
@@ -37,8 +37,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 11443,
-      "degree": 6
+      "bytes": 10517,
+      "degree": 7
     },
     {
       "id": "CLAUDE.md",
@@ -581,6 +581,18 @@
       "degree": 3
     },
     {
+      "id": "skills/project-retrospective/references/tracking-issues.md",
+      "label": "Tracking issues — one per repo the retro touches",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3735,
+      "degree": 3
+    },
+    {
       "id": "skills/project-retrospective/references/triage-schema.md",
       "label": "triage.json schema",
       "type": "skill-reference",
@@ -733,8 +745,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 29574,
-      "degree": 43
+      "bytes": 31783,
+      "degree": 45
     },
     {
       "id": "wiki/INDEX.md",
@@ -1363,6 +1375,11 @@
     },
     {
       "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/tracking-issues.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/triage-schema.md",
       "type": "contracts"
     },
@@ -1514,6 +1531,13 @@
     {
       "source": "AGENTS.md",
       "target": "scripts/graph/README.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "AGENTS.md",
+      "target": "skills/project-retrospective/references/tracking-issues.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -1733,6 +1757,13 @@
       "target": "skills/project-retrospective/references/spec-capture.md",
       "type": "links-to",
       "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/tracking-issues.md",
+      "type": "links-to",
+      "count": 6,
       "anchors": []
     },
     {
