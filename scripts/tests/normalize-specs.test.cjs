@@ -187,6 +187,60 @@ test('Document Status is read from the properties table even when it is not the 
   }
 });
 
+test('a bolded **Status** property row is read as the gate, even when it is not the first table', () => {
+  // Editable Fields comes first; the real Page Properties block uses bolded keys
+  // and labels the gate "Status" (not "Document Status") — the MCPHS template.
+  const body =
+    '## Component Content\n\n### Editable Fields\n\n' +
+    '| Field Name | Field Type | Required | Notes |\n| --- | --- | --- | --- |\n| Heading | string | Yes | h2 |\n\n' +
+    '## Properties\n\n' +
+    '| **Batch** | 1 |\n| --- | --- |\n| **Status** | approved |\n| **Contains PII** | No |\n';
+  const { dir, file } = tempRaw([{ pageId: '5', title: 'MCPHS | Media Gallery', bodyMarkdown: body }]);
+  try {
+    const r = normalize(['--raw', file]);
+    assert.equal(r.status, 0, r.stderr);
+    // Without emphasis-stripping the bold-keyed block is not identified as
+    // properties, the status parses empty, and the approved spec is skipped.
+    assert.equal(r.json.counts.specs, 1);
+    assert.equal(r.json.counts.skipped, 0);
+    assert.equal(specOf(r.json, 'Media Gallery').documentStatus.toUpperCase(), 'APPROVED');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('when both Document Status and Status rows are present, Document Status wins', () => {
+  // A spec carrying both fields must be read from the canonical "Document Status"
+  // — so a bare "Status: draft" alongside "Document Status: APPROVED" is included.
+  const body =
+    '## Properties\n\n' +
+    '| Batch | 1 |\n| --- | --- |\n| Document Status | APPROVED |\n| Status | draft |\n';
+  const { dir, file } = tempRaw([{ pageId: '7', title: 'MCPHS | Both Fields', bodyMarkdown: body }]);
+  try {
+    const r = normalize(['--raw', file]);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.json.counts.specs, 1);
+    assert.equal(r.json.counts.skipped, 0);
+    assert.equal(specOf(r.json, 'Both Fields').documentStatus.toUpperCase(), 'APPROVED');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('a bare Status row still respects the gate value — a draft is skipped', () => {
+  const body = '## Properties\n\n| Batch | 1 |\n| --- | --- |\n| Status | draft |\n\n## Overview\n\nx\n';
+  const { dir, file } = tempRaw([{ pageId: '6', title: 'MCPHS | Draft Band', bodyMarkdown: body }]);
+  try {
+    const r = normalize(['--raw', file]);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.json.counts.specs, 0);
+    assert.equal(r.json.counts.skipped, 1);
+    assert.equal(r.json.skipped[0].documentStatus.toUpperCase(), 'DRAFT');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('a page carrying several batch labels is deduped, not counted twice', () => {
   const body = '## Overview\n\n`baseType: _component`\n\nGrid.\n\n## Properties\n\n| Document Status | APPROVED |\n| --- | --- |\n';
   const { dir, file } = tempRaw([
