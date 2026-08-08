@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 88,
-    "edges": 210,
+    "nodes": 89,
+    "edges": 212,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 8,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 18,
+      "wiki-journal": 19,
       "wiki-plan": 4,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 22,
       "covers": 19,
-      "links-to": 92,
+      "links-to": 93,
       "plan": 4,
       "requires": 33,
       "tests": 10,
-      "topic": 30
+      "topic": 31
     }
   },
   "nodes": [
@@ -733,8 +733,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7564,
-      "degree": 28
+      "bytes": 7757,
+      "degree": 29
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1039,6 +1039,22 @@
       "degree": 3
     },
     {
+      "id": "wiki/journal/2026-08-08-fix-normalize-specs-read-the-gate-from-a-bold-or-bare-status.md",
+      "label": "fix(normalize-specs): Read the gate from a bold or bare Status row",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [
+        "49"
+      ],
+      "issues": [],
+      "bytes": 778,
+      "degree": 2
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -1213,6 +1229,7 @@
         "promote watch reject"
       ],
       "prs": [
+        "49",
         "45",
         "43",
         "40",
@@ -1231,8 +1248,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 8788,
-      "degree": 35
+      "bytes": 8942,
+      "degree": 36
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1827,6 +1844,13 @@
     {
       "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-08-03-prior-art-dedup-and-spec-images.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-08-fix-normalize-specs-read-the-gate-from-a-bold-or-bare-status.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2456,6 +2480,11 @@
     },
     {
       "source": "wiki/journal/2026-08-03-prior-art-dedup-and-spec-images.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-08-08-fix-normalize-specs-read-the-gate-from-a-bold-or-bare-status.md",
       "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },
