@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-08-08 — [feat(project-retrospective): Update triage schema and related documentat](journal/2026-08-08-feat-project-retrospective-update-triage-schema-and-related-.md) — AI-drafted, revise
 - 2026-08-08 — [fix(normalize-specs): Read the gate from a bold or bare Status row](journal/2026-08-08-fix-normalize-specs-read-the-gate-from-a-bold-or-bare-status.md) — AI-drafted, revise
 - 2026-08-03 — [chore(project-retrospective): Update report template and validation test](journal/2026-08-03-chore-project-retrospective-update-report-template-and-valid.md) — AI-drafted, revise
 - 2026-08-03 — [feat(project-retrospective): Add specs input handling to project retrosp](journal/2026-08-03-feat-project-retrospective-add-specs-input-handling-to-proje.md) — AI-drafted, revise

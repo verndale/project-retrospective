@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 90,
-    "edges": 214,
+    "nodes": 91,
+    "edges": 216,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 8,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 19,
+      "wiki-journal": 20,
       "wiki-plan": 4,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 23,
       "covers": 19,
-      "links-to": 94,
+      "links-to": 95,
       "plan": 4,
       "requires": 33,
       "tests": 10,
-      "topic": 31
+      "topic": 32
     }
   },
   "nodes": [
@@ -745,8 +745,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7757,
-      "degree": 29
+      "bytes": 7956,
+      "degree": 30
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1051,6 +1051,22 @@
       "degree": 3
     },
     {
+      "id": "wiki/journal/2026-08-08-feat-project-retrospective-update-triage-schema-and-related-.md",
+      "label": "feat(project-retrospective): Update triage schema and related documentat",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [
+        "52"
+      ],
+      "issues": [],
+      "bytes": 1257,
+      "degree": 2
+    },
+    {
       "id": "wiki/journal/2026-08-08-fix-normalize-specs-read-the-gate-from-a-bold-or-bare-status.md",
       "label": "fix(normalize-specs): Read the gate from a bold or bare Status row",
       "type": "wiki-journal",
@@ -1241,6 +1257,7 @@
         "promote watch reject"
       ],
       "prs": [
+        "52",
         "49",
         "45",
         "43",
@@ -1260,8 +1277,8 @@
         "1"
       ],
       "issues": [],
-      "bytes": 8942,
-      "degree": 36
+      "bytes": 9102,
+      "degree": 37
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1868,6 +1885,13 @@
     {
       "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-08-03-prior-art-dedup-and-spec-images.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-08-feat-project-retrospective-update-triage-schema-and-related-.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2504,6 +2528,11 @@
     },
     {
       "source": "wiki/journal/2026-08-03-prior-art-dedup-and-spec-images.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-08-08-feat-project-retrospective-update-triage-schema-and-related-.md",
       "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },
