@@ -1,3 +1,64 @@
+# v1.14.1 — 2026-08-08
+
+## Summary (AI, bounded)
+- Fixed normalize-specs to properly read the gate from a bold or bare Status row (commit 1f51385).
+- Updated CI workflows by removing unnecessary push steps (commit 37aaeae).
+- Enhanced project retrospective documentation, including updates to AGENTS.md with branch and ticket guidelines and improvements to report templates and validation tests (commits af12501, 7c09634).
+- Synced wiki documentation including journal, topics, and plans across multiple updates (commits 5d51d37, 472aefa, 8229ee1).
+- Merged several pull requests to facilitate documentation synchronization and fixes (commit 553cb12).
+
+## Highlights
+- commit: Merge pull request #49 from verndale/fix/normalize-specs-status-gate (553cb12)
+- fix(normalize-specs): Read the gate from a bold or bare Status row (1f51385)
+- chore(ci): Update workflows to remove unnecessary push (37aaeae)
+- chore(project-retrospective): Update AGENTS.md with branch and ticket guidelines (af12501)
+- commit: Merge pull request #47 from verndale/bot/wiki-sync/45 (7ae3e76)
+- docs(wiki): sync journal, topics, and plans for #45 (8229ee1)
+- commit: Merge pull request #45 from verndale/feat/gotchas-in-documentation (4ab0632)
+- chore(project-retrospective): Update report template and validation tests (7c09634)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Fixes
+- fix(normalize-specs): Read the gate from a bold or bare Status row (1f51385)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #40 (5d51d37)
+- docs(wiki): sync journal, topics, and plans for #43 (472aefa)
+- docs(wiki): sync journal, topics, and plans for #45 (8229ee1)
+
+### Chore
+- chore(ci): Update workflows to remove unnecessary push (37aaeae)
+- chore(project-retrospective): Update AGENTS.md with branch and ticket guidelines (af12501)
+- chore(project-retrospective): Update graph data and enhance wiki documentation (71d07cd)
+- chore(project-retrospective): Update report template and validation tests (7c09634)
+
+### Other (unknown)
+- commit: Merge pull request #41 from verndale/bot/wiki-sync/40 (9b721ef)
+- commit: Merge pull request #43 from verndale/fix/analyze-rebuild-evidence-generated-trees (680563e)
+- commit: Merge pull request #44 from verndale/bot/wiki-sync/43 (1b3db98)
+- commit: Merge pull request #45 from verndale/feat/gotchas-in-documentation (4ab0632)
+- commit: Merge pull request #47 from verndale/bot/wiki-sync/45 (7ae3e76)
+- commit: Merge pull request #49 from verndale/fix/normalize-specs-status-gate (553cb12)
+
+## Full commit list
+- 553cb12 commit: Merge pull request #49 from verndale/fix/normalize-specs-status-gate
+- 1f51385 fix(normalize-specs): Read the gate from a bold or bare Status row
+- 37aaeae chore(ci): Update workflows to remove unnecessary push
+- af12501 chore(project-retrospective): Update AGENTS.md with branch and ticket guidelines
+- 7ae3e76 commit: Merge pull request #47 from verndale/bot/wiki-sync/45
+- 8229ee1 docs(wiki): sync journal, topics, and plans for #45
+- 4ab0632 commit: Merge pull request #45 from verndale/feat/gotchas-in-documentation
+- 7c09634 chore(project-retrospective): Update report template and validation tests
+- 1b3db98 commit: Merge pull request #44 from verndale/bot/wiki-sync/43
+- 472aefa docs(wiki): sync journal, topics, and plans for #43
+- 680563e commit: Merge pull request #43 from verndale/fix/analyze-rebuild-evidence-generated-trees
+- 71d07cd chore(project-retrospective): Update graph data and enhance wiki documentation
+- 9b721ef commit: Merge pull request #41 from verndale/bot/wiki-sync/40
+- 5d51d37 docs(wiki): sync journal, topics, and plans for #40
+
 # v1.14.0 — 2026-08-03
 
 ## Summary (AI, bounded)
