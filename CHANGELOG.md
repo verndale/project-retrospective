@@ -1,3 +1,36 @@
+# v1.15.0 — 2026-08-08
+
+## Summary (AI, bounded)
+- Updated the triage schema and related documentation for project retrospectives (dbb2515).
+- Synchronized journal, topics, and plans in the wiki documentation (bcc7f96).
+- Included merge commits for feature and documentation updates to ensure integration (bef0fb3, bb1b62a).
+
+## Highlights
+- commit: Merge pull request #52 from verndale/feat/emit-triage-json (bef0fb3)
+- feat(project-retrospective): Update triage schema and related documentation (dbb2515)
+- commit: Merge pull request #50 from verndale/bot/wiki-sync/49 (bb1b62a)
+- docs(wiki): sync journal, topics, and plans for #49 (bcc7f96)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Update triage schema and related documentation (dbb2515)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #49 (bcc7f96)
+
+### Other (unknown)
+- commit: Merge pull request #50 from verndale/bot/wiki-sync/49 (bb1b62a)
+- commit: Merge pull request #52 from verndale/feat/emit-triage-json (bef0fb3)
+
+## Full commit list
+- bef0fb3 commit: Merge pull request #52 from verndale/feat/emit-triage-json
+- dbb2515 feat(project-retrospective): Update triage schema and related documentation
+- bb1b62a commit: Merge pull request #50 from verndale/bot/wiki-sync/49
+- bcc7f96 docs(wiki): sync journal, topics, and plans for #49
+
 # v1.14.1 — 2026-08-08
 
 ## Summary (AI, bounded)
