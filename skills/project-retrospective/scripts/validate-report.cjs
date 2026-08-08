@@ -207,6 +207,94 @@ function checkMeta(dir, scope, result) {
 }
 
 /**
+ * Is this run's triage.json well-formed?
+ *
+ * triage.json is the machine-readable twin of report.md's "## Candidates" verdicts:
+ * a promote/watch/reject split the ui-design-evidence promotion radar
+ * (query/start-pack.cjs) reads to rank candidates. A run without it is a gap note —
+ * the radar goes dark for that project. The model authors it at full/candidates scope
+ * from its Step-3 verdicts plus resolution.json/inventory.json metadata, so this checks
+ * structure only: schema, the run-dir join, the three arrays, per-entry label/verdict,
+ * and the counts object. The watch "provisional canonical:" note is what the radar keys
+ * on, so a missing one warns rather than fails — the run is still usable, just weaker.
+ */
+function checkTriage(dir, scope, result) {
+  const file = path.join(dir, 'triage.json');
+  if (!isFile(file)) {
+    result.fail('triage-present', 'triage.json is missing');
+    return null;
+  }
+  const read = readJsonSafe(file);
+  if (!read.ok) {
+    result.fail('triage-parses', `triage.json could not be parsed: ${read.error}`);
+    return null;
+  }
+  const triage = read.value;
+  if (!triage || typeof triage !== 'object' || Array.isArray(triage)) {
+    result.fail('triage-parses', 'triage.json is not a JSON object');
+    return null;
+  }
+  if (triage.schemaVersion !== 1) result.fail('triage-schema', `triage.json schemaVersion is ${triage.schemaVersion}, expected 1`);
+
+  // When the output dir is a real run directory (runs/<slug>/<date>/), run must equal
+  // <parent>/<basename> — the same guard checkMeta uses so the radar, the wiki, and the
+  // report agree on which run this is. Skipped for ad-hoc output dirs.
+  if (path.basename(path.dirname(path.dirname(dir))) === 'runs') {
+    const expected = `${path.basename(path.dirname(dir))}/${path.basename(dir)}`;
+    if (triage.run !== expected) {
+      result.fail('triage-run', `triage.json run "${triage.run}" does not match the run directory "${expected}"`);
+    }
+  }
+
+  const VERDICTS = ['Promote', 'Watch', 'Reject'];
+  const arrays = { promote: triage.promote, watch: triage.watch, reject: triage.reject };
+  for (const [key, value] of Object.entries(arrays)) {
+    if (!Array.isArray(value)) {
+      result.fail('triage-shape', `triage.json ${key} must be an array`);
+      continue;
+    }
+    for (const entry of value) {
+      const label = entry && typeof entry === 'object' ? entry.label : undefined;
+      if (typeof label !== 'string' || !label) {
+        result.fail('triage-entry', `a ${key} entry has no non-empty string "label"`);
+        continue;
+      }
+      if (!VERDICTS.includes(entry.verdict)) {
+        result.fail('triage-entry', `${key} entry "${label}" has verdict "${entry.verdict}", expected one of: ${VERDICTS.join(', ')}`);
+      }
+    }
+  }
+
+  // The radar ranks a Watch by its "provisional canonical:" note; a note that omits it
+  // starves the radar of the name it needs. Advisory — the run is still valid.
+  if (Array.isArray(triage.watch)) {
+    for (const entry of triage.watch) {
+      if (!entry || typeof entry !== 'object') continue;
+      const label = typeof entry.label === 'string' && entry.label ? entry.label : '?';
+      const note = typeof entry.note === 'string' ? entry.note : '';
+      if (!note.startsWith('provisional canonical:')) {
+        result.warn(
+          'triage-provisional',
+          `watch entry "${label}" note does not start "provisional canonical:" — the promotion radar needs it to rank the candidate`,
+        );
+      }
+    }
+  }
+
+  const counts = triage.counts;
+  if (!counts || typeof counts !== 'object' || Array.isArray(counts)) {
+    result.fail('triage-counts', 'triage.json has no counts object');
+  } else {
+    for (const key of VERDICTS) {
+      if (counts[key] !== undefined && typeof counts[key] !== 'number') {
+        result.fail('triage-counts', `triage.json counts.${key} must be a number`);
+      }
+    }
+  }
+  return triage;
+}
+
+/**
  * Did this run preserve the project's memory, or say why it could not?
  *
  * "Did the project have memory?" comes from inventory's evidence block. The
@@ -799,6 +887,9 @@ function main() {
   // Identity is required wherever the run has candidates (full and candidates
   // scopes); an inventory-only run has no client wiki to feed.
   if (scope !== 'inventory') checkMeta(dir, scope, result);
+  // The machine-readable twin of the report's "## Candidates" verdicts; the evidence
+  // promotion radar reads it, so a run with candidates must emit it (full and candidates).
+  if (scope !== 'inventory') checkTriage(dir, scope, result);
   // Every analyze run that reaches Step 6 (full and candidates) must preserve
   // project memory or record why it could not; an inventory-only run has no Step 6.
   if (scope !== 'inventory') checkMemoryArchive(dir, result);

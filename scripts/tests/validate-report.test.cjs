@@ -612,6 +612,107 @@ test('meta.json must agree with a real run directory', () => {
   assertFails(runDir, 'meta-dir');
 });
 
+// --- triage.json (the machine-readable "## Candidates" twin the promotion radar reads) ---
+
+test('a run with a valid triage.json passes', () => {
+  const dir = tempOutput(); // the golden fixture ships a well-formed triage.json
+  const result = validate(dir, ['--json']);
+  assert.equal(result.status, 0, `expected pass, got: ${JSON.stringify(result.json?.failures, null, 2)}`);
+  assert.ok(
+    !result.json.warnings.some((w) => w.check === 'triage-provisional'),
+    'the golden watch entry carries a provisional-canonical note',
+  );
+});
+
+test('a run missing triage.json fails at full scope', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'triage.json'));
+  assertFails(dir, 'triage-present');
+});
+
+test('triage.json with the wrong schemaVersion fails', () => {
+  const dir = tempOutput();
+  const triage = JSON.parse(readFile(dir, 'triage.json'));
+  triage.schemaVersion = 2;
+  writeFile(dir, 'triage.json', JSON.stringify(triage, null, 2));
+  assertFails(dir, 'triage-schema');
+});
+
+test('a triage entry with an invalid verdict fails', () => {
+  const dir = tempOutput();
+  const triage = JSON.parse(readFile(dir, 'triage.json'));
+  triage.promote[0].verdict = 'Maybe';
+  writeFile(dir, 'triage.json', JSON.stringify(triage, null, 2));
+  assertFails(dir, 'triage-entry');
+});
+
+test('a triage entry with no label fails', () => {
+  const dir = tempOutput();
+  const triage = JSON.parse(readFile(dir, 'triage.json'));
+  delete triage.watch[0].label;
+  writeFile(dir, 'triage.json', JSON.stringify(triage, null, 2));
+  assertFails(dir, 'triage-entry');
+});
+
+test('a triage array that is not an array fails shape', () => {
+  const dir = tempOutput();
+  const triage = JSON.parse(readFile(dir, 'triage.json'));
+  triage.reject = null;
+  writeFile(dir, 'triage.json', JSON.stringify(triage, null, 2));
+  assertFails(dir, 'triage-shape');
+});
+
+test('a non-numeric count fails', () => {
+  const dir = tempOutput();
+  const triage = JSON.parse(readFile(dir, 'triage.json'));
+  triage.counts.Watch = 'one';
+  writeFile(dir, 'triage.json', JSON.stringify(triage, null, 2));
+  assertFails(dir, 'triage-counts');
+});
+
+test('a watch note without "provisional canonical:" warns but does not fail', () => {
+  const dir = tempOutput();
+  const triage = JSON.parse(readFile(dir, 'triage.json'));
+  triage.watch[0].note = 'a collection wrapper around Card';
+  writeFile(dir, 'triage.json', JSON.stringify(triage, null, 2));
+  const result = validate(dir, ['--json']);
+  assert.equal(result.status, 0, `a missing provisional note warns, it does not fail:\n${result.stdout}`);
+  assert.ok(warns(result, 'triage-provisional'), 'expected a triage-provisional warning');
+});
+
+test('a malformed triage.json fails to parse', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'triage.json', '{ not json');
+  assertFails(dir, 'triage-parses');
+});
+
+test('scope inventory does not require triage.json', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'triage.json'));
+  fs.rmSync(path.join(dir, 'meta.json'));
+  fs.rmSync(path.join(dir, 'memory-archive.json'));
+  fs.rmSync(path.join(dir, 'resolution.json'));
+  fs.rmSync(path.join(dir, 'proposals'), { recursive: true });
+  fs.rmSync(path.join(dir, 'orchestration-drafts.md'));
+  const result = validate(dir, ['--scope', 'inventory']);
+  assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
+test('triage.json must agree with a real run directory', () => {
+  const os = require('node:os');
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-triage-'));
+  const runDir = path.join(base, 'runs', 'fake-project', '2026-01-01');
+  fs.cpSync(tempOutput(), runDir, { recursive: true });
+  // The fixture triage already declares run fake-project/2026-01-01 → passes.
+  const pass = validate(runDir);
+  assert.equal(pass.status, 0, `expected pass, got:\n${pass.stdout}`);
+  // Break the run field so it disagrees with the directory.
+  const triage = JSON.parse(fs.readFileSync(path.join(runDir, 'triage.json'), 'utf8'));
+  triage.run = 'fake-project/2026-02-02';
+  fs.writeFileSync(path.join(runDir, 'triage.json'), JSON.stringify(triage, null, 2));
+  assertFails(runDir, 'triage-run');
+});
+
 // --- memory-archive.json (the "no run silently drops project memory" gate) ---
 
 /** Assert the run passed (exit 0) and raised the given warning. */
