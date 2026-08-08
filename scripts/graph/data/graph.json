@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 89,
-    "edges": 212,
+    "nodes": 90,
+    "edges": 214,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -9,7 +9,7 @@
       "test": 10,
       "authoring-spec": 1,
       "skill-readme": 1,
-      "skill-reference": 15,
+      "skill-reference": 16,
       "skill-script": 8,
       "skill": 1,
       "wiki-index": 3,
@@ -18,9 +18,9 @@
       "wiki-topic": 5
     },
     "byEdgeType": {
-      "contracts": 22,
+      "contracts": 23,
       "covers": 19,
-      "links-to": 93,
+      "links-to": 94,
       "plan": 4,
       "requires": 33,
       "tests": 10,
@@ -265,7 +265,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 33314,
+      "bytes": 37496,
       "degree": 2
     },
     {
@@ -581,6 +581,18 @@
       "degree": 3
     },
     {
+      "id": "skills/project-retrospective/references/triage-schema.md",
+      "label": "triage.json schema",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 4660,
+      "degree": 2
+    },
+    {
       "id": "skills/project-retrospective/references/wiki-client-template.md",
       "label": "wiki client page template",
       "type": "skill-reference",
@@ -709,7 +721,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 38466,
+      "bytes": 42637,
       "degree": 4
     },
     {
@@ -721,8 +733,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 28706,
-      "degree": 41
+      "bytes": 29574,
+      "degree": 43
     },
     {
       "id": "wiki/INDEX.md",
@@ -1334,6 +1346,11 @@
     },
     {
       "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/triage-schema.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/wiki-client-template.md",
       "type": "contracts"
     },
@@ -1697,6 +1714,13 @@
     {
       "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/spec-capture.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/triage-schema.md",
       "type": "links-to",
       "count": 2,
       "anchors": []

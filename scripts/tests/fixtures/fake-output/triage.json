@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "run": "fake-project/2026-01-01",
+  "promote": [
+    {
+      "label": "logo-ribbon",
+      "verdict": "Promote",
+      "rule": "two-source; not-already-covered",
+      "note": "normalized build pack plus project memory describe it without the client",
+      "bucket": "rendering",
+      "domain": "marketing",
+      "entry": "artifacts/build-packs/logo-ribbon.md",
+      "sources": ["build-pack", "memory"]
+    }
+  ],
+  "watch": [
+    {
+      "label": "cards",
+      "verdict": "Watch",
+      "rule": "coverage-uncertain (Card boundary)",
+      "note": "provisional canonical: Card grid — a collection wrapper around Card; single source, no build pack. A second project or a build pack would settle it.",
+      "bucket": "ui",
+      "domain": null,
+      "entry": "src/components/ui/cards",
+      "sources": ["component-index"]
+    }
+  ],
+  "reject": [
+    {
+      "label": "checkout-panel",
+      "verdict": "Reject",
+      "rule": "hard-exclusion (commerce flow)",
+      "note": "checkout is a hard exclusion — commerce flow, not reusable UI vocabulary",
+      "bucket": "rendering",
+      "domain": "marketing",
+      "entry": null,
+      "sources": ["component-index"]
+    }
+  ],
+  "counts": { "Promote": 1, "Watch": 1, "Reject": 1 }
+}
