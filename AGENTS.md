@@ -84,19 +84,11 @@ Branch names in the shared catalog/library repos stay **client-agnostic** — na
 
 This is *in addition to* the no-commit rule, not a softening of it: still stop at the handback with each branch checked out and nothing committed — the maintainer commits, pushes, and opens the PR.
 
-## File a tracking ticket per repo at the end of a retro
+## File a tracking issue per repo at the end of a retro
 
-After an `Action: analyze` run, file one **[Feature]** GitHub issue per repo involved, using the `github-issue-creator` skill (which drafts, confirms with the maintainer, and only then files — never silently).
+At the end of an `Action: analyze` run, the skill files one **[Feature]** GitHub issue per repo the run gives pending work, using the `github-issue-creator` skill (which drafts, confirms with the maintainer, and only then files — never silently). The executable spec — which repos, when, titles, bodies, and labels — is the vendored [`skills/project-retrospective/references/tracking-issues.md`](skills/project-retrospective/references/tracking-issues.md), invoked at Workflow Step 7; keep the two in sync.
 
-The three shared/public **downstream** repos each get an issue whose body is a checklist itemizing that repo's pending work (skip one with no pending work):
-
-- **ui-design-brain** — the run's catalog proposals (`proposals/*.md`): each new pattern and alias to apply.
-- **ui-design-library** — the run's component captures (`captures/*.md`).
-- **ai-orchestration** — the run's pipeline-rule drafts (`orchestration-drafts.md`).
-
-These are shared/public, so each is **client-agnostic** — describe the pattern, capture, or rule and its recurrence, never the client, the run slug, or client copy (the same data boundary the proposals and downstream wiki follow). Label each with the repo's feature-type label — **`Feature`** on ui-design-brain and ui-design-library, **`enhancement`** on ai-orchestration (which has no `Feature` label) — plus a fitting **area label** in the **`area: <area>`** convention (a space after the colon, lowercase area): e.g. `area: catalog` (ui-design-brain), `area: components` (ui-design-library), `area: rule` (ai-orchestration). Label sets differ per repo, so run `gh label list --repo <owner>/<repo>` first: reuse an existing area label when one fits, create one in the `area: <area>` format when none does, and never apply a label the repo lacks.
-
-**ui-design-evidence** (the private data repo) also gets one — a **client-named hub** issue titled `[Feature] Record the <Client> <date> retrospective run`, labeled `Feature`, matching the existing run-record issues' shape (Summary / What's included / Branch). Because this repo is private, this issue alone may name the client and cite run paths: its body records the run's `runs/<project>/<date>/` outputs and wiki feed, names the run branch, and links the three downstream tickets above.
+In short: the private **ui-design-evidence** repo gets a **client-named hub** issue recording the run; **ui-design-brain** gets a **client-agnostic** issue when the run drafted proposals; **ui-design-library** gets one — and its branch — only when the run flagged captures. `ai-orchestration` gets no issue (its rule drafts are carried over by hand). The shared repos' issues follow the same data boundary as the proposals and downstream wiki: describe the pattern, alias, or capture and its recurrence, never the client, the run slug, or client copy.
 
 Filing an issue is the one step here that reaches outside the working tree; get the maintainer's go-ahead first.
 
