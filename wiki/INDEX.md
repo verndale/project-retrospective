@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-08-08 — [fix(normalize-specs): Read the gate from a bold or bare Status row](journal/2026-08-08-fix-normalize-specs-read-the-gate-from-a-bold-or-bare-status.md) — AI-drafted, revise
 - 2026-08-03 — [chore(project-retrospective): Update report template and validation test](journal/2026-08-03-chore-project-retrospective-update-report-template-and-valid.md) — AI-drafted, revise
 - 2026-08-03 — [feat(project-retrospective): Add specs input handling to project retrosp](journal/2026-08-03-feat-project-retrospective-add-specs-input-handling-to-proje.md) — AI-drafted, revise
 - 2026-08-03 — [Prior-art dedup for captures/proposals, and spec images](journal/2026-08-03-prior-art-dedup-and-spec-images.md) — `validate-report --data` warns on captures/proposals a prior run already made, and the ADF converter renders spec images as links and fixes emphasis that included trailing whitespace.
