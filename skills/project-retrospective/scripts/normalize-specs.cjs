@@ -126,17 +126,30 @@ function parseTables(body) {
   return tables;
 }
 
+/** Strip markdown bold/code markers (`**`, `` ` ``) and trim. Page Properties
+ *  keys and values are plain text, but some Confluence templates bold them
+ *  (e.g. `| **Status** | approved |`) — normalize so lookups are markup-agnostic.
+ *  Underscores are left intact so a snake_case value (an `in_review` status) is
+ *  not mangled — property keys are wrapped in `**`, never `_`, in practice. */
+function stripEmphasis(s) {
+  return String(s).replace(/[*`]/g, '').trim();
+}
+
 /**
  * A 2-column table read as an ordered map of label → value (Page Properties).
  *
  * The properties block has no real header row — its first row ("Batch | 1") is
- * data — so the header is folded back in alongside the rows.
+ * data — so the header is folded back in alongside the rows. Keys and values are
+ * stripped of emphasis so a bolded property label still resolves.
  */
 function tableToProps(table) {
   const props = {};
   if (!table) return props;
   for (const row of [table.headers, ...table.rows]) {
-    if (row.length >= 2 && row[0]) props[row[0].toLowerCase()] = row.slice(1).join(' | ').trim();
+    if (row.length >= 2 && row[0]) {
+      const key = stripEmphasis(row[0]).toLowerCase();
+      if (key) props[key] = stripEmphasis(row.slice(1).join(' | '));
+    }
   }
   return props;
 }
@@ -154,10 +167,14 @@ function findTable(tables, needles) {
 const PROP_KEYS =
   /^(document status|batch|contains pii|approval order|document owner|figjam name|build jira task|client review)$/i;
 
-/** The table that looks like Page Properties (a known property in its first column), else the first table. */
+/** The table that looks like Page Properties (a known property in its first column), else the first table.
+ *  Keys are de-emphasized before matching so a bold-keyed properties block (`| **Batch** | 1 |`) is still
+ *  identified over an earlier Editable Fields / Dynamic Data table. `status` is deliberately not a PROP_KEYS
+ *  anchor — the properties block is already recognized by its other keys, and a stray "Status"-headed table
+ *  should not be mistaken for it; the gate reads the status value once the real block is found. */
 function findPropsTable(tables) {
   for (const t of tables) {
-    if ([t.headers, ...t.rows].some((r) => PROP_KEYS.test((r[0] || '').trim()))) return t;
+    if ([t.headers, ...t.rows].some((r) => PROP_KEYS.test(stripEmphasis(r[0] || '')))) return t;
   }
   return tables[0] || null;
 }
@@ -194,8 +211,11 @@ function normalizeSpec(raw) {
   // documentStatus/containsPII/batch come from it when the capture did not lift
   // them to explicit fields.
   const props = tableToProps(findPropsTable(tables));
+  // The gate: an explicit raw field wins; otherwise read the Page Properties row.
+  // Some templates label it "Document Status", others just "Status" — prefer the
+  // former when present so a spec carrying both is read from the canonical field.
   const documentStatus = String(
-    raw.documentStatus != null ? raw.documentStatus : props['document status'] || '',
+    raw.documentStatus != null ? raw.documentStatus : props['document status'] || props['status'] || '',
   ).trim();
 
   // Label: the title's trailing "Client Rebuild | Component" segment. The
