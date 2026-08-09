@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-08-09 — [Keep team-retrospective knowledge and actions alive](journal/2026-08-09-team-retrospective-ingestion.md) — seeded-space ingestion now preserves retrospective sources privately and turns every action into a validated lifecycle record.
 - 2026-08-08 — [chore(project-retrospective): Update documentation for tracking issues p](journal/2026-08-08-chore-project-retrospective-update-documentation-for-trackin.md) — AI-drafted, revise
 - 2026-08-08 — [feat(project-retrospective): Update triage schema and related documentat](journal/2026-08-08-feat-project-retrospective-update-triage-schema-and-related-.md) — AI-drafted, revise
 - 2026-08-08 — [fix(normalize-specs): Read the gate from a bold or bare Status row](journal/2026-08-08-fix-normalize-specs-read-the-gate-from-a-bold-or-bare-status.md) — AI-drafted, revise

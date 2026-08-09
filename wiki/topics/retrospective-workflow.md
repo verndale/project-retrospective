@@ -1,6 +1,6 @@
 ---
 aliases: [analyze path, retrospective run, component inventory, label resolution, evidence triage, promote watch reject]
-covers: [skills/project-retrospective/SKILL.md, skills/project-retrospective/scripts/inventory.cjs, skills/project-retrospective/scripts/resolve.cjs, skills/project-retrospective/scripts/validate-report.cjs, skills/project-retrospective/scripts/normalize-specs.cjs, skills/project-retrospective/scripts/adf-to-markdown.cjs, skills/project-retrospective/references/spec-capture.md]
+covers: [skills/project-retrospective/SKILL.md, skills/project-retrospective/scripts/inventory.cjs, skills/project-retrospective/scripts/resolve.cjs, skills/project-retrospective/scripts/validate-report.cjs, skills/project-retrospective/scripts/normalize-specs.cjs, skills/project-retrospective/scripts/normalize-retrospectives.cjs, skills/project-retrospective/scripts/update-retrospective-register.cjs, skills/project-retrospective/scripts/adf-to-markdown.cjs, skills/project-retrospective/references/spec-capture.md, skills/project-retrospective/references/team-retrospectives.md]
 ---
 # Retrospective workflow — Design History
 
@@ -8,16 +8,19 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Current state
 
-- Three deterministic scripts do the mechanical work. `inventory.cjs` reads pipeline artifacts (build packs, component index, fingerprints, project memory) and unions them with a stack-aware filesystem scan: `stackAdapter` selects the component extensions and roots, the scan runs in both modes so it recovers components the index omitted, and Storybook is counted where the stack uses it. `resolve.cjs` matches every component label against the ui-design-brain manifest. `validate-report.cjs` is the sanctioned validator for a run's output directory.
+- Deterministic scripts do the mechanical work. `inventory.cjs` reads pipeline artifacts (build packs, component index, fingerprints, project memory) and unions them with a stack-aware filesystem scan: `stackAdapter` selects the component extensions and roots, the scan runs in both modes so it recovers components the index omitted, and Storybook is counted where the stack uses it. `resolve.cjs` matches every component label against the ui-design-brain manifest. `normalize-retrospectives.cjs` reconciles seeded-space discovery, normalizes action contracts, and decides evidence eligibility; `update-retrospective-register.cjs` merges immutable run actions into the living private register. `validate-report.cjs` is the sanctioned validator for a run's output directory.
 - Resolution is exact after normalization — lowercase, camelCase-boundary split, spaces and underscores collapsed to hyphens. No stemming, no plural folding, no nearest-match. A label resolves or it is novel.
 - A label that maps to two canonicals through a context-scoped alias is reported `ambiguous` with its candidates; the script never picks. The model confirms from usage evidence or demotes the label to unresolved.
 - The model's only job is judgment: triage into Promote / Watch / Reject with cited evidence, then draft prose. Verdicts carry evidence paths, never numeric scores.
 - The validator runs under a stated cap of three attempts. On the third failure the run stops and reports the remaining failures verbatim rather than reshaping output to satisfy the validator.
 - Captures are a separate track from proposals: the best component-library candidates are labels that already resolve cleanly, not novel ones. They are enumerated in the report's `## Captures` section and held in two-way parity with `captures/` — see [library capture](library-capture.md).
 - The report's three downstream sections each pair with one artifact and one repo: `## Candidates` with `proposals/` for ui-design-brain, `## Captures` with `captures/` for ui-design-library, `## Learnings` with `orchestration-drafts.md` for ai-orchestration.
+- Team retrospectives are an optional evidence source and an append-only backfill scope. Explicit pages are included, automatic discovery stays inside seeded spaces, and every candidate is reconciled as included or excluded. Retrospective evidence can affect component triage only when it names an inventoried component and agrees with strong non-code-scan as-built evidence.
+- Retrospective actions receive stable IDs, a destination, owner, next step, and lifecycle state. Missing owners escalate to `needs-owner`; `done` needs proof and `wont-do` needs rationale. Raw pages, people, and issue links stay in the private evidence repo, while shared-repo work moves only through client-neutral proposals, captures, and orchestration drafts.
 
 ## Decisions
 
+- 2026-08-09 — Added seeded-space retrospective ingestion, deterministic action accountability, and an append-only `retrospectives` scope rather than treating meeting notes as unstructured report prose; this keeps discovery auditable and separates private source fidelity from client-neutral platform recommendations ([issue #57](https://github.com/verndale/project-retrospective/issues/57), [journal](../journal/2026-08-09-team-retrospective-ingestion.md))
 - 2026-08-08 — chore(project-retrospective): Update documentation for tracking issues p ([PR #55](https://github.com/verndale/project-retrospective/pull/55))
 - 2026-08-08 — feat(project-retrospective): Update triage schema and related documentat ([PR #52](https://github.com/verndale/project-retrospective/pull/52))
 - 2026-08-08 — fix(normalize-specs): Read the gate from a bold or bare Status row ([PR #49](https://github.com/verndale/project-retrospective/pull/49))

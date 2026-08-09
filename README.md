@@ -8,7 +8,7 @@ An **agent skill** that analyzes a completed frontend project and mines it for a
 
 Projects are temporary; knowledge is permanent. When a build wraps, the components it produced carry evidence about the platform: which design labels the team reached for, which ones the canonical catalog already covers, and which ones it doesn't yet name.
 
-This skill turns that evidence into reviewable proposals. It inventories what was built, resolves every label against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) manifest, and triages what didn't resolve into **Promote / Watch / Reject** with cited evidence. Promoted candidates become brain-format pattern or alias proposals; pipeline-shaped learnings become paste-ready drafts for [`ai-orchestration`](https://github.com/verndale/front-end-build-orchestration).
+This skill turns that evidence into reviewable proposals. It inventories what was built, resolves every label against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) manifest, and triages what didn't resolve into **Promote / Watch / Reject** with cited evidence. It also ingests team retrospectives and post-mortems into a private archive plus owned action lifecycle, so decisions and follow-through survive the meeting. Promoted candidates become brain-format pattern or alias proposals; pipeline-shaped learnings become paste-ready drafts for [`ai-orchestration`](https://github.com/verndale/front-end-build-orchestration).
 
 It is an **architectural advisor, not an autonomous editor.** Every change to the platform is reviewed and committed by a human.
 
@@ -21,7 +21,7 @@ completed project  (read-only — the retrospective never writes here)
         │  /project-retrospective  Action: analyze
         ▼
 a run in the `ui-design-evidence` repo:
-report.md · inventory.json · resolution.json · memory-archive.json · proposals/ · captures/ · orchestration-drafts.md
+report.md · inventory.json · resolution.json · memory-archive.json · retrospective artifacts · proposals/ · captures/ · orchestration-drafts.md
         │  human review
         ├── proposals/  → Action: promote → ui-design-brain working tree → verify → stop
         ├── captures/   → Action: capture → ui-design-library working tree → verify → stop
@@ -92,15 +92,17 @@ Brain: /path/to/ui-design-brain
 | `Brain:` | for resolution, promote, and capture | Absolute path to a local `ui-design-brain` checkout. Without it, resolution is skipped and the report says so. |
 | `Data:` | no | Absolute path to the private `ui-design-evidence` repo. When given, runs land under `<Data>/runs/`. |
 | `Output:` | no | Where run output is written. Never inside `Project`. |
-| `Scope:` | no | `full` (default), `inventory`, or `candidates`. |
+| `Scope:` | no | `full` (default), `inventory`, `candidates`, or append-only `retrospectives`. |
 | `PriorReports:` | no | Comma-separated paths to earlier `report.md` files. A candidate that recurs across projects is elevated from Watch to Promote. |
 | `Specs:` | no | Confluence source for the project's functional specs (a space + label(s), or an approvals-page URL). Captures approved specs as a `spec` evidence source. |
-| `Action:` | no | `analyze` (default), `promote`, or `capture`. |
+| `Retrospectives:` | no | Confluence page and space URLs. Discovery is restricted to seeded project spaces and every candidate is included or excluded with a reason. |
+| `ProjectSlug:` | for retrospective ingestion | Existing evidence project used to derive client, platform, and prior run. |
+| `Action:` | no | `analyze` (default), `ingest-retrospectives`, `promote`, or `capture`. |
 | `Proposal:` | for promote | Path to the approved proposal file to apply. |
 | `Captures:` | for capture | Path to a run's `captures/` directory. Applied as a set. |
 | `Library:` | for capture | Absolute path to a local `ui-design-library` checkout. |
 
-Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json`, `memory-archive.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, and `orchestration-drafts.md` — plus `specs-raw.json` and `specs.json` when a `Specs:` input was given. Full parameter and output detail: [`skills/project-retrospective/README.md`](skills/project-retrospective/README.md).
+Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json`, `memory-archive.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, and `orchestration-drafts.md` — plus `specs-raw.json` and `specs.json` when a `Specs:` input was given, or the four retrospective capture/normalization/action artifacts when `Retrospectives:` was given. Full parameter and output detail: [`skills/project-retrospective/README.md`](skills/project-retrospective/README.md).
 
 **Client data stays with the client.** The analyzed project is read-only — a retrospective never leaves artifacts in the repository it analyzed. Run output goes to `Data:` or `Output:`, and is never committed to this public repo.
 

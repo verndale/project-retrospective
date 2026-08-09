@@ -915,3 +915,98 @@ test('without --data the prior-art check does not run (backward compatible)', ()
   const result = validate(dir, ['--manifest', MANIFEST, '--json']);
   assert.ok(!warns(result, 'proposal-duplicate') && !warns(result, 'capture-duplicate'));
 });
+
+function tempRetrospectiveOutput() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-only-output-'));
+  writeFile(
+    dir,
+    'meta.json',
+    JSON.stringify({
+      schemaVersion: 1,
+      date: '2026-08-09',
+      scope: 'retrospectives',
+      client: { name: 'Sample', slug: 'sample' },
+      project: { name: 'Sample project', slug: 'sample-project' },
+      platform: null,
+      priorReports: [],
+    }),
+  );
+  writeFile(dir, 'retrospectives-raw.json', JSON.stringify({ schemaVersion: 1, pages: [{ pageId: '1' }] }));
+  writeFile(dir, 'retrospective-findings.json', JSON.stringify({ schemaVersion: 1, pages: [{ pageId: '1' }], actions: [] }));
+  writeFile(
+    dir,
+    'retrospectives.json',
+    JSON.stringify({
+      schemaVersion: 1,
+      pages: [{ pageId: '1', title: 'Build Retrospective', componentSignals: [] }],
+      excluded: [],
+      warnings: [],
+      counts: { pages: 1, excluded: 0, actions: 1 },
+    }),
+  );
+  writeFile(
+    dir,
+    'retrospective-actions.json',
+    JSON.stringify({
+      schemaVersion: 1,
+      actions: [
+        {
+          id: 'retro-action-123456789abc',
+          title: 'Assign release ownership',
+          status: 'needs-owner',
+          owner: null,
+          destination: 'project',
+          evidence: null,
+          rationale: null,
+        },
+      ],
+      counts: { total: 1, needsOwner: 1 },
+    }),
+  );
+  writeFile(
+    dir,
+    'report.md',
+    '# Project retrospective — Sample\n\n## Run\n\nRetrospectives-only backfill.\n\n## Summary\n\nOne page captured.\n\n## Team retrospectives\n\n- Build Retrospective\n\n## Gaps\n\n- None.\n\n## Next steps\n\n1. Assign the open action.\n',
+  );
+  return dir;
+}
+
+test('retrospectives scope validates without inventory, resolution, triage, or memory artifacts', () => {
+  const dir = tempRetrospectiveOutput();
+  try {
+    const result = validate(dir, ['--scope', 'retrospectives']);
+    assert.equal(result.status, 0, result.stdout);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('retrospectives scope requires the dedicated report section', () => {
+  const dir = tempRetrospectiveOutput();
+  try {
+    writeFile(dir, 'report.md', readFile(dir, 'report.md').replace('## Team retrospectives', '## Notes'));
+    assertFails(dir, 'report-sections', ['--scope', 'retrospectives']);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('retrospective actions enforce owner and completion proof', () => {
+  const dir = tempRetrospectiveOutput();
+  try {
+    const pack = JSON.parse(readFile(dir, 'retrospective-actions.json'));
+    pack.actions[0].status = 'done';
+    writeFile(dir, 'retrospective-actions.json', JSON.stringify(pack));
+    assertFails(dir, 'retrospective-action-owner', ['--scope', 'retrospectives']);
+    assertFails(dir, 'retrospective-action-proof', ['--scope', 'retrospectives']);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('a normal full run with one retrospective artifact missing fails parity', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'retrospectives.json', JSON.stringify({ schemaVersion: 1, pages: [], excluded: [], warnings: [], counts: { pages: 0, excluded: 0, actions: 0 } }));
+  assertFails(dir, 'retrospectives-present');
+  assertFails(dir, 'report-sections');
+});

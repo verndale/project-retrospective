@@ -29,6 +29,8 @@
     "test": "node --test \"scripts/tests/*.test.cjs\" && pnpm evals:graph",
     "retro:inventory": "node skills/project-retrospective/scripts/inventory.cjs",
     "retro:resolve": "node skills/project-retrospective/scripts/resolve.cjs",
+    "retro:normalize-retrospectives": "node skills/project-retrospective/scripts/normalize-retrospectives.cjs",
+    "retro:update-actions": "node skills/project-retrospective/scripts/update-retrospective-register.cjs",
     "retro:validate": "node skills/project-retrospective/scripts/validate-report.cjs",
     "graph:build": "node scripts/graph/build-graph.cjs",
     "graph:view": "node scripts/graph/serve.cjs",

@@ -25,7 +25,7 @@ Title is the github-issue-creator `[Feature] <summary>` format. The body uses th
 - **brain** — one checkbox per proposal in `proposals/*.md`: each new pattern and each new alias to apply, named by canonical.
 - **library** — one checkbox per capture in `captures/*.md`, named by canonical.
 
-The brain and library issues are **client-agnostic** — the same data boundary the proposals and downstream wiki follow. Describe the pattern, alias, or capture and its recurrence; never the client name, the run slug, or client copy.
+The brain and library issues are **client-agnostic** — the same data boundary the proposals and downstream wiki follow. Describe the pattern, alias, or capture and its recurrence; never the client name, the run slug, retrospective source URLs, action owners, private issue links, or client copy. Team-retrospective actions reach these shared repositories only through an already-approved proposal, capture, or orchestration draft; never file a shared issue straight from raw retrospective content.
 
 ## Labels
 
@@ -40,6 +40,8 @@ Label sets differ per repo, so run `gh label list --repo <owner>/<repo>` first. 
 
 - **Summary** — the run: `<Client> <project-slug> <date>`.
 - **Context** — that this records a completed retrospective run, on the run branch `feat/<project>-<date>-run`.
-- **Details** — what's included: the run outputs (`runs/<project-slug>/<date>/`) and the wiki feed Step 6 wrote; link the brain issue, and the library issue when one was filed.
+- **Details** — what's included: the run outputs (`runs/<project-slug>/<date>/`) and the wiki feed Step 6 wrote; link the brain issue, and the library issue when one was filed. When the run contains `retrospective-actions.json`, add one checkbox per not-done action, prefixed by its deterministic action ID and naming its destination, owner (or `needs-owner`), and next step. Link the living `wiki/actions/<client-slug>/<project-slug>.md` register rather than copying private source text.
 - **Expected Outcome** — the run is recorded and its downstream issues applied.
 - **Additional Notes** — anything else, or "None".
+
+The evidence-hub checklist mirrors the run at filing time; the private action register remains canonical for later owner and lifecycle changes. A `needs-owner` item is never treated as informational or complete merely because the issue exists.

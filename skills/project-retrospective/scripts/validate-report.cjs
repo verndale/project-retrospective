@@ -13,7 +13,7 @@
  * cannot tell you a verdict is wrong, only that the output is malformed.
  *
  * Usage:
- *   node validate-report.cjs --output <dir> [--scope full|inventory|candidates]
+ *   node validate-report.cjs --output <dir> [--scope full|inventory|candidates|retrospectives]
  *                            [--no-brain] [--manifest <file>] [--data <dir>] [--json]
  *
  * With --data (a ui-design-evidence checkout), it also flags a capture or proposal this
@@ -46,17 +46,17 @@ const {
 } = require('./lib/util.cjs');
 
 const USAGE = [
-  'Usage: node validate-report.cjs --output <dir> [--scope full|inventory|candidates] [--no-brain] [--manifest <file>] [--data <dir>] [--json]',
+  'Usage: node validate-report.cjs --output <dir> [--scope full|inventory|candidates|retrospectives] [--no-brain] [--manifest <file>] [--data <dir>] [--json]',
   '',
   '  --output    Run output directory to validate (required)',
-  '  --scope     Scope the run used: full (default), inventory, or candidates',
+  '  --scope     Scope the run used: full (default), inventory, candidates, or retrospectives',
   '  --no-brain  The run had no Brain path, so resolution.json is not expected',
   '  --manifest  patterns-manifest.json to check new-pattern proposals against',
   '  --data      ui-design-evidence checkout; warn on captures/proposals a prior run already made',
   '  --json      Emit a JSON result instead of PASS/FAIL lines',
 ];
 
-const SCOPES = ['full', 'inventory', 'candidates'];
+const SCOPES = ['full', 'inventory', 'candidates', 'retrospectives'];
 const PROPOSAL_TYPES = ['new-pattern', 'new-alias', 'guidance-edit'];
 // Captures target the component library rather than the catalog, so they live in
 // their own directory and pair with the report's "## Captures" entries rather than
@@ -165,6 +165,9 @@ function checkMeta(dir, scope, result) {
     return null;
   }
   if (meta.schemaVersion !== 1) result.fail('meta-schema', `meta.json schemaVersion is ${meta.schemaVersion}, expected 1`);
+  if (scope === 'retrospectives' && meta.scope !== scope) {
+    result.fail('meta-scope', `meta.json scope "${meta.scope}" does not match validator scope "${scope}"`);
+  }
 
   const client = meta.client && typeof meta.client === 'object' ? meta.client : {};
   const project = meta.project && typeof meta.project === 'object' ? meta.project : {};
@@ -434,6 +437,81 @@ function checkSpecPack(dir, result) {
   return pack;
 }
 
+/** Validate the optional team-retrospective capture and its action contract. */
+function checkRetrospectives(dir, required, result) {
+  const packFile = path.join(dir, 'retrospectives.json');
+  const actionsFile = path.join(dir, 'retrospective-actions.json');
+  const rawFile = path.join(dir, 'retrospectives-raw.json');
+  const findingsFile = path.join(dir, 'retrospective-findings.json');
+  const anyPresent = [packFile, actionsFile, rawFile, findingsFile].some(isFile);
+  if (!required && !anyPresent) return null;
+  for (const [name, file] of [
+    ['retrospectives.json', packFile],
+    ['retrospective-actions.json', actionsFile],
+    ['retrospectives-raw.json', rawFile],
+    ['retrospective-findings.json', findingsFile],
+  ]) {
+    if (!isFile(file)) result.fail('retrospectives-present', `${name} is missing from a retrospective capture`);
+  }
+  if (!isFile(packFile) || !isFile(actionsFile)) return null;
+  const packRead = readJsonSafe(packFile);
+  const actionsRead = readJsonSafe(actionsFile);
+  if (!packRead.ok) {
+    result.fail('retrospectives-parses', `retrospectives.json could not be parsed: ${packRead.error}`);
+    return null;
+  }
+  if (!actionsRead.ok) {
+    result.fail('retrospective-actions-parses', `retrospective-actions.json could not be parsed: ${actionsRead.error}`);
+    return null;
+  }
+  const pack = packRead.value;
+  const actionPack = actionsRead.value;
+  if (pack?.schemaVersion !== 1 || !Array.isArray(pack.pages) || !Array.isArray(pack.excluded) || !Array.isArray(pack.warnings)) {
+    result.fail('retrospectives-schema', 'retrospectives.json must be schemaVersion 1 with pages, excluded, and warnings arrays');
+  }
+  if (!pack?.counts || pack.counts.pages !== pack.pages?.length || pack.counts.excluded !== pack.excluded?.length) {
+    result.fail('retrospectives-counts', 'retrospectives.json page/excluded counts do not reconcile');
+  }
+  if (actionPack?.schemaVersion !== 1 || !Array.isArray(actionPack.actions)) {
+    result.fail('retrospective-actions-schema', 'retrospective-actions.json must be schemaVersion 1 with an actions array');
+    return pack;
+  }
+  if (!actionPack.counts || actionPack.counts.total !== actionPack.actions.length) {
+    result.fail('retrospective-actions-counts', 'retrospective-actions.json counts.total does not match actions.length');
+  }
+  const ids = new Set();
+  const statuses = new Set(['needs-owner', 'open', 'in-progress', 'blocked', 'done', 'wont-do']);
+  for (const action of actionPack.actions) {
+    if (!action || typeof action !== 'object' || !/^retro-action-[a-f0-9]{12}$/.test(String(action.id || ''))) {
+      result.fail('retrospective-action-entry', 'an action has no stable retro-action-<12 hex> id');
+      continue;
+    }
+    if (ids.has(action.id)) result.fail('retrospective-action-id', `action id ${action.id} is duplicated`);
+    ids.add(action.id);
+    if (!statuses.has(action.status)) result.fail('retrospective-action-status', `${action.id} has unknown status "${action.status}"`);
+    if (action.status === 'needs-owner' && action.owner) {
+      result.fail('retrospective-action-owner', `${action.id} is needs-owner but already names an owner`);
+    }
+    if (action.status !== 'needs-owner' && !action.owner) {
+      result.fail('retrospective-action-owner', `${action.id} status ${action.status} requires an owner`);
+    }
+    if (action.status === 'done' && !action.evidence) {
+      result.fail('retrospective-action-proof', `${action.id} is done without evidence`);
+    }
+    if (action.status === 'wont-do' && !action.rationale) {
+      result.fail('retrospective-action-proof', `${action.id} is wont-do without a rationale`);
+    }
+  }
+  const needsOwner = actionPack.actions.filter((action) => action.status === 'needs-owner').length;
+  if (actionPack.counts && actionPack.counts.needsOwner !== needsOwner) {
+    result.fail('retrospective-actions-counts', 'retrospective-actions.json counts.needsOwner does not reconcile');
+  }
+  if (pack?.counts && pack.counts.actions !== actionPack.actions.length) {
+    result.fail('retrospective-action-parity', 'retrospectives.json counts.actions does not match retrospective-actions.json');
+  }
+  return pack;
+}
+
 function checkReport(dir, scope, noBrain, result) {
   const file = path.join(dir, 'report.md');
   const text = isFile(file) ? readTextSafe(file) : null;
@@ -442,10 +520,13 @@ function checkReport(dir, scope, noBrain, result) {
     return { promoted: [], candidates: [], captured: [], capturesSectionPresent: false };
   }
 
-  const required = ['Run', 'Summary', 'Inventory', 'Gaps'];
-  if (scope !== 'inventory' && !noBrain) required.push('Resolution');
-  if (scope !== 'inventory') required.push('Candidates', 'Next steps');
+  const required = scope === 'retrospectives'
+    ? ['Run', 'Summary', 'Team retrospectives', 'Gaps', 'Next steps']
+    : ['Run', 'Summary', 'Inventory', 'Gaps'];
+  if (!['inventory', 'retrospectives'].includes(scope) && !noBrain) required.push('Resolution');
+  if (!['inventory', 'retrospectives'].includes(scope)) required.push('Candidates', 'Next steps');
   if (scope === 'full') required.push('Learnings', 'Captures');
+  if (scope !== 'retrospectives' && isFile(path.join(dir, 'retrospectives.json'))) required.push('Team retrospectives');
 
   // Headings are matched exactly, from the same fence-aware parse used to read the
   // sections. A substring test would accept "## Candidates (3 evaluated)" here and
@@ -458,7 +539,9 @@ function checkReport(dir, scope, noBrain, result) {
     }
   }
 
-  if (scope === 'inventory') return { promoted: [], candidates: [], captured: [], capturesSectionPresent: false };
+  if (scope === 'inventory' || scope === 'retrospectives') {
+    return { promoted: [], candidates: [], captured: [], capturesSectionPresent: false };
+  }
 
   // Read Captures before the Candidates guard below. A report missing "## Candidates"
   // is already failing `report-sections`; short-circuiting here too would stack a
@@ -882,20 +965,23 @@ function main() {
     }
   }
 
-  checkInventory(dir, result);
-  if (scope !== 'inventory' && !noBrain) checkResolution(dir, result);
+  if (scope !== 'retrospectives') checkInventory(dir, result);
+  if (!['inventory', 'retrospectives'].includes(scope) && !noBrain) checkResolution(dir, result);
   // Identity is required wherever the run has candidates (full and candidates
   // scopes); an inventory-only run has no client wiki to feed.
   if (scope !== 'inventory') checkMeta(dir, scope, result);
   // The machine-readable twin of the report's "## Candidates" verdicts; the evidence
   // promotion radar reads it, so a run with candidates must emit it (full and candidates).
-  if (scope !== 'inventory') checkTriage(dir, scope, result);
+  if (!['inventory', 'retrospectives'].includes(scope)) checkTriage(dir, scope, result);
   // Every analyze run that reaches Step 6 (full and candidates) must preserve
   // project memory or record why it could not; an inventory-only run has no Step 6.
-  if (scope !== 'inventory') checkMemoryArchive(dir, result);
+  if (!['inventory', 'retrospectives'].includes(scope)) checkMemoryArchive(dir, result);
   // Confluence functional specs are an optional evidence input; when a run captured
   // them, the spec pack must be well-formed and approved-only.
-  if (scope !== 'inventory') checkSpecPack(dir, result);
+  if (!['inventory', 'retrospectives'].includes(scope)) checkSpecPack(dir, result);
+  // Team retrospectives are optional for ordinary analyze runs but required for
+  // the append-only retrospectives scope.
+  if (scope !== 'inventory') checkRetrospectives(dir, scope === 'retrospectives', result);
 
   const { promoted, captured, capturesSectionPresent } = checkReport(dir, scope, noBrain, result);
 
@@ -908,7 +994,7 @@ function main() {
   // Prior-art dedup: when a ui-design-evidence checkout is given, flag a capture or
   // proposal this run drafts that an earlier run already made. Runs on scopes that
   // draft proposals/captures (full, candidates); harmless when neither exists.
-  if (values.data && scope !== 'inventory') {
+  if (values.data && !['inventory', 'retrospectives'].includes(scope)) {
     checkPriorArt(dir, path.resolve(values.data), result);
   }
 

@@ -46,9 +46,12 @@ An inventory component carries `sources[]`. These count as **independent** evide
 | `fingerprint` | It has a declared reusable API surface (`slots`, `affordance`, `role`, `variants`). |
 | `design-facts` | It has extracted design evidence behind it. |
 | `memory` | Project memory discusses it by name — it generated durable knowledge. |
+| `team-retrospective` | A captured team retrospective names it and the normalizer confirms model-recorded agreement against a matching component with a cited path and strong as-built evidence. Context-only retro prose never receives this source. |
 | `code-scan` | It was found by directory heuristics only. **Weak** — see below. |
 
 `code-scan` is a single weak source: it proves a directory exists, nothing about reuse or contract. A candidate evidenced only by `code-scan` caps at **Watch** unless a prior report supplies a second source. See `code-scan-mode.md`.
+
+`team-retrospective` is independent authored reflection, but it is admitted only after corroboration: the finding must name the component, agree semantically with its implementation, cite a project path, and join to at least one of `component-index`, `build-pack`, `fingerprint`, `design-facts`, or `memory`. It can then satisfy one of the two sources; it never replaces the as-built source that made it eligible.
 
 **Using `spec` evidence (from `resolution.json`'s `specs` block).** An approved spec is a strong, independent source, and it is unusual in also settling Promote **test 3** (describable client-neutrally): the spec's Overview and per-element contract are an authored, near-neutral definition already — the client copy comes out at drafting time. A `specOnly` entry (specced but not found as-built) is authored intent worth a Watch, not a Promote, until a build backs it. ba-spec-writer canonicalizes its element names against the brain when the spec is written, so the richest new-pattern candidates are the elements it flagged as novel (`novelLabels`) — a label it could not name is one the catalog cannot either.
 
