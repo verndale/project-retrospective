@@ -1,3 +1,54 @@
+# v1.16.0 — 2026-08-09
+
+## Summary (AI, bounded)
+- Enhanced project retrospective skill functionality (commit ad92679)
+- Updated graph data and retrospective documentation (commit d6c4ae7)
+- Updated documentation for tracking issues process (commit 7898e9d)
+- Synced wiki documentation for journals, topics, and plans (#52 and #55) (commits 37f9634 and 7b0f1ff)
+- Included multiple pull request merges to support retrospective ingestion and wiki sync (commits 01b2963, 279edcb, 74f0391, 80a627a)
+
+## Highlights
+- commit: Merge pull request #58 from verndale/codex/team-retrospective-ingestion (01b2963)
+- chore(project-retrospective): Update graph data and retrospective documentation (d6c4ae7)
+- feat(project-retrospective): Enhance project retrospective skill functionality (ad92679)
+- commit: Merge pull request #56 from verndale/bot/wiki-sync/55 (74f0391)
+- docs(wiki): sync journal, topics, and plans for #55 (7b0f1ff)
+- commit: Merge pull request #55 from verndale/fix/retro-tracking-issues (80a627a)
+- chore(project-retrospective): Update documentation for tracking issues process (7898e9d)
+- commit: Merge pull request #53 from verndale/bot/wiki-sync/52 (279edcb)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Enhance project retrospective skill functionality (ad92679)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #52 (37f9634)
+- docs(wiki): sync journal, topics, and plans for #55 (7b0f1ff)
+
+### Chore
+- chore(project-retrospective): Update documentation for tracking issues process (7898e9d)
+- chore(project-retrospective): Update graph data and retrospective documentation (d6c4ae7)
+
+### Other (unknown)
+- commit: Merge pull request #53 from verndale/bot/wiki-sync/52 (279edcb)
+- commit: Merge pull request #55 from verndale/fix/retro-tracking-issues (80a627a)
+- commit: Merge pull request #56 from verndale/bot/wiki-sync/55 (74f0391)
+- commit: Merge pull request #58 from verndale/codex/team-retrospective-ingestion (01b2963)
+
+## Full commit list
+- 01b2963 commit: Merge pull request #58 from verndale/codex/team-retrospective-ingestion
+- d6c4ae7 chore(project-retrospective): Update graph data and retrospective documentation
+- ad92679 feat(project-retrospective): Enhance project retrospective skill functionality
+- 74f0391 commit: Merge pull request #56 from verndale/bot/wiki-sync/55
+- 7b0f1ff docs(wiki): sync journal, topics, and plans for #55
+- 80a627a commit: Merge pull request #55 from verndale/fix/retro-tracking-issues
+- 7898e9d chore(project-retrospective): Update documentation for tracking issues process
+- 279edcb commit: Merge pull request #53 from verndale/bot/wiki-sync/52
+- 37f9634 docs(wiki): sync journal, topics, and plans for #52
+
 # v1.15.0 — 2026-08-08
 
 ## Summary (AI, bounded)
