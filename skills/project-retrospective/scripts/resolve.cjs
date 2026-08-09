@@ -17,6 +17,7 @@
  *
  * Usage:
  *   node resolve.cjs --inventory <file> (--brain <dir> | --manifest <file>)
+ *                    [--specs <file>] [--retrospectives <file>]
  *                    [--out <file>] [--pretty]
  *
  * Exit codes:
@@ -42,12 +43,13 @@ const {
 } = require('./lib/util.cjs');
 
 const USAGE = [
-  'Usage: node resolve.cjs --inventory <file> (--brain <dir> | --manifest <file>) [--specs <file>] [--out <file>] [--pretty]',
+  'Usage: node resolve.cjs --inventory <file> (--brain <dir> | --manifest <file>) [--specs <file>] [--retrospectives <file>] [--out <file>] [--pretty]',
   '',
   '  --inventory  inventory.json produced by inventory.cjs (required)',
   '  --brain      Path to a ui-design-brain checkout (resolves the manifest inside it)',
   '  --manifest   Path to patterns-manifest.json directly (alternative to --brain)',
   '  --specs      specs.json produced by normalize-specs.cjs (optional authored-spec evidence)',
+  '  --retrospectives  retrospectives.json produced by normalize-retrospectives.cjs (optional corroborated team evidence)',
   '  --out        Write JSON here instead of stdout',
   '  --pretty     Indent the JSON output',
 ];
@@ -238,9 +240,47 @@ function crossReferenceSpecs(pack, { resolved, unresolved, lookups }) {
   };
 }
 
+/**
+ * Add team-retrospective as independent evidence only for signals the normalizer
+ * marked eligible. Eligibility means the model recorded semantic agreement and
+ * the deterministic join found a matching inventory component, a strong as-built
+ * source, and a cited project path. Context-only retrospective prose never enters
+ * the component evidence list.
+ */
+function crossReferenceRetrospectives(pack, { unresolved }) {
+  const signals = [];
+  for (const page of Array.isArray(pack.pages) ? pack.pages : []) {
+    for (const signal of Array.isArray(page && page.componentSignals) ? page.componentSignals : []) {
+      if (!signal || signal.eligible !== true) continue;
+      signals.push({
+        pageId: String(page.pageId || ''),
+        label: signal.label,
+        normalized: signal.normalized || normalizeLabel(signal.label || ''),
+        summary: signal.summary || '',
+        corroboratingPaths: Array.isArray(signal.corroboratingPaths) ? signal.corroboratingPaths : [],
+        strongSources: Array.isArray(signal.strongSources) ? signal.strongSources : [],
+      });
+    }
+  }
+  const eligibleLabels = new Set(signals.map((signal) => signal.normalized).filter(Boolean));
+  for (const candidate of unresolved) {
+    if (eligibleLabels.has(candidate.normalized) && !candidate.sources.includes('team-retrospective')) {
+      candidate.sources = [...candidate.sources, 'team-retrospective'].sort();
+    }
+  }
+  return {
+    entries: signals,
+    counts: {
+      pages: Array.isArray(pack.pages) ? pack.pages.length : 0,
+      eligibleSignals: signals.length,
+      matchedUnresolved: unresolved.filter((candidate) => eligibleLabels.has(candidate.normalized)).length,
+    },
+  };
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2), {
-    keys: ['inventory', 'brain', 'manifest', 'specs', 'out'],
+    keys: ['inventory', 'brain', 'manifest', 'specs', 'retrospectives', 'out'],
     flags: ['pretty'],
   });
   const { values } = args;
@@ -366,6 +406,32 @@ function main() {
     }
   }
 
+  // Optional team-authored retrospective evidence. A malformed pack degrades to
+  // a warning. Only normalizer-approved component signals can append the source.
+  let retrospectivesBlock = null;
+  if (values.retrospectives) {
+    const retrospectivesPath = path.resolve(values.retrospectives);
+    const retrospectiveRead = readJsonSafe(retrospectivesPath);
+    if (!retrospectiveRead.ok) {
+      warnings.add(
+        'retrospectives-unreadable',
+        `--retrospectives could not be parsed: ${retrospectiveRead.error} — retrospective evidence skipped.`,
+      );
+    } else if (
+      !retrospectiveRead.value ||
+      retrospectiveRead.value.schemaVersion !== SUPPORTED_SCHEMA ||
+      !Array.isArray(retrospectiveRead.value.pages)
+    ) {
+      warnings.add(
+        'retrospectives-unreadable',
+        '--retrospectives is not a schemaVersion 1 retrospective pack — retrospective evidence skipped.',
+      );
+    } else {
+      const crossRef = crossReferenceRetrospectives(retrospectiveRead.value, { unresolved });
+      retrospectivesBlock = { path: retrospectivesPath, entries: crossRef.entries, counts: crossRef.counts };
+    }
+  }
+
   writeOut(
     {
       schemaVersion: 1,
@@ -383,6 +449,7 @@ function main() {
         unresolvedLabels: unresolved.length,
       },
       ...(specsBlock ? { specs: specsBlock } : {}),
+      ...(retrospectivesBlock ? { retrospectives: retrospectivesBlock } : {}),
       warnings: warnings.toJSON(),
     },
     values.out,

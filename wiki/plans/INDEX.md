@@ -16,7 +16,7 @@ Every agent plan executed for this repo, gathered from Claude plan stores and Co
 - **out-of-scope** — targets another repo/product.
 - **not-verified** — recovered by `pnpm wiki:find-plans --archive`; nobody has checked yet whether it shipped.
 
-Totals: 4 implemented (4 plans).
+Totals: 4 implemented · 1 partial (5 plans).
 
 ## Plans
 
@@ -26,3 +26,4 @@ Totals: 4 implemented (4 plans).
 | 2026-07-26 | [Port the knowledge-graph + context-wiki subsystem into project-retrospective](2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) | implemented | [PR #1](https://github.com/verndale/project-retrospective/pull/1) | graph-wiki-subsystem |
 | 2026-07-31 | [Make inventory discovery stack-aware and comprehensive](2026-07-31-stack-aware-inventory-discovery.md) | implemented | [PR #24](https://github.com/verndale/project-retrospective/pull/24) | retrospective-workflow |
 | 2026-07-31 | [Fix the shallow-scan folder collapse in `inventory.cjs`](2026-07-31-fix-the-shallow-scan-folder-collapse-in-inventory-cjs.md) | implemented | [PR #27](https://github.com/verndale/project-retrospective/pull/27) | retrospective-workflow |
+| 2026-08-09 | [Team Retrospective Knowledge and Accountability](2026-08-09-team-retrospective-knowledge-and-accountability.md) | partial | https://github.com/verndale/project-retrospective/issues/57 | retrospective-workflow |

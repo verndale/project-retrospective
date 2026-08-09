@@ -18,7 +18,7 @@ What the skill does, how to run it, and what it produces. The skill's own instru
 
 ## What it does
 
-Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what didn't resolve into reviewable proposals.
+Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what didn't resolve into reviewable proposals. It can also ingest seeded team retrospectives and post-mortems, preserve their original structure privately, and turn every action into an owned, auditable lifecycle record.
 
 The division of labour matters: **scripts decide structure, the model exercises judgment.** Discovery, label resolution, and output validation are deterministic and zero-LLM. Deciding whether an unresolved label is real platform vocabulary is the part that needs a model — and it is advisory. Nothing reaches the catalog without a human commit.
 
@@ -49,7 +49,7 @@ Data: /Users/you/Projects/ui-design-evidence
 
 `Data` is what puts the run in the evidence repo. Without it, output lands in `~/project-retrospective/runs/` and the skill tells you so.
 
-Output goes to `<Data>/runs/<project-slug>/<YYYY-MM-DD>/`. **Done when:** that directory holds `meta.json`, `report.md`, `inventory.json`, `resolution.json`, `memory-archive.json`, `orchestration-drafts.md`, plus `proposals/` and `captures/` if anything qualified — the validator exits 0 — and (because `Data` is set) the client wiki under `<Data>/wiki/` gained a journal entry, its client page, and the project's memory archive under `<Data>/wiki/memory/`.
+Output goes to `<Data>/runs/<project-slug>/<YYYY-MM-DD>/`. **Done when:** that directory holds `meta.json`, `report.md`, `inventory.json`, `resolution.json`, `memory-archive.json`, `orchestration-drafts.md`, plus `proposals/` and `captures/` if anything qualified — the validator exits 0 — and (because `Data` is set) the client wiki under `<Data>/wiki/` gained a journal entry, its client page, and the project's memory archive under `<Data>/wiki/memory/`. When `Retrospectives` was supplied, the run also contains the four retrospective artifacts, while the private wiki gains the reviewed source archive and living action register.
 
 ### Step 2 — Read the report
 
@@ -144,19 +144,33 @@ Data: /Users/you/Projects/ui-design-evidence
 PriorReports: /Users/you/Projects/ui-design-evidence/runs/site-a/2026-05-02/report.md
 ```
 
+Append-only retrospective backfill, without re-running project discovery:
+
+```text
+/project-retrospective
+Action: ingest-retrospectives
+Data: /Users/you/Projects/ui-design-evidence
+ProjectSlug: some-client-site
+Retrospectives: https://example.atlassian.net/wiki/spaces/EXAMPLE/pages/123, https://example.atlassian.net/wiki/spaces/EXAMPLE
+```
+
+The action derives client, platform, and `prior_run` from the latest existing evidence metadata, creates a new `scope: retrospectives` run, and never edits the prior run.
+
 ## Parameters
 
 | Parameter | Required | Default | Meaning |
 |---|---|---|---|
-| `Project` | yes | — | Absolute path to the completed project repository. **Read-only** — the retrospective never writes here. |
+| `Project` | for analyze | — | Absolute path to the completed project repository. **Read-only** — the retrospective never writes here. |
 | `Brain` | for resolution, promote, and capture | — | Absolute path to a local ui-design-brain checkout. Without it, resolution is skipped and the report records the gap. |
 | `Data` | no | — | Absolute path to the private `ui-design-evidence` repo. When given, runs land under `<Data>/runs/<project-slug>/<date>/`. |
 | `Output` | no | `<Data>/runs/…`, else `~/project-retrospective/runs/…` | Where run output is written. Never inside `Project`. |
 | `Client` | no | derived | Human-readable client name; sets the wiki client-slug (distinct from the project-slug — one client may own several projects). Resolution order in [`references/wiki-feed.md`](references/wiki-feed.md). |
-| `Scope` | no | `full` | `inventory` (what was built), `candidates` (adds resolution and verdicts), `full` (adds proposals and drafts). |
+| `Scope` | no | `full` | `inventory` (what was built), `candidates` (adds resolution and verdicts), `full` (adds proposals and drafts), or `retrospectives` (append-only team-retrospective backfill). |
 | `PriorReports` | no | — | Comma-separated paths to earlier `report.md` files. A Watch candidate that recurs is elevated to Promote. |
 | `Specs` | no | — | Confluence source for the project's functional specs — a space key + label(s), or an approvals-page URL. Enables spec capture (Step 1b). |
-| `Action` | no | `analyze` | `analyze`, `promote`, or `capture`. |
+| `Retrospectives` | no | — | Comma-separated Confluence page and space URLs. Explicit pages are always audited; discovery stays inside the seeded spaces. |
+| `ProjectSlug` | for ingest-retrospectives | — | Existing evidence project whose latest metadata supplies client, platform, and prior run. |
+| `Action` | no | `analyze` | `analyze`, `ingest-retrospectives`, `promote`, or `capture`. |
 | `Proposal` | for promote | — | Path to the approved proposal file to apply. |
 | `Captures` | for capture | — | Path to a run's `captures/` directory. Applied as a set — one invocation covers every capture in it. |
 | `Library` | for capture | — | Absolute path to a local ui-design-library checkout. |
@@ -176,10 +190,14 @@ Written to `Output`, never into this skill's repository:
 | `captures/<slug>.md` | Implementations mature enough to seed `ui-design-library`, with the de-clienting work each needs. Often drawn from components whose labels already resolve. |
 | `orchestration-drafts.md` | Pipeline-shaped findings as paste-ready drafts for ai-orchestration. |
 | `specs-raw.json` / `specs.json` | Only when a `Specs` input was given: the model's raw Confluence capture, and the structured, approved-only spec pack (`normalize-specs.cjs`) that feeds `resolve.cjs --specs`. |
+| `retrospectives-raw.json` | Audited page/space capture: explicit and discovered candidates, source versions, converted Markdown, and every exclusion reason. |
+| `retrospective-findings.json` | Model-authored, source-linked themes, contradictions, component signals, and action candidates. |
+| `retrospectives.json` | Deterministically normalized coverage, eligible component corroboration, and archive manifest. |
+| `retrospective-actions.json` | Stable action IDs with destination, owner, next step, lifecycle status, completion evidence, and `wont-do` rationale. |
 
 **The analyzed project is never written to.** Runs land in the private `ui-design-evidence` repo (`Data`) or, failing that, a user-level directory — never in the client repo. That keeps a retrospective from leaving artifacts a project team has to review, and keeps cross-project evidence out of any single client's tree.
 
-**The client wiki (Step 6).** When `Data` is the `ui-design-evidence` checkout, an analyze run also feeds that repo's client wiki: it creates/updates `<Data>/wiki/clients/<client-slug>.md` (durable client knowledge) and appends `<Data>/wiki/journal/<date>-<project-slug>.md` (what happened this run), so the evidence repo answers "who is this client and what have we run for them." It also preserves the project's engineering memory near-raw at `<Data>/wiki/memory/<client-slug>/<project-slug>/` (a byte-copied `source/` plus an `index.md` digest), so a wrapped project's learnings outlive it. Skipped when the run lands in the home fallback. See [`references/wiki-feed.md`](references/wiki-feed.md).
+**The client wiki (Step 6).** When `Data` is the `ui-design-evidence` checkout, an analyze run also feeds that repo's client wiki: it creates/updates `<Data>/wiki/clients/<client-slug>.md` (durable client knowledge) and appends `<Data>/wiki/journal/<date>-<project-slug>.md` (what happened this run), so the evidence repo answers "who is this client and what have we run for them." It also preserves the project's engineering memory near-raw at `<Data>/wiki/memory/<client-slug>/<project-slug>/` (a byte-copied `source/` plus an `index.md` digest), so a wrapped project's learnings outlive it. Retrospective runs additionally preserve reviewed source Markdown under `<Data>/wiki/retrospectives/` and merge actions into living registers under `<Data>/wiki/actions/`. Skipped when the run lands in the home fallback. See [`references/wiki-feed.md`](references/wiki-feed.md).
 
 **Two modes.** A project that went through the build pipeline has normalized evidence (build packs, component index, fingerprints, project memory) — that is `artifacts` mode. A project without it degrades to `code-scan`: directory walking only, which yields names but no contract, so verdicts cap at Watch. The report says which mode ran, in the Run and Gaps sections.
 
@@ -190,7 +208,9 @@ Runnable directly, which is useful for debugging a run:
 ```bash
 node scripts/inventory.cjs --project <path> --out inventory.json --pretty
 node scripts/archive-memory.cjs --project <path> --out memory-archive.json --pretty
-node scripts/resolve.cjs --inventory inventory.json --brain <brain-path> --out resolution.json --pretty
+node scripts/normalize-retrospectives.cjs --raw retrospectives-raw.json --findings retrospective-findings.json --project-slug <slug> --out retrospectives.json --actions-out retrospective-actions.json --pretty
+node scripts/resolve.cjs --inventory inventory.json --brain <brain-path> --retrospectives retrospectives.json --out resolution.json --pretty
+node scripts/update-retrospective-register.cjs --actions retrospective-actions.json --register <Data>/wiki/actions/<client>/<project>.md
 node scripts/validate-report.cjs --output <output-dir> --scope full
 node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <library-path> --brain <brain-path> --pretty
 ```
@@ -200,6 +220,8 @@ node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <l
 | `inventory.cjs` | 0 success (including degraded) · 1 unexpected · 2 bad invocation · 3 `--project` is not a directory |
 | `archive-memory.cjs` | 0 success (including degraded) · 1 unexpected · 2 bad invocation · 3 `--project` is not a directory |
 | `resolve.cjs` | 0 · 1 · 2 · 3 inventory missing/unreadable/wrong schema · 4 manifest missing/unreadable/invalid |
+| `normalize-retrospectives.cjs` | 0 success (including recorded warnings) · 1 unexpected · 2 bad invocation · 3 named input missing/unreadable |
+| `update-retrospective-register.cjs` | 0 success · 1 unexpected · 2 bad invocation · 3 action pack missing/unreadable |
 | `validate-report.cjs` | 0 pass · 1 failures · 2 bad invocation · 3 `--output` is not a directory |
 | `capture-preflight.cjs` | 0 all ready or already applied · 1 one or more blocked, or unexpected · 2 bad invocation · 3 `--captures` is not a directory · 4 `--library` is not a library checkout · 5 manifest missing/unreadable/invalid · 6 none blocked, but one or more deferred (canonical only proposed this run — promote first, then re-run) |
 

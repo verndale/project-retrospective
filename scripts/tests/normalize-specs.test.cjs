@@ -189,13 +189,13 @@ test('Document Status is read from the properties table even when it is not the 
 
 test('a bolded **Status** property row is read as the gate, even when it is not the first table', () => {
   // Editable Fields comes first; the real Page Properties block uses bolded keys
-  // and labels the gate "Status" (not "Document Status") — the MCPHS template.
+  // and labels the gate "Status" (not "Document Status") — a legacy template.
   const body =
     '## Component Content\n\n### Editable Fields\n\n' +
     '| Field Name | Field Type | Required | Notes |\n| --- | --- | --- | --- |\n| Heading | string | Yes | h2 |\n\n' +
     '## Properties\n\n' +
     '| **Batch** | 1 |\n| --- | --- |\n| **Status** | approved |\n| **Contains PII** | No |\n';
-  const { dir, file } = tempRaw([{ pageId: '5', title: 'MCPHS | Media Gallery', bodyMarkdown: body }]);
+  const { dir, file } = tempRaw([{ pageId: '5', title: 'Example | Media Gallery', bodyMarkdown: body }]);
   try {
     const r = normalize(['--raw', file]);
     assert.equal(r.status, 0, r.stderr);
@@ -215,7 +215,7 @@ test('when both Document Status and Status rows are present, Document Status win
   const body =
     '## Properties\n\n' +
     '| Batch | 1 |\n| --- | --- |\n| Document Status | APPROVED |\n| Status | draft |\n';
-  const { dir, file } = tempRaw([{ pageId: '7', title: 'MCPHS | Both Fields', bodyMarkdown: body }]);
+  const { dir, file } = tempRaw([{ pageId: '7', title: 'Example | Both Fields', bodyMarkdown: body }]);
   try {
     const r = normalize(['--raw', file]);
     assert.equal(r.status, 0, r.stderr);
@@ -229,7 +229,7 @@ test('when both Document Status and Status rows are present, Document Status win
 
 test('a bare Status row still respects the gate value — a draft is skipped', () => {
   const body = '## Properties\n\n| Batch | 1 |\n| --- | --- |\n| Status | draft |\n\n## Overview\n\nx\n';
-  const { dir, file } = tempRaw([{ pageId: '6', title: 'MCPHS | Draft Band', bodyMarkdown: body }]);
+  const { dir, file } = tempRaw([{ pageId: '6', title: 'Example | Draft Band', bodyMarkdown: body }]);
   try {
     const r = normalize(['--raw', file]);
     assert.equal(r.status, 0, r.stderr);

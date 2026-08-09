@@ -1,30 +1,30 @@
 {
   "counts": {
-    "nodes": 93,
-    "edges": 221,
+    "nodes": 100,
+    "edges": 240,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
       "tooling-doc": 1,
-      "test": 10,
+      "test": 12,
       "authoring-spec": 1,
       "skill-readme": 1,
-      "skill-reference": 17,
-      "skill-script": 8,
+      "skill-reference": 18,
+      "skill-script": 10,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 21,
-      "wiki-plan": 4,
+      "wiki-journal": 22,
+      "wiki-plan": 5,
       "wiki-topic": 5
     },
     "byEdgeType": {
-      "contracts": 24,
-      "covers": 19,
-      "links-to": 98,
-      "plan": 4,
-      "requires": 33,
-      "tests": 10,
-      "topic": 33
+      "contracts": 27,
+      "covers": 22,
+      "links-to": 102,
+      "plan": 5,
+      "requires": 37,
+      "tests": 12,
+      "topic": 35
     }
   },
   "nodes": [
@@ -73,7 +73,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 11487,
+      "bytes": 12120,
       "degree": 8
     },
     {
@@ -157,7 +157,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7115,
+      "bytes": 7571,
       "degree": 3
     },
     {
@@ -206,7 +206,7 @@
       "prs": [],
       "issues": [],
       "bytes": 1900,
-      "degree": 8
+      "degree": 10
     },
     {
       "id": "scripts/tests/inventory.test.cjs",
@@ -221,6 +221,18 @@
       "degree": 2
     },
     {
+      "id": "scripts/tests/normalize-retrospectives.test.cjs",
+      "label": "normalize-retrospectives.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 9094,
+      "degree": 2
+    },
+    {
       "id": "scripts/tests/normalize-specs.test.cjs",
       "label": "normalize-specs.test.cjs",
       "type": "test",
@@ -229,7 +241,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 13350,
+      "bytes": 13355,
       "degree": 2
     },
     {
@@ -241,7 +253,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7929,
+      "bytes": 9888,
       "degree": 4
     },
     {
@@ -257,6 +269,18 @@
       "degree": 3
     },
     {
+      "id": "scripts/tests/update-retrospective-register.test.cjs",
+      "label": "update-retrospective-register.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 3743,
+      "degree": 2
+    },
+    {
       "id": "scripts/tests/validate-report.test.cjs",
       "label": "validate-report.test.cjs",
       "type": "test",
@@ -265,7 +289,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 37496,
+      "bytes": 40830,
       "degree": 2
     },
     {
@@ -433,7 +457,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 21350,
+      "bytes": 24012,
       "degree": 4
     },
     {
@@ -481,7 +505,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 9515,
+      "bytes": 10179,
       "degree": 2
     },
     {
@@ -565,7 +589,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 5818,
+      "bytes": 7035,
       "degree": 2
     },
     {
@@ -581,6 +605,18 @@
       "degree": 3
     },
     {
+      "id": "skills/project-retrospective/references/team-retrospectives.md",
+      "label": "Team retrospective capture",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 5738,
+      "degree": 3
+    },
+    {
       "id": "skills/project-retrospective/references/tracking-issues.md",
       "label": "Tracking issues — one per repo the retro touches",
       "type": "skill-reference",
@@ -589,7 +625,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 3735,
+      "bytes": 4557,
       "degree": 3
     },
     {
@@ -613,7 +649,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 2251,
+      "bytes": 2562,
       "degree": 2
     },
     {
@@ -625,7 +661,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 9962,
+      "bytes": 11059,
       "degree": 3
     },
     {
@@ -637,7 +673,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 2027,
+      "bytes": 2467,
       "degree": 2
     },
     {
@@ -698,7 +734,19 @@
       "prs": [],
       "issues": [],
       "bytes": 12697,
-      "degree": 7
+      "degree": 9
+    },
+    {
+      "id": "skills/project-retrospective/scripts/normalize-retrospectives.cjs",
+      "label": "normalize-retrospectives.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 16073,
+      "degree": 4
     },
     {
       "id": "skills/project-retrospective/scripts/normalize-specs.cjs",
@@ -721,7 +769,19 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 14474,
+      "bytes": 17636,
+      "degree": 4
+    },
+    {
+      "id": "skills/project-retrospective/scripts/update-retrospective-register.cjs",
+      "label": "update-retrospective-register.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 6805,
       "degree": 4
     },
     {
@@ -733,7 +793,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 42637,
+      "bytes": 47747,
       "degree": 4
     },
     {
@@ -745,8 +805,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 31783,
-      "degree": 45
+      "bytes": 35510,
+      "degree": 49
     },
     {
       "id": "wiki/INDEX.md",
@@ -757,8 +817,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 8155,
-      "degree": 31
+      "bytes": 8409,
+      "degree": 32
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1111,6 +1171,22 @@
       "degree": 2
     },
     {
+      "id": "wiki/journal/2026-08-09-team-retrospective-ingestion.md",
+      "label": "Keep team-retrospective knowledge and actions alive",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "57"
+      ],
+      "bytes": 2278,
+      "degree": 4
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -1189,6 +1265,22 @@
       "degree": 4
     },
     {
+      "id": "wiki/plans/2026-08-09-team-retrospective-knowledge-and-accountability.md",
+      "label": "Team Retrospective Knowledge and Accountability",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "57"
+      ],
+      "bytes": 3271,
+      "degree": 3
+    },
+    {
       "id": "wiki/plans/INDEX.md",
       "label": "Plan Audit",
       "type": "wiki-index",
@@ -1200,9 +1292,11 @@
         "24",
         "27"
       ],
-      "issues": [],
-      "bytes": 2011,
-      "degree": 6
+      "issues": [
+        "57"
+      ],
+      "bytes": 2251,
+      "degree": 7
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -1305,9 +1399,11 @@
         "7",
         "1"
       ],
-      "issues": [],
-      "bytes": 9262,
-      "degree": 38
+      "issues": [
+        "57"
+      ],
+      "bytes": 10887,
+      "degree": 44
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1392,6 +1488,11 @@
     },
     {
       "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/team-retrospectives.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/tracking-issues.md",
       "type": "contracts"
     },
@@ -1437,12 +1538,22 @@
     },
     {
       "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/scripts/normalize-retrospectives.cjs",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/scripts/normalize-specs.cjs",
       "type": "contracts"
     },
     {
       "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/scripts/resolve.cjs",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/scripts/update-retrospective-register.cjs",
       "type": "contracts"
     },
     {
@@ -1507,6 +1618,11 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/references/team-retrospectives.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "skills/project-retrospective/scripts/adf-to-markdown.cjs",
       "type": "covers"
     },
@@ -1517,12 +1633,22 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/scripts/normalize-retrospectives.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "skills/project-retrospective/scripts/normalize-specs.cjs",
       "type": "covers"
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
       "target": "skills/project-retrospective/scripts/resolve.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/scripts/update-retrospective-register.cjs",
       "type": "covers"
     },
     {
@@ -1778,6 +1904,13 @@
     },
     {
       "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/team-retrospectives.md",
+      "type": "links-to",
+      "count": 3,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/tracking-issues.md",
       "type": "links-to",
       "count": 6,
@@ -1960,6 +2093,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-09-team-retrospective-ingestion.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -2052,6 +2192,13 @@
     {
       "source": "wiki/plans/INDEX.md",
       "target": "wiki/plans/2026-07-31-stack-aware-inventory-discovery.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-08-09-team-retrospective-knowledge-and-accountability.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2177,6 +2324,13 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/journal/2026-08-09-team-retrospective-ingestion.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
       "type": "links-to",
       "count": 2,
@@ -2252,6 +2406,11 @@
       "type": "plan"
     },
     {
+      "source": "wiki/journal/2026-08-09-team-retrospective-ingestion.md",
+      "target": "wiki/plans/2026-08-09-team-retrospective-knowledge-and-accountability.md",
+      "type": "plan"
+    },
+    {
       "source": "scripts/evals/graph-check.cjs",
       "target": "scripts/graph/build-graph.cjs",
       "type": "requires"
@@ -2297,6 +2456,11 @@
       "type": "requires"
     },
     {
+      "source": "scripts/tests/normalize-retrospectives.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
       "source": "scripts/tests/normalize-specs.test.cjs",
       "target": "scripts/tests/helpers.cjs",
       "type": "requires"
@@ -2313,6 +2477,11 @@
     },
     {
       "source": "scripts/tests/skill-conformance.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/update-retrospective-register.test.cjs",
       "target": "scripts/tests/helpers.cjs",
       "type": "requires"
     },
@@ -2402,12 +2571,22 @@
       "type": "requires"
     },
     {
+      "source": "skills/project-retrospective/scripts/normalize-retrospectives.cjs",
+      "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
       "source": "skills/project-retrospective/scripts/normalize-specs.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
     },
     {
       "source": "skills/project-retrospective/scripts/resolve.cjs",
+      "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "skills/project-retrospective/scripts/update-retrospective-register.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
     },
@@ -2437,6 +2616,11 @@
       "type": "tests"
     },
     {
+      "source": "scripts/tests/normalize-retrospectives.test.cjs",
+      "target": "skills/project-retrospective/scripts/normalize-retrospectives.cjs",
+      "type": "tests"
+    },
+    {
       "source": "scripts/tests/normalize-specs.test.cjs",
       "target": "skills/project-retrospective/scripts/normalize-specs.cjs",
       "type": "tests"
@@ -2459,6 +2643,11 @@
     {
       "source": "scripts/tests/skill-conformance.test.cjs",
       "target": "skills/project-retrospective/SKILL.md",
+      "type": "tests"
+    },
+    {
+      "source": "scripts/tests/update-retrospective-register.test.cjs",
+      "target": "skills/project-retrospective/scripts/update-retrospective-register.cjs",
       "type": "tests"
     },
     {
@@ -2602,6 +2791,11 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-08-09-team-retrospective-ingestion.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
@@ -2628,6 +2822,11 @@
     },
     {
       "source": "wiki/plans/2026-07-31-stack-aware-inventory-discovery.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-08-09-team-retrospective-knowledge-and-accountability.md",
       "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     }

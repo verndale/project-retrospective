@@ -112,6 +112,20 @@ test('bullet lists and links convert', () => {
   assert.match(md, / \[docs\]\(https:\/\/x\)/);
 });
 
+test('task lists preserve open and completed states', () => {
+  const md = adfToMarkdown(
+    doc({
+      type: 'taskList',
+      content: [
+        { type: 'taskItem', attrs: { state: 'TODO' }, content: [t('Assign an owner')] },
+        { type: 'taskItem', attrs: { state: 'DONE' }, content: [t('Publish the decision')] },
+      ],
+    }),
+  );
+  assert.match(md, /^- \[ \] Assign an owner$/m);
+  assert.match(md, /^- \[x\] Publish the decision$/m);
+});
+
 test('a file-attachment media node renders as a markdown link (not an embed) with its caption', () => {
   const md = adfToMarkdown(
     doc({

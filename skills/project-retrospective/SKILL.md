@@ -1,6 +1,6 @@
 ---
 name: project-retrospective
-description: Analyzes a completed frontend project repository and mines it for promotable architectural knowledge. Inventories the components that were built (from pipeline artifacts — build packs, component index, fingerprints, project memory — or a degraded code scan), resolves every component label against the ui-design-brain patterns manifest, triages unresolved labels into Promote, Watch, or Reject candidates with cited evidence, and drafts catalog-format pattern and alias proposals plus paste-ready ai-orchestration rule drafts. With Action promote, applies one approved proposal to a local ui-design-brain checkout following the catalog-integrity checklist. With Action capture, applies a run's component captures to a local ui-design-library checkout. Both stop before committing. Use when a project wraps and the user wants a retrospective, pattern harvest, component inventory, catalog gap analysis, alias audit, to promote a pattern or alias into ui-design-brain, or to apply captures into ui-design-library.
+description: Analyzes a completed frontend project and mines it for promotable architecture, reusable components, pipeline rules, and durable team-retrospective knowledge. Inventories and resolves components against ui-design-brain, triages novel labels, drafts catalog/library/orchestration artifacts, captures Confluence retrospectives and accountable actions, and can append retrospective-only backfills to ui-design-evidence. With Action promote or capture, applies approved work to local downstream checkouts and stops before committing. Use when a project wraps, the user wants a retrospective, pattern harvest, component inventory, catalog gap or alias audit, team-retrospective/post-mortem ingestion, historical evidence backfill, catalog promotion, or library capture.
 ---
 
 # Skill: project-retrospective
@@ -25,6 +25,7 @@ Operator docs: [README.md](README.md).
 - The user wants an alias audit — labels the project used for concepts the catalog already covers.
 - The user has an approved proposal file and wants it applied to a local ui-design-brain checkout (`Action: promote`).
 - The user has a run's `captures/` directory and wants those components applied to a local ui-design-library checkout (`Action: capture`).
+- The user wants team design/build/release retrospectives or post-mortems preserved, synthesized, and tracked, including an append-only historical backfill (`Action: ingest-retrospectives`).
 - Use the `ui-design-brain` skill instead when the task is resolving one label while authoring or building. This skill is for mining a whole repository.
 
 ## First-hop references
@@ -44,6 +45,7 @@ Operator docs: [README.md](README.md).
 12. [`references/downstream-wiki.md`](references/downstream-wiki.md) — the client-agnostic context-wiki entry in the repo an action touches. Read for `Action: promote` (ui-design-brain) and `Action: capture` (ui-design-library).
 13. [`references/spec-capture.md`](references/spec-capture.md) — the Confluence functional-spec capture recipe: label discovery, the approved-only gate, and the `specs-raw.json` schema. Read for `Action: analyze` when a `Specs` input is given.
 14. [`references/tracking-issues.md`](references/tracking-issues.md) — the per-repo GitHub tracking issues (evidence hub, brain, conditional library) filed at the end of an analyze run. Read for `Action: analyze` Step 7; also cited from the promote/capture handbacks.
+15. [`references/team-retrospectives.md`](references/team-retrospectives.md) — Confluence discovery, raw/findings schemas, normalized evidence, action lifecycle, private archive, and retrospectives-only runs. Read when `Retrospectives` is given or `Action: ingest-retrospectives` is used.
 
 ## Workflow
 
@@ -54,6 +56,7 @@ Copy this checklist into your response and tick each item as you complete it:
 ```
 Retrospective progress:
 - [ ] 1. Inventory
+- [ ] 1c. Team retrospectives (when supplied)
 - [ ] 2. Resolution
 - [ ] 3. Triage
 - [ ] 4. Draft
@@ -89,13 +92,17 @@ node <skill>/scripts/normalize-specs.cjs --raw <Output>/specs-raw.json [--archiv
 
 The component label comes from the spec title; step 2 resolves it against the brain. The spec pack is authored-intent evidence — CMS field surface, ARIA/keyboard contract, composition, and the elements ba-spec-writer could not canonicalize (the highest-value novel candidates). Report its `warnings` verbatim. Skip this step, with a note, when no `Specs` input is given.
 
+**1c. Team retrospectives (optional).** When `Retrospectives` is supplied, capture explicit pages and discover likely pages only inside the seeded Confluence spaces per [`references/team-retrospectives.md`](references/team-retrospectives.md). Fetch as ADF, render with `scripts/adf-to-markdown.cjs`, write `retrospectives-raw.json`, synthesize `retrospective-findings.json`, then run `scripts/normalize-retrospectives.cjs` to produce `retrospectives.json` and `retrospective-actions.json`. Record every excluded automatic candidate with a reason; never assume a shared template or cadence. Under an evidence `Data` checkout, archive reviewed bodies under `<Data>/wiki/retrospectives/` and merge actions with `scripts/update-retrospective-register.cjs`. Report all warnings verbatim.
+
 **2. Resolution.** Requires `Brain`. Without it, skip to step 3, treat no label as novel (you cannot know), and record the missing catalog under Gaps. With it:
 
 ```bash
-node <skill>/scripts/resolve.cjs --inventory <Output>/inventory.json --brain <Brain> [--specs <Output>/specs.json] --out <Output>/resolution.json --pretty
+node <skill>/scripts/resolve.cjs --inventory <Output>/inventory.json --brain <Brain> [--specs <Output>/specs.json] [--retrospectives <Output>/retrospectives.json] --out <Output>/resolution.json --pretty
 ```
 
 Pass `--specs <Output>/specs.json` when Step 1b produced a spec pack: an approved spec adds a `spec` evidence source to a matched novel label and records the spec-vs-as-built join (`matched`, `specOnly`) under `specs` for triage. For any entry with `ambiguous: true`, the manifest scopes that label to more than one canonical and the script deliberately did not pick. Decide from usage evidence — the component's build pack, its `fingerprint.json` (`affordance`, `role`), its bucket and domain. If the evidence does not clearly match one candidate's `context`, treat the label as unresolved rather than guessing. Record which evidence decided it.
+
+Pass `--retrospectives <Output>/retrospectives.json` when Step 1c ran. Only normalizer-eligible component signals append `team-retrospective`: the signal must name an inventoried component, semantically agree with the implementation, cite a project path, and have a strong non-`code-scan` as-built source. All other retrospective knowledge remains contextual.
 
 **3. Triage.** Apply [`references/evidence-rubric.md`](references/evidence-rubric.md) to every unresolved label: Promote, Watch, or Reject, each with evidence citing file paths. Check `PriorReports` first — a label that was Watch in an earlier report and recurs here is elevated to Promote. A label backed by both an as-built source and an approved `spec` clears the two-source bar with a client-neutral definition already in hand; a `specOnly` entry in `resolution.json`'s `specs` block is authored intent not yet built (a Watch, not a Promote) — feed it into the verdict per the rubric's `spec` source. When step 2 was skipped for want of a `Brain`, still emit `## Candidates` with an explicit note that no resolution ran, so the section is present rather than missing.
 
@@ -110,12 +117,23 @@ Pass `--specs <Output>/specs.json` when Step 1b produced a spec pack: an approve
 - `captures/<kebab-canonical>.md` — for implementations mature enough that the next project should start from them rather than rebuild. Draw these from the **resolved** list as much as the unresolved one: a mature Card or Modal implementation is a better library candidate than a novel label, which is usually the least-settled code in the project. A Promote candidate (new-pattern) whose *implementation* is itself mature also earns a capture, keyed to the canonical its proposal establishes — note it **deferred** in its `## Captures` entry and link the proposal; `capture-preflight.cjs` reports it `deferred` (exit 6) until that proposal is promoted, so promote first, then capture. When two components resolve to one canonical, fold prop/visual variants into one capture's `variants` or route a structurally distinct module to its own canonical — never drop the second (see the template). Apply [`references/proposal-component-capture-template.md`](references/proposal-component-capture-template.md). Omit the directory when nothing qualifies.
 - `orchestration-drafts.md` — pipeline-shaped findings per [`references/orchestration-draft-template.md`](references/orchestration-draft-template.md), or its explicit "no pipeline learnings" note.
 - `memory-archive.json` — run `scripts/archive-memory.cjs` to preserve the project's engineering memory (`<artifactsRoot>/memory/**`) before it is lost. It produces this manifest on **every** analyze run and, under a `Data` = ui-design-evidence checkout, byte-copies the memory (skipping empty placeholder shards) into the evidence archive using `meta.json`'s `client-slug`. Flags, layout, and the fidelity carve-out: [`references/wiki-feed.md`](references/wiki-feed.md).
+- When Step 1c ran: `retrospectives-raw.json`, `retrospective-findings.json`, `retrospectives.json`, and `retrospective-actions.json`; add the frozen `## Team retrospectives` section to `report.md`.
 
 **5. Self-check.** Run the validator (see Validation loops) and fix what it reports.
 
 **6. Wiki.** Feed the client/project knowledge wiki, per [`references/wiki-feed.md`](references/wiki-feed.md). Only when `Output` resolved under a `Data` checkout that is `ui-design-evidence` (`<Data>/wiki/` beside `<Data>/runs/`): resolve the client identity (a client-slug distinct from the project-slug — one client may own several), upsert `<Data>/wiki/clients/<client-slug>.md` — carrying durable engineering knowledge from the analyzed project's `artifacts/memory/` forward into its `## What we know`, and linking the project-memory archive Step 4 preserved at `<Data>/wiki/memory/<client-slug>/<project-slug>/` (author its `index.md`: a cleaned-up, fuller paraphrase of that memory) — and append `<Data>/wiki/journal/<YYYY-MM-DD>-<project-slug>.md` from their templates with outcomes grounded in this run, add one `<Data>/wiki/INDEX.md` line per new file, then **rebuild the evidence repo's generated, drift-gated artifacts from the `Data` root** — run each of `pnpm -C <Data> graph:build`, `pnpm -C <Data> wiki:build`, and `pnpm -C <Data> query:build` independently (not as one `&&` chain: skip any the checkout does not define, with a note, and still run the rest) — so the run hands back a CI-clean tree rather than depending on that repo's pre-commit hook, and hand back the wiki paths. When the run landed in the home fallback, skip this and say so. Append-only: never overwrite a journal entry; keep client-page sets additive.
 
 **7. Issues.** File the run's GitHub tracking issues per [`references/tracking-issues.md`](references/tracking-issues.md), using the `github-issue-creator` skill — which drafts, confirms, and only then files. Batch them at the end of the run: the client-named **evidence** hub (only when Step 6 ran under a `Data` = evidence checkout), a client-agnostic **brain** issue when the run drafted `proposals/`, and a client-agnostic **library** issue when the run drafted `captures/`. Skip a repo with no pending work; `ai-orchestration` gets no issue. Filing reaches outside the working tree — get the maintainer's go-ahead first, and never file silently.
+
+When `retrospective-actions.json` exists, include every non-`done`/non-`wont-do` action as a checklist item in the private evidence hub, naming its id, status, owner (or `needs-owner`), destination, and register link. Never publish client-derived actions directly to a shared repo.
+
+### Action: ingest-retrospectives
+
+Requires `Data`, `ProjectSlug`, and `Retrospectives`; accepts optional `Date` (today by default). Resolve client identity, platform, and `priorReports` from the latest existing `<Data>/runs/<ProjectSlug>/` run. Stop if the target `<Data>/runs/<ProjectSlug>/<Date>/` already exists.
+
+Create an evidence run branch off that checkout's `main` before the first write. Follow [`references/team-retrospectives.md`](references/team-retrospectives.md): capture/discover pages, write the four retrospective artifacts, and write `meta.json` with `scope: retrospectives`. Its `report.md` contains exactly the applicable frozen spine: `Run`, `Summary`, `Team retrospectives`, `Gaps`, `Next steps`.
+
+Archive reviewed bodies and an `index.md` digest under `<Data>/wiki/retrospectives/<client-slug>/<ProjectSlug>/`; merge the living register under `<Data>/wiki/actions/<client-slug>/<ProjectSlug>.md`; update the client page and append the run journal. Rebuild the evidence repo's graph/wiki/query outputs independently, validate with `--scope retrospectives`, draft the private evidence-hub issue with its action checklist, and stop without committing.
 
 ### Action: promote
 
@@ -169,12 +187,15 @@ Brain: /abs/path/to/ui-design-brain
 | `Scope` | no | `full` | `full`, `inventory`, or `candidates`. |
 | `PriorReports` | no | — | Comma-separated paths to earlier `report.md` files. |
 | `Specs` | no | — | Confluence source for the project's functional specs — a space key + label(s), or an approvals-page URL. Enables Step 1b. |
-| `Action` | no | `analyze` | `analyze`, `promote`, or `capture`. |
+| `Retrospectives` | no | — | Comma/newline-separated Confluence page or space URLs. Enables Step 1c. |
+| `ProjectSlug` | for ingest-retrospectives | — | Existing project slug in the evidence checkout. |
+| `Date` | no | today | Run date for ingest-retrospectives; `YYYY-MM-DD`. |
+| `Action` | no | `analyze` | `analyze`, `ingest-retrospectives`, `promote`, or `capture`. |
 | `Proposal` | for promote | — | Path to the approved proposal file to apply. |
 | `Captures` | for capture | — | Path to a run's `captures/` directory. Applied as a set. |
 | `Library` | for capture | — | Absolute path to a local ui-design-library checkout. |
 
-**Outputs (analyze)** — all inside `Output`: `meta.json`, `inventory.json`, `resolution.json`, `report.md`, `triage.json` (the machine-readable `## Candidates` twin the promotion radar reads; `full`/`candidates` scope), `memory-archive.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, `orchestration-drafts.md`. Plus, when a `Specs` input was given: `specs-raw.json` (the model's Confluence capture) and `specs.json` (the structured spec pack).
+**Outputs (analyze)** — all inside `Output`: `meta.json`, `inventory.json`, `resolution.json`, `report.md`, `triage.json` (the machine-readable `## Candidates` twin the promotion radar reads; `full`/`candidates` scope), `memory-archive.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, `orchestration-drafts.md`. Plus `specs-raw.json`/`specs.json` when `Specs` was given, and the four retrospective artifacts when `Retrospectives` was given. `Action: ingest-retrospectives` emits only `meta.json`, `report.md`, and those four retrospective artifacts.
 
 **Side effects (analyze, wiki)** — when `Output` is under a `Data` = ui-design-evidence checkout, the run also preserves the project's memory at `<Data>/wiki/memory/<client-slug>/<project-slug>/` (near-raw `source/` plus an `index.md` digest), archives captured specs near-raw at `<Data>/wiki/specs/<client-slug>/<project-slug>/` (when a `Specs` input was given), creates/updates `<Data>/wiki/clients/<client-slug>.md`, appends `<Data>/wiki/journal/<date>-<project-slug>.md`, and adds `<Data>/wiki/INDEX.md` lines. It then regenerates that repo's committed, drift-gated artifacts (`scripts/graph/data/graph.json`, `wiki/connections*`, `wiki/start-packs/*`) via its own `graph:build`/`wiki:build`/`query:build`, so the handed-back tree is CI-clean. Skipped in the home fallback — though `memory-archive.json` is still written to `Output`. Nothing is committed. At the end of the run it also files GitHub tracking issues — brain and library issues for any repo with pending work regardless of the evidence checkout, plus the evidence hub when the run used a `Data` = evidence checkout — via the `github-issue-creator` skill, the one side effect that reaches outside the working tree and only with the maintainer's go-ahead; see [`references/tracking-issues.md`](references/tracking-issues.md).
 
@@ -220,6 +241,7 @@ Normative rubric: [`references/evidence-rubric.md`](references/evidence-rubric.m
 - MUST write `meta.json` for every analyze run, with `project.slug` and `date` equal to the run's own directory, so the wiki, the graph, and captures' `provenance.run` never disagree.
 - MUST capture only **approved** functional specs (Document Status = APPROVED), and treat `specs-raw.json`/`specs.json` and the spec archive as client-derived output — written only under `Output`, or archived under `<Data>/wiki/specs/`, never into this repository. `validate-report.cjs` fails a spec pack carrying a non-approved spec.
 - MUST author the downstream wiki (ui-design-brain on promote, ui-design-library on capture) client-agnostically, per [`references/downstream-wiki.md`](references/downstream-wiki.md): no client display name, no run slug or `provenance.source` path in prose, no client-naming `declienting` string. Ground each entry in recurrence and the catalog/de-client decision — these are shared repos, unlike the private evidence wiki that alone may name the client.
+- MUST keep raw retrospective bodies, page ids/URLs, client identities, action owners, and issue links inside the private evidence checkout. Public fixtures and examples stay synthetic.
 - MUST read the downstream repo's own `wiki/MECHANICS.md` and follow its per-capture protocol and templates — that repo owns the format; `references/downstream-wiki.md` adds only the data boundary, the skip rule, and the grounding.
 - MUST skip the downstream wiki entry, with a stated message, when the checkout has no `wiki/`; and MUST author a library entry only for a capture actually written (skip `deferred`/`blocked`). Never create a `wiki/` tree the repo lacks.
 - MUST rebuild the downstream repo's connections graph after the wiki entry by running its own graph build from its root — `pnpm graph:build` for the library, `node scripts/graph/build-graph.cjs` for the brain — and MUST NOT hand-edit the generated `wiki/connections*` pages.

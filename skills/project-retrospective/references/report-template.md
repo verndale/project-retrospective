@@ -10,7 +10,7 @@ The run's human-readable output. The `##` headings inside the template are **fro
 
 ## Scope waivers
 
-`Scope: inventory` emits only Run, Summary, Inventory, Gaps. `Scope: candidates` adds Resolution, Candidates, Next steps. `Scope: full` adds Captures and Learnings. A run with no `Brain:` omits Resolution and says so under Gaps.
+`Scope: inventory` emits only Run, Summary, Inventory, Gaps. `Scope: candidates` adds Resolution, Candidates, Next steps. `Scope: full` adds Captures and Learnings. When `Retrospectives` was supplied, candidates/full also add Team retrospectives. `Scope: retrospectives` emits Run, Summary, Team retrospectives, Gaps, Next steps. A run with no `Brain:` omits Resolution and says so under Gaps.
 
 ## Template
 
@@ -97,6 +97,26 @@ Implementations the next project should start from rather than rebuild. Drafted 
 - <Why this implementation, not just the concept, is worth keeping — cite a path.>
 - <The de-clienting headline: the largest thing the rewrite must strip.>
 
+## Team retrospectives
+
+<N> page(s) captured from <seeded project space(s)>; <M> automatic candidate(s) excluded with recorded reasons. Dates below are observed page/event dates, not an inferred cadence.
+
+| Page | Phase | Format | Observed date | Source |
+|---|---|---|---|---|
+| <client-safe title> | design / build / release / incident / unknown | retrospective / post-mortem / lessons-learned / other | <date or unknown> | `retrospectives.json` page `<id>` |
+
+### Themes
+
+- <Client-safe cross-page takeaway with source page ids.>
+
+### Contradictions
+
+- <Disagreement or "None observed.">
+
+### Actions
+
+- `<action-id>` — <title>; status: <status>; owner: <owner or needs-owner>; destination: <destination>. Living register: `<Data>/wiki/actions/<client>/<project>.md`.
+
 ## Learnings
 
 Pipeline-shaped findings that belong in ai-orchestration rather than the catalog. Drafted in `orchestration-drafts.md`. Optionally group them under `### Gotchas` (a pitfall to avoid) and `### Tips` (a practice to adopt) — see Rules.
@@ -131,5 +151,6 @@ What this run could not see. Script warnings verbatim, then anything the mode it
 - **Capture entries carry no `Verdict:` line.** There is no triage axis: the entry's presence is the assertion. *Verdict* stays reserved for Candidates.
 - **`## Captures` is required at `full` scope even when nothing qualified.** Keep the heading and say so in a sentence, with no `### ` entries under it.
 - **`### Gotchas` / `### Tips` under `## Learnings` are optional.** Use them to separate a pitfall the next project should avoid from a practice it should adopt from the start; a finding that is neither, or both, stays a bare bullet under `## Learnings`. Never force the split. These H3s carry no `Verdict:` line and need no proposal or capture file — the downstream start pack surfaces them verbatim.
+- **`## Team retrospectives` is required when retrospective artifacts exist.** Keep source titles/content client-safe in the report; page ids and URLs stay in the private JSON/archive. A retrospectives-only run uses only Run, Summary, Team retrospectives, Gaps, and Next steps.
 - **No numeric scores** — evidence and a verdict, nothing in between.
 - Write for a reviewer who was not on the project: name paths, not impressions.

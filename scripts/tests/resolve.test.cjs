@@ -188,3 +188,55 @@ test('a malformed --specs degrades to a warning, not a failure', () => {
   assert.ok(!('specs' in res), 'a broken pack yields no specs block');
   assert.ok(res.warnings.map((w) => w.code).includes('specs-unreadable'));
 });
+
+// --retrospectives: team-authored evidence only after normalizer corroboration.
+const RETROSPECTIVES = path.join(tmp, 'retrospectives.json');
+test.before(() => {
+  fs.writeFileSync(
+    RETROSPECTIVES,
+    JSON.stringify({
+      schemaVersion: 1,
+      pages: [
+        {
+          pageId: 'retro-1',
+          componentSignals: [
+            {
+              label: 'LogoRibbon',
+              normalized: 'logo-ribbon',
+              summary: 'The reusable logo strip avoided repeated markup.',
+              corroboratingPaths: ['artifacts/build-packs/logo-ribbon/master.md'],
+              strongSources: ['build-pack'],
+              eligible: true,
+            },
+            {
+              label: 'Cards',
+              normalized: 'cards',
+              summary: 'Context only.',
+              corroboratingPaths: [],
+              strongSources: [],
+              eligible: false,
+            },
+          ],
+        },
+      ],
+    }),
+    'utf8',
+  );
+});
+
+test('--retrospectives adds only eligible team-retrospective evidence', () => {
+  const res = resolve(['--brain', BRAIN, '--retrospectives', RETROSPECTIVES]);
+  assert.ok(findUnresolved(res, 'logo-ribbon').sources.includes('team-retrospective'));
+  assert.ok(!findUnresolved(res, 'cards').sources.includes('team-retrospective'));
+  assert.equal(res.retrospectives.counts.eligibleSignals, 1);
+  assert.equal(res.retrospectives.counts.matchedUnresolved, 1);
+});
+
+test('a malformed --retrospectives pack warns and leaves evidence unchanged', () => {
+  const bad = path.join(tmp, 'not-a-retrospective-pack.json');
+  fs.writeFileSync(bad, JSON.stringify({ schemaVersion: 1, pages: 'nope' }), 'utf8');
+  const res = resolve(['--brain', BRAIN, '--retrospectives', bad]);
+  assert.ok(!('retrospectives' in res));
+  assert.ok(!findUnresolved(res, 'logo-ribbon').sources.includes('team-retrospective'));
+  assert.ok(res.warnings.some((warning) => warning.code === 'retrospectives-unreadable'));
+});
