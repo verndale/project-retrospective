@@ -2,7 +2,7 @@
 date: 2026-08-09
 topics: [retrospective-workflow]
 plan: plans/2026-08-09-team-retrospective-knowledge-and-accountability.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/58
 issue: https://github.com/verndale/project-retrospective/issues/57
 ---
 # Keep team-retrospective knowledge and actions alive

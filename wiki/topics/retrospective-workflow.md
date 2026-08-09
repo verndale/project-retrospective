@@ -20,6 +20,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-08-09 — feat(project-retrospective): Enhance project retrospective skill functio ([PR #58](https://github.com/verndale/project-retrospective/pull/58))
 - 2026-08-09 — Added seeded-space retrospective ingestion, deterministic action accountability, and an append-only `retrospectives` scope rather than treating meeting notes as unstructured report prose; this keeps discovery auditable and separates private source fidelity from client-neutral platform recommendations ([issue #57](https://github.com/verndale/project-retrospective/issues/57), [journal](../journal/2026-08-09-team-retrospective-ingestion.md))
 - 2026-08-08 — chore(project-retrospective): Update documentation for tracking issues p ([PR #55](https://github.com/verndale/project-retrospective/pull/55))
 - 2026-08-08 — feat(project-retrospective): Update triage schema and related documentat ([PR #52](https://github.com/verndale/project-retrospective/pull/52))
