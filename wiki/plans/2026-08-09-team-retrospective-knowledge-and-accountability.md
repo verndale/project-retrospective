@@ -1,5 +1,5 @@
 ---
-status: partial
+status: implemented
 executed: 2026-08-09
 date: 2026-08-09
 evidence:
@@ -7,7 +7,7 @@ evidence:
 source_tool: file
 source: "/private/tmp/team-retrospective-knowledge-and-accountability.md"
 topics: [retrospective-workflow]
-audit_note: "Public skill implementation is in progress; private evidence-repository support and authenticated historical backfill are tracked in the same plan."
+audit_note: "Implemented the public skill contract and private append-only retrofit; all quality, freshness, accountability, immutability, and data-boundary gates passed."
 ---
 # Team Retrospective Knowledge and Accountability
 
