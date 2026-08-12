@@ -44,7 +44,7 @@ The skill plugs into the **front** of the existing delivery chain and replaces n
 
 The library and the evidence store are **separate repos on purpose.** The library is pulled into client projects; the evidence store aggregates across clients. Keeping them apart means one client's build can never contain another client's retrospective data.
 
-The library is keyed by the catalog's canonical slug, which is what makes it deterministically usable: `ui-design-brain` resolves a design label to `card`, and the library answers `components/card/`. The catalog defines the concept; the library implements it.
+The library is keyed by the catalog's canonical slug, which is what makes it deterministically usable: `ui-design-brain` resolves a design label to `card`, and the library answers `components/card/`. Each capture also carries a validated server-first runtime plan, so application produces a public facade over a private tree/branch/leaf module graph instead of a single client-heavy TSX file. The catalog defines the concept; the library implements it.
 
 ---
 

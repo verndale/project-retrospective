@@ -35,15 +35,43 @@ function assertBlocked(result, code) {
   assert.ok(codes.includes(code), `expected blocker "${code}", got: ${JSON.stringify(record.blockers, null, 2)}`);
 }
 
-/** Rewrite the golden capture's fenced json entry. */
-function patchEntry(captures, patch) {
+/** Rewrite one named section's fenced JSON without confusing the two JSON blocks. */
+function patchJsonSection(captures, heading, patch) {
   const text = readFile(captures, 'modal.md');
-  const entry = JSON.parse(text.match(/```json\n([\s\S]*?)\n```/)[1]);
+  const sectionStart = text.indexOf(`## ${heading}`);
+  assert.notEqual(sectionStart, -1, `missing ## ${heading}`);
+  const fenceStart = text.indexOf('```json\n', sectionStart);
+  assert.notEqual(fenceStart, -1, `missing JSON fence under ## ${heading}`);
+  const jsonStart = fenceStart + '```json\n'.length;
+  const jsonEnd = text.indexOf('\n```', jsonStart);
+  assert.notEqual(jsonEnd, -1, `unclosed JSON fence under ## ${heading}`);
+  const value = JSON.parse(text.slice(jsonStart, jsonEnd));
   writeFile(
     captures,
     'modal.md',
-    text.replace(/```json\n[\s\S]*?\n```/, `\`\`\`json\n${JSON.stringify(patch(entry), null, 2)}\n\`\`\``),
+    `${text.slice(0, jsonStart)}${JSON.stringify(patch(value), null, 2)}${text.slice(jsonEnd)}`,
   );
+}
+
+function patchEntry(captures, patch) {
+  patchJsonSection(captures, 'Proposed library entry', patch);
+}
+
+function patchArchitecture(captures, patch) {
+  patchJsonSection(captures, 'Runtime architecture', patch);
+}
+
+function retarget(text, canonical, slug) {
+  const symbol = canonical.replace(/[^A-Za-z0-9]+(.)?/g, (_, next) => (next ? next.toUpperCase() : ''));
+  return text
+    .replace(/\*\*Modal\*\* \(`modal`\)/, `**${canonical}** (\`${slug}\`)`)
+    .replace(/"canonical": "Modal"/, `"canonical": "${canonical}"`)
+    .replace(/"slug": "modal"/, `"slug": "${slug}"`)
+    .replaceAll('Modal.types.ts', `${symbol}.types.ts`)
+    .replaceAll('Modal.tsx', `${symbol}.tsx`)
+    .replaceAll('ModalDialog.client.tsx', `${symbol}Dialog.client.tsx`)
+    .replaceAll('ModalHeader.tsx', `${symbol}Header.tsx`)
+    .replaceAll('useModal.client.ts', `use${symbol}.client.ts`);
 }
 
 test('the golden captures pass preflight', () => {
@@ -53,6 +81,8 @@ test('the golden captures pass preflight', () => {
   assert.equal(record.status, 'ready');
   assert.equal(record.canonical, 'Modal');
   assert.equal(record.slug, 'modal');
+  assert.equal(record.architecture.mode, 'hybrid');
+  assert.equal(record.architecture.serverOutput, 'shell');
   assert.deepEqual(record.blockers, []);
 });
 
@@ -69,7 +99,7 @@ test('the envelope carries the documented key order', () => {
     'counts',
     'warnings',
   ]);
-  assert.equal(result.json.schemaVersion, 1);
+  assert.equal(result.json.schemaVersion, 2);
   assert.deepEqual(result.json.counts, {
     captures: 1,
     ready: 1,
@@ -89,14 +119,285 @@ test('componentJson matches the library key order, with declienting left to fill
     'styling',
     'slots',
     'variants',
+    'reuseFingerprint',
     'tokens',
     'provenance',
     'declienting',
     'maturity',
   ]);
   assert.deepEqual(record.componentJson.declienting, []);
+  assert.deepEqual(record.componentJson.reuseFingerprint, {
+    slots: ['heading', 'body', 'action'],
+    affordance: 'contain',
+    role: 'container',
+  });
   assert.equal(record.componentJson.maturity, 'candidate');
+  assert.ok(!Object.hasOwn(record.componentJson, 'architecture'));
   assert.deepEqual(record.stories, { title: 'Modal', tag: 'maturity:candidate' });
+});
+
+test('a valid server architecture passes with full server output and no hydration', () => {
+  const captures = tempCaptures();
+  patchArchitecture(captures, () => ({
+    mode: 'server',
+    hydration: [],
+    serverOutput: 'full',
+    modules: [
+      { path: 'index.ts', role: 'facade', runtime: 'server' },
+      { path: 'Modal.types.ts', role: 'types', runtime: 'server' },
+      { path: 'Modal.tsx', role: 'tree', runtime: 'server' },
+      { path: 'parts/ModalHeader.tsx', role: 'leaf', runtime: 'server' },
+    ],
+  }));
+  const result = preflight(captures, fixture('fake-library'));
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(only(result).architecture.mode, 'server');
+});
+
+test('a valid client architecture passes with a client facade and neutral presentation leaf', () => {
+  const captures = tempCaptures();
+  patchArchitecture(captures, () => ({
+    mode: 'client',
+    hydration: ['state', 'event-handler'],
+    serverOutput: 'none',
+    modules: [
+      { path: 'index.ts', role: 'facade', runtime: 'client' },
+      { path: 'Modal.types.ts', role: 'types', runtime: 'server' },
+      { path: 'Modal.client.tsx', role: 'tree', runtime: 'client' },
+      { path: 'parts/ModalHeader.tsx', role: 'leaf', runtime: 'server' },
+    ],
+  }));
+  const result = preflight(captures, fixture('fake-library'));
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(only(result).architecture.mode, 'client');
+});
+
+test('a missing Runtime architecture block is a hard blocker', () => {
+  const captures = tempCaptures();
+  const text = readFile(captures, 'modal.md');
+  const start = text.indexOf('## Runtime architecture');
+  const end = text.indexOf('## Proposed library entry', start);
+  writeFile(captures, 'modal.md', `${text.slice(0, start)}${text.slice(end)}`);
+  assertBlocked(preflight(captures, fixture('fake-library')), 'architecture-missing');
+});
+
+test('unknown architecture modes, hydration reasons, roles, and runtimes are blocked', () => {
+  const captures = tempCaptures();
+  patchArchitecture(captures, (architecture) => ({
+    ...architecture,
+    mode: 'island',
+    hydration: ['magic'],
+    modules: architecture.modules.map((module, index) =>
+      index === 2 ? { ...module, role: 'wrapper', runtime: 'edge' } : module,
+    ),
+  }));
+  const result = preflight(captures, fixture('fake-library'));
+  assertBlocked(result, 'architecture-mode');
+  const codes = only(result).blockers.map((blocker) => blocker.code);
+  assert.ok(codes.includes('architecture-hydration'));
+  assert.ok(codes.includes('architecture-module'));
+});
+
+test('runtime architecture and module objects reject keys outside the exact contract', () => {
+  const cases = [
+    (architecture) => ({ ...architecture, rationale: 'not part of the contract' }),
+    (architecture) => ({
+      ...architecture,
+      modules: architecture.modules.map((module, index) =>
+        index === 0 ? { ...module, export: 'public' } : module,
+      ),
+    }),
+  ];
+
+  for (const patch of cases) {
+    const captures = tempCaptures();
+    patchArchitecture(captures, patch);
+    const result = preflight(captures, fixture('fake-library'));
+    const codes = only(result).blockers.map((blocker) => blocker.code);
+    assert.ok(
+      codes.includes('architecture-keys') || codes.includes('architecture-module'),
+      JSON.stringify(only(result).blockers, null, 2),
+    );
+  }
+});
+
+test('hydration reasons cannot be duplicated', () => {
+  const captures = tempCaptures();
+  patchArchitecture(captures, (architecture) => ({
+    ...architecture,
+    hydration: [...architecture.hydration, architecture.hydration[0]],
+  }));
+  assertBlocked(preflight(captures, fixture('fake-library')), 'architecture-hydration');
+});
+
+test('the plan requires exactly one index.ts facade and one server types module', () => {
+  const cases = [
+    {
+      code: 'architecture-facade',
+      patch: (architecture) => ({
+        ...architecture,
+        modules: architecture.modules.filter((module) => module.role !== 'facade'),
+      }),
+    },
+    {
+      code: 'architecture-types',
+      patch: (architecture) => ({
+        ...architecture,
+        modules: architecture.modules.filter((module) => module.role !== 'types'),
+      }),
+    },
+    {
+      code: 'architecture-types',
+      patch: (architecture) => ({
+        ...architecture,
+        modules: architecture.modules.map((module) =>
+          module.role === 'types' ? { ...module, path: 'types/Modal.ts' } : module,
+        ),
+      }),
+    },
+    {
+      code: 'architecture-types',
+      patch: (architecture) => ({
+        ...architecture,
+        modules: architecture.modules.map((module) =>
+          module.role === 'types' ? { ...module, runtime: 'client', path: 'Modal.types.client.ts' } : module,
+        ),
+      }),
+    },
+  ];
+
+  for (const fixtureCase of cases) {
+    const captures = tempCaptures();
+    patchArchitecture(captures, fixtureCase.patch);
+    assertBlocked(preflight(captures, fixture('fake-library')), fixtureCase.code);
+  }
+});
+
+test('mode, hydration, server output, and facade consistency are enforced', () => {
+  const cases = [
+    {
+      name: 'server hydration',
+      patch: (architecture) => ({ ...architecture, mode: 'server', hydration: ['state'], serverOutput: 'full' }),
+    },
+    {
+      name: 'hybrid hydration',
+      patch: (architecture) => ({ ...architecture, hydration: [] }),
+    },
+    {
+      name: 'hybrid output',
+      patch: (architecture) => ({ ...architecture, serverOutput: 'full' }),
+    },
+    {
+      name: 'client facade',
+      patch: (architecture) => ({ ...architecture, mode: 'client', serverOutput: 'none' }),
+    },
+  ];
+
+  for (const fixtureCase of cases) {
+    const captures = tempCaptures();
+    patchArchitecture(captures, fixtureCase.patch);
+    const result = preflight(captures, fixture('fake-library'));
+    assertBlocked(result, 'architecture-consistency');
+  }
+});
+
+test('server, hybrid, and client module-runtime consistency is enforced', () => {
+  const cases = [
+    {
+      message: /server mode cannot declare client modules/,
+      patch: (architecture) => ({ ...architecture, mode: 'server', hydration: [], serverOutput: 'full' }),
+    },
+    {
+      message: /hybrid mode requires at least one server implementation module and one client module/,
+      patch: (architecture) => ({
+        ...architecture,
+        modules: architecture.modules.map((module) => ({
+          ...module,
+          path: module.path.replace('.client.', '.'),
+          runtime: 'server',
+        })),
+      }),
+    },
+    {
+      message: /client mode requires at least one client tree\/branch\/leaf module/,
+      patch: (architecture) => ({
+        ...architecture,
+        mode: 'client',
+        serverOutput: 'none',
+        modules: architecture.modules.map((module) =>
+          module.role === 'facade'
+            ? { ...module, runtime: 'client' }
+            : module.runtime === 'client'
+              ? { ...module, path: module.path.replace('.client.', '.'), runtime: 'server' }
+              : module,
+        ),
+      }),
+    },
+  ];
+
+  for (const fixtureCase of cases) {
+    const captures = tempCaptures();
+    patchArchitecture(captures, fixtureCase.patch);
+    const result = preflight(captures, fixture('fake-library'));
+    assertBlocked(result, 'architecture-consistency');
+    assert.ok(only(result).blockers.some((blocker) => fixtureCase.message.test(blocker.message)));
+  }
+});
+
+test('a hybrid facade does not substitute for a server implementation module', () => {
+  const captures = tempCaptures();
+  patchArchitecture(captures, (architecture) => ({
+    ...architecture,
+    modules: architecture.modules.map((module) =>
+      ['tree', 'branch', 'leaf'].includes(module.role)
+        ? { ...module, path: module.path.replace('.tsx', '.client.tsx'), runtime: 'client' }
+        : module,
+    ),
+  }));
+  const result = preflight(captures, fixture('fake-library'));
+  assertBlocked(result, 'architecture-consistency');
+  assert.ok(only(result).blockers.some((blocker) => /server implementation module/.test(blocker.message)));
+});
+
+test('client implementation modules require the .client.ts/.client.tsx suffix', () => {
+  const captures = tempCaptures();
+  patchArchitecture(captures, (architecture) => ({
+    ...architecture,
+    modules: architecture.modules.map((module) =>
+      module.path === 'parts/ModalDialog.client.tsx'
+        ? { ...module, path: 'parts/ModalDialog.tsx' }
+        : module,
+    ),
+  }));
+  assertBlocked(preflight(captures, fixture('fake-library')), 'architecture-client-path');
+});
+
+test('one-TSX plans are blocked', () => {
+  const captures = tempCaptures();
+  patchArchitecture(captures, () => ({
+    mode: 'server',
+    hydration: [],
+    serverOutput: 'full',
+    modules: [
+      { path: 'index.ts', role: 'facade', runtime: 'server' },
+      { path: 'Modal.types.ts', role: 'types', runtime: 'server' },
+      { path: 'Modal.tsx', role: 'tree', runtime: 'server' },
+    ],
+  }));
+  assertBlocked(preflight(captures, fixture('fake-library')), 'architecture-tsx');
+});
+
+test('module paths must be normalized, safe, relative, and unique', () => {
+  const captures = tempCaptures();
+  patchArchitecture(captures, (architecture) => ({
+    ...architecture,
+    modules: architecture.modules.map((module, index) =>
+      index === 2 ? { ...module, path: '../Modal.tsx' } : index === 4 ? { ...module, path: 'index.ts' } : module,
+    ),
+  }));
+  const result = preflight(captures, fixture('fake-library'));
+  assertBlocked(result, 'architecture-path');
+  assert.ok(only(result).blockers.some((blocker) => blocker.code === 'architecture-path-duplicate'));
 });
 
 test('orphanedByRun names a library component claiming this run with no capture', () => {
@@ -165,10 +466,7 @@ test('an unknown canonical established by an in-run new-pattern proposal is defe
   // "Logo ribbon" is absent from fake-brain's manifest — so a logo-ribbon capture defers
   // to that pending promotion instead of hard-blocking. Promote it, re-run, and it is ready.
   const captures = tempCaptures();
-  const text = readFile(captures, 'modal.md')
-    .replace(/\*\*Modal\*\* \(`modal`\)/, '**Logo ribbon** (`logo-ribbon`)')
-    .replace(/"canonical": "Modal"/, '"canonical": "Logo ribbon"')
-    .replace(/"slug": "modal"/, '"slug": "logo-ribbon"');
+  const text = retarget(readFile(captures, 'modal.md'), 'Logo ribbon', 'logo-ribbon');
   fs.rmSync(path.join(captures, 'modal.md'));
   writeFile(captures, 'logo-ribbon.md', text);
   const result = preflight(captures, fixture('fake-library'));
@@ -186,10 +484,7 @@ test('a deferred capture that also has a hard blocker stays blocked, not deferre
   // Blocked outranks deferred at the terminal gate: an empty slots array is a real
   // defect, so the pending-promotion flag must not launder it into a deferral.
   const captures = tempCaptures();
-  const text = readFile(captures, 'modal.md')
-    .replace(/\*\*Modal\*\* \(`modal`\)/, '**Logo ribbon** (`logo-ribbon`)')
-    .replace(/"canonical": "Modal"/, '"canonical": "Logo ribbon"')
-    .replace(/"slug": "modal"/, '"slug": "logo-ribbon"')
+  const text = retarget(readFile(captures, 'modal.md'), 'Logo ribbon', 'logo-ribbon')
     .replace(/"slots": \[[^\]]*\]/, '"slots": []');
   fs.rmSync(path.join(captures, 'modal.md'));
   writeFile(captures, 'logo-ribbon.md', text);
@@ -204,10 +499,8 @@ test('a deferred capture that also has a hard blocker stays blocked, not deferre
 test('a capture named after the project label rather than the canonical is blocked', () => {
   // captures/tag.md declaring **Badge** — the defect the CN run actually carried.
   const captures = tempCaptures();
-  const text = readFile(captures, 'modal.md')
-    .replace(/\*\*Modal\*\* \(`modal`\)/, '**Badge** (`tag`)')
-    .replace(/"canonical": "Modal"/, '"canonical": "Badge"')
-    .replace(/"slug": "modal"/, '"slug": "badge"');
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge')
+    .replace('**Badge** (`badge`)', '**Badge** (`tag`)');
   fs.rmSync(path.join(captures, 'modal.md'));
   writeFile(captures, 'tag.md', text);
   assertBlocked(preflight(captures, fixture('fake-library')), 'slug-mismatch');
@@ -215,7 +508,11 @@ test('a capture named after the project label rather than the canonical is block
 
 test('a proposed library entry with no fenced json is blocked', () => {
   const captures = tempCaptures();
-  writeFile(captures, 'modal.md', readFile(captures, 'modal.md').replace(/```json\n[\s\S]*?\n```/, '(to be written)'));
+  const text = readFile(captures, 'modal.md');
+  const sectionStart = text.indexOf('## Proposed library entry');
+  const fenceStart = text.indexOf('```json\n', sectionStart);
+  const fenceEnd = text.indexOf('\n```', fenceStart) + '\n```'.length;
+  writeFile(captures, 'modal.md', `${text.slice(0, fenceStart)}(to be written)${text.slice(fenceEnd)}`);
   assertBlocked(preflight(captures, fixture('fake-library')), 'entry-unparsable');
 });
 
@@ -234,6 +531,22 @@ test('a proposed library entry with no slots is blocked', () => {
   assertBlocked(preflight(captures, fixture('fake-library')), 'slots-empty');
 });
 
+test('a missing or ungoverned reuse fingerprint is blocked', () => {
+  const missing = tempCaptures();
+  patchEntry(missing, (entry) => {
+    delete entry.reuseFingerprint;
+    return entry;
+  });
+  assertBlocked(preflight(missing, fixture('fake-library')), 'reuse-fingerprint');
+
+  const ungoverned = tempCaptures();
+  patchEntry(ungoverned, (entry) => ({
+    ...entry,
+    reuseFingerprint: { slots: ['dialog'], affordance: 'overlay', role: 'dialog' },
+  }));
+  assertBlocked(preflight(ungoverned, fixture('fake-library')), 'reuse-fingerprint');
+});
+
 test('an entry disagreeing with the Canonical line is blocked', () => {
   const captures = tempCaptures();
   patchEntry(captures, (entry) => ({ ...entry, canonical: 'Alert', slug: 'alert' }));
@@ -243,10 +556,7 @@ test('an entry disagreeing with the Canonical line is blocked', () => {
 test('a half-written component directory is blocked, not overwritten', () => {
   // components/link/ holds only a component.json in the fixture.
   const captures = tempCaptures();
-  const text = readFile(captures, 'modal.md')
-    .replace(/\*\*Modal\*\* \(`modal`\)/, '**Link** (`link`)')
-    .replace(/"canonical": "Modal"/, '"canonical": "Link"')
-    .replace(/"slug": "modal"/, '"slug": "link"');
+  const text = retarget(readFile(captures, 'modal.md'), 'Link', 'link');
   fs.rmSync(path.join(captures, 'modal.md'));
   writeFile(captures, 'link.md', text);
   assertBlocked(preflight(captures, fixture('fake-library')), 'library-partial');
@@ -254,15 +564,115 @@ test('a half-written component directory is blocked, not overwritten', () => {
 
 test('an already-applied capture is skipped, not blocked', () => {
   const captures = tempCaptures();
-  const text = readFile(captures, 'modal.md')
-    .replace(/\*\*Modal\*\* \(`modal`\)/, '**Badge** (`badge`)')
-    .replace(/"canonical": "Modal"/, '"canonical": "Badge"')
-    .replace(/"slug": "modal"/, '"slug": "badge"');
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
   fs.rmSync(path.join(captures, 'modal.md'));
   writeFile(captures, 'badge.md', text);
   const result = preflight(captures, fixture('fake-library'));
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}${result.stderr}`);
+  const record = only(result);
+  assert.equal(record.status, 'skipped');
+  assert.ok(record.library.files.includes('parts/BadgeDialog.client.tsx'));
+  assert.deepEqual(record.library.missingModules, []);
+});
+
+test('applied inspection follows multiline imports and directives after comments', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+
+  const library = tempFixture('fake-library');
+  const dialog = path.join(library, 'components/badge/parts/BadgeDialog.client.tsx');
+  fs.writeFileSync(
+    dialog,
+    fs
+      .readFileSync(dialog, 'utf8')
+      .replace("'use client';", "// Client island.\n'use client';")
+      .replace("import { useBadge } from '../hooks/useBadge.client';", "import {\n  useBadge,\n} from '../hooks/useBadge.client';"),
+  );
+  const result = preflight(captures, library);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(only(result).status, 'skipped');
+});
+
+test('planned filenames do not hide component manifest drift', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge').replace(
+    'runs/fake-project/2026-01-01/',
+    'runs/fake-project/2026-02-02/',
+  );
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  assertBlocked(preflight(captures, fixture('fake-library')), 'library-drift');
+});
+
+test('an empty planned module is not treated as already applied', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+
+  const library = tempFixture('fake-library');
+  fs.writeFileSync(path.join(library, 'components/badge/parts/BadgeHeader.tsx'), '');
+  const result = preflight(captures, library);
+  assertBlocked(result, 'library-partial');
+  assert.ok(only(result).library.architectureIssues.some((issue) => /is empty/.test(issue)));
+});
+
+test('an unexpected implementation module is not treated as already applied', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+
+  const library = tempFixture('fake-library');
+  fs.writeFileSync(path.join(library, 'components/badge/parts/Unplanned.tsx'), 'export const Unplanned = null;\n');
+  const result = preflight(captures, library);
+  assertBlocked(result, 'library-partial');
+  assert.deepEqual(only(result).library.unexpectedModules, ['parts/Unplanned.tsx']);
+});
+
+test('a client module outside the applied client boundary is not treated as complete', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+
+  const library = tempFixture('fake-library');
+  const dialog = path.join(library, 'components/badge/parts/BadgeDialog.client.tsx');
+  fs.writeFileSync(dialog, fs.readFileSync(dialog, 'utf8').replace("'use client';\n\n", ''));
+  const result = preflight(captures, library);
+  assertBlocked(result, 'library-partial');
+  assert.ok(only(result).library.architectureIssues.some((issue) => /not beneath/.test(issue)));
+});
+
+test('recursive inspection blocks a component missing one nested planned module', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+
+  const library = tempFixture('fake-library');
+  fs.rmSync(path.join(library, 'components/badge/parts/BadgeHeader.tsx'));
+  const result = preflight(captures, library);
+  assertBlocked(result, 'library-partial');
+  assert.deepEqual(only(result).library.missingModules, ['parts/BadgeHeader.tsx']);
+});
+
+test('a nested story does not make an otherwise complete component look applied', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+
+  const library = tempFixture('fake-library');
+  fs.renameSync(
+    path.join(library, 'components/badge/Badge.stories.tsx'),
+    path.join(library, 'components/badge/parts/Badge.stories.tsx'),
+  );
+  const result = preflight(captures, library);
+  assertBlocked(result, 'library-partial');
+  assert.equal(only(result).library.has.stories, false);
 });
 
 test('a token the semantic layer does not define warns but stays ready', () => {
@@ -314,10 +724,7 @@ test('a canonical the two repos kebab differently is blocked', () => {
   // `ctabutton` there and `cta-button` here. No current canonical triggers it; this
   // pins the replica so a fix to one repo cannot drift the other silently.
   const captures = tempCaptures();
-  const text = readFile(captures, 'modal.md')
-    .replace(/\*\*Modal\*\* \(`modal`\)/, '**CTAButton** (`cta-button`)')
-    .replace(/"canonical": "Modal"/, '"canonical": "CTAButton"')
-    .replace(/"slug": "modal"/, '"slug": "cta-button"');
+  const text = retarget(readFile(captures, 'modal.md'), 'CTAButton', 'cta-button');
   fs.rmSync(path.join(captures, 'modal.md'));
   writeFile(captures, 'cta-button.md', text);
 
@@ -334,7 +741,7 @@ test('a proposed library entry of null is blocked, not a crash', () => {
   // `null` parses, so reading a field off it would throw past the top-level catch
   // and lose the plan for every other capture in the set.
   const captures = tempCaptures();
-  writeFile(captures, 'modal.md', readFile(captures, 'modal.md').replace(/```json\n[\s\S]*?\n```/, '```json\nnull\n```'));
+  patchEntry(captures, () => null);
   const result = preflight(captures, fixture('fake-library'));
   assert.ok(result.json, `expected a plan even for a null entry, got:\n${result.stdout}${result.stderr}`);
   assertBlocked(result, 'entry-unparsable');
@@ -344,10 +751,7 @@ test('a slug already held by a different canonical is blocked, not skipped', () 
   // components/badge/ holds Badge. A capture of a different canonical that kebabs
   // to `badge` is a collision, not a no-op.
   const captures = tempCaptures();
-  const text = readFile(captures, 'modal.md')
-    .replace(/\*\*Modal\*\* \(`modal`\)/, '**Badge** (`badge`)')
-    .replace(/"canonical": "Modal"/, '"canonical": "Badge"')
-    .replace(/"slug": "modal"/, '"slug": "badge"');
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
   fs.rmSync(path.join(captures, 'modal.md'));
   writeFile(captures, 'badge.md', text);
 
@@ -378,15 +782,10 @@ test('a mixed set reports every status in one plan', () => {
   // blocked, skipped, and deferred together, since that combination drives the exit rule.
   const captures = tempCaptures();
   const base = readFile(captures, 'modal.md');
-  const retarget = (canonical, slug) =>
-    base
-      .replace(/\*\*Modal\*\* \(`modal`\)/, `**${canonical}** (\`${slug}\`)`)
-      .replace(/"canonical": "Modal"/, `"canonical": "${canonical}"`)
-      .replace(/"slug": "modal"/, `"slug": "${slug}"`);
 
-  writeFile(captures, 'badge.md', retarget('Badge', 'badge')); //                already applied  → skipped
-  writeFile(captures, 'link.md', retarget('Link', 'link')); //                   partial dir      → blocked
-  writeFile(captures, 'logo-ribbon.md', retarget('Logo ribbon', 'logo-ribbon')); // in-run proposal → deferred
+  writeFile(captures, 'badge.md', retarget(base, 'Badge', 'badge')); //                already applied  → skipped
+  writeFile(captures, 'link.md', retarget(base, 'Link', 'link')); //                   partial dir      → blocked
+  writeFile(captures, 'logo-ribbon.md', retarget(base, 'Logo ribbon', 'logo-ribbon')); // in-run proposal → deferred
   // modal.md stays as-is                                                        //                → ready
 
   const result = preflight(captures, fixture('fake-library'), ['--brain', BRAIN]);
@@ -418,10 +817,7 @@ test('a large plan is not truncated when piped', () => {
     writeFile(
       captures,
       `${slug}.md`,
-      base
-        .replace(/\*\*Modal\*\* \(`modal`\)/, `**Filler ${i}** (\`${slug}\`)`)
-        .replace(/"canonical": "Modal"/, `"canonical": "Filler ${i}"`)
-        .replace(/"slug": "modal"/, `"slug": "${slug}"`),
+      retarget(base, `Filler ${i}`, slug),
     );
   }
   // --pretty is what SKILL.md's documented invocation uses, and it is what pushes a

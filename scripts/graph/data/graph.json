@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 100,
-    "edges": 240,
+    "nodes": 102,
+    "edges": 247,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 10,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 22,
-      "wiki-plan": 5,
+      "wiki-journal": 23,
+      "wiki-plan": 6,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 27,
       "covers": 22,
-      "links-to": 102,
-      "plan": 5,
+      "links-to": 106,
+      "plan": 6,
       "requires": 37,
       "tests": 12,
-      "topic": 35
+      "topic": 37
     }
   },
   "nodes": [
@@ -73,7 +73,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 12120,
+      "bytes": 12313,
       "degree": 8
     },
     {
@@ -193,7 +193,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 19535,
+      "bytes": 34793,
       "degree": 2
     },
     {
@@ -457,7 +457,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 24012,
+      "bytes": 26334,
       "degree": 4
     },
     {
@@ -493,7 +493,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 9086,
+      "bytes": 9195,
       "degree": 2
     },
     {
@@ -517,7 +517,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10753,
+      "bytes": 15003,
       "degree": 3
     },
     {
@@ -541,7 +541,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 8110,
+      "bytes": 10951,
       "degree": 3
     },
     {
@@ -709,7 +709,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 21523,
+      "bytes": 39576,
       "degree": 4
     },
     {
@@ -805,7 +805,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 35510,
+      "bytes": 37084,
       "degree": 49
     },
     {
@@ -817,8 +817,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 8409,
-      "degree": 32
+      "bytes": 8729,
+      "degree": 33
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1189,6 +1189,22 @@
       "degree": 4
     },
     {
+      "id": "wiki/journal/2026-08-12-server-first-component-captures.md",
+      "label": "Make component captures server-first and structurally explicit",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "60"
+      ],
+      "bytes": 2668,
+      "degree": 4
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -1285,6 +1301,22 @@
       "degree": 3
     },
     {
+      "id": "wiki/plans/2026-08-12-server-first-component-architecture.md",
+      "label": "Server-first component architecture and full library migration",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "60"
+      ],
+      "bytes": 9666,
+      "degree": 4
+    },
+    {
       "id": "wiki/plans/INDEX.md",
       "label": "Plan Audit",
       "type": "wiki-index",
@@ -1298,10 +1330,11 @@
         "58"
       ],
       "issues": [
-        "57"
+        "57",
+        "60"
       ],
-      "bytes": 2320,
-      "degree": 7
+      "bytes": 2571,
+      "degree": 8
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -1362,12 +1395,16 @@
         "library integrity checklist",
         "capture preflight",
         "orphaned by run",
-        "de-clienting"
+        "de-clienting",
+        "runtime architecture",
+        "server-first capture"
       ],
       "prs": [],
-      "issues": [],
-      "bytes": 6348,
-      "degree": 12
+      "issues": [
+        "60"
+      ],
+      "bytes": 8016,
+      "degree": 16
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -2106,6 +2143,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-12-server-first-component-captures.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -2210,6 +2254,13 @@
       "anchors": []
     },
     {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-08-12-server-first-component-architecture.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
       "source": "wiki/topics/brain-promotion.md",
       "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
       "type": "links-to",
@@ -2268,6 +2319,20 @@
     {
       "source": "wiki/topics/library-capture.md",
       "target": "wiki/journal/2026-07-30-downstream-wiki-feed.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
+      "target": "wiki/journal/2026-08-12-server-first-component-captures.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
+      "target": "wiki/plans/2026-08-12-server-first-component-architecture.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2414,6 +2479,11 @@
     {
       "source": "wiki/journal/2026-08-09-team-retrospective-ingestion.md",
       "target": "wiki/plans/2026-08-09-team-retrospective-knowledge-and-accountability.md",
+      "type": "plan"
+    },
+    {
+      "source": "wiki/journal/2026-08-12-server-first-component-captures.md",
+      "target": "wiki/plans/2026-08-12-server-first-component-architecture.md",
       "type": "plan"
     },
     {
@@ -2802,6 +2872,11 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-08-12-server-first-component-captures.md",
+      "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
@@ -2834,6 +2909,11 @@
     {
       "source": "wiki/plans/2026-08-09-team-retrospective-knowledge-and-accountability.md",
       "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-08-12-server-first-component-architecture.md",
+      "target": "wiki/topics/library-capture.md",
       "type": "topic"
     }
   ]

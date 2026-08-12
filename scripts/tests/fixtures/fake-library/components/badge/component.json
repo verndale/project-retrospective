@@ -3,13 +3,18 @@
   "slug": "badge",
   "framework": "react",
   "styling": "tailwind",
-  "slots": ["children"],
-  "variants": ["default"],
-  "tokens": ["color-surface-raised"],
+  "slots": ["title", "body", "actions"],
+  "variants": ["default", "wide"],
+  "reuseFingerprint": {
+    "slots": ["heading", "body", "action"],
+    "affordance": "contain",
+    "role": "container"
+  },
+  "tokens": ["color-surface-raised", "ease-standard"],
   "provenance": {
     "project": "fake-project",
     "run": "runs/fake-project/2026-01-01/",
-    "source": "src/components/ui/badge/Badge.tsx"
+    "source": "src/components/ui/modal/Badge.tsx"
   },
   "declienting": ["Mapped the project's chip background onto the surface-raised semantic token."],
   "maturity": "candidate"
