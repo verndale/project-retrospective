@@ -20,6 +20,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-08-13 — feat(capture): enforce realization schema v3 (#63) ([PR #64](https://github.com/verndale/project-retrospective/pull/64))
 - 2026-08-13 — feat(project-retrospective): validate server-first captures ([PR #61](https://github.com/verndale/project-retrospective/pull/61))
 - 2026-08-09 — feat(project-retrospective): Enhance project retrospective skill functio ([PR #58](https://github.com/verndale/project-retrospective/pull/58))
 - 2026-08-09 — Added seeded-space retrospective ingestion, deterministic action accountability, and an append-only `retrospectives` scope rather than treating meeting notes as unstructured report prose; this keeps discovery auditable and separates private source fidelity from client-neutral platform recommendations ([issue #57](https://github.com/verndale/project-retrospective/issues/57), [journal](../journal/2026-08-09-team-retrospective-ingestion.md))
