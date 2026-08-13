@@ -82,7 +82,7 @@ Every repository the skill *writes* is edited on a working branch off that repo'
 
 Branch names in the shared catalog/library repos stay **client-agnostic** — name the change, not the client (e.g. `feat/add-<slug>-pattern`). A repo the action only *reads* stays on `main`: the brain during a capture preflight, and the analyzed project (always read-only).
 
-This is *in addition to* the no-commit rule, not a softening of it: still stop at the handback with each branch checked out and nothing committed — the maintainer commits, pushes, and opens the PR.
+By default, still stop at handback with each working branch checked out and nothing committed. The explicit maintainer-authorization exception below applies only to the named repository and issue branch; it does not let a retrospective action commit or push other repositories it touches.
 
 ## File a tracking issue per repo at the end of a retro
 
@@ -92,8 +92,8 @@ In short: the private **ui-design-evidence** repo gets a **client-named hub** is
 
 Filing an issue is the one step here that reaches outside the working tree; get the maintainer's go-ahead first.
 
-## Commits & release — the maintainer's job, not the agent's
+## Commits & release
 
-**Permission boundary:** edit files under `skills/`, `scripts/`, and `wiki/` freely without asking — that's the autonomous zone, and capturing a substantive change in `wiki/` is expected rather than optional. Everything in this section is the maintainer's.
+**Permission boundary:** edit files under `skills/`, `scripts/`, and `wiki/` freely without asking — that's the autonomous zone, and capturing a substantive change in `wiki/` is expected rather than optional. An agent may commit and push an issue branch only when the maintainer explicitly authorizes those actions.
 
-**Do not commit, push, merge, tag, or release** — in this repo or in any repo the skill touches. Make the requested edits, then stop and hand back for review. The maintainer commits with `pnpm commit` (Conventional Commits, required scope) and pushes; `semantic-release` then runs on `main`.
+Without explicit maintainer authorization, make the requested edits and stop at handback. When commit and push are authorized, use `pnpm commit` (Conventional Commits, required scope) and push only the issue branch so repository automation can create the draft PR. **Do not merge, tag, release, or publish** — in this repo or in any repo the skill touches. `semantic-release` runs only on `main`.

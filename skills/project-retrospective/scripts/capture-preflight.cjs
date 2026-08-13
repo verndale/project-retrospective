@@ -135,6 +135,7 @@ const REALIZATION_RESPONSIBILITIES = [
   'heading-context',
   'landmark-context',
   'dynamic-content',
+  'timed-content',
   'token-contrast',
   'safe-class-overrides',
   'complete-page-assistive-technology-testing',
@@ -148,7 +149,8 @@ const REALIZATION_PROTECTED_PROPERTIES = [
   'reading-order',
   'target-size',
 ];
-const IDREF_ATTRIBUTES = ['aria-controls', 'aria-describedby', 'aria-labelledby'];
+const IDREF_ATTRIBUTES = ['aria-controls', 'aria-describedby', 'aria-labelledby', 'for'];
+const CONDITION_PREDICATES = ['present', 'truthy', 'equals', 'not-equals', 'non-empty'];
 
 // Semantic tokens are declared in component.json without the leading dashes, so
 // harvest the names the same way the library's own contract checker does.
@@ -428,6 +430,37 @@ function validateReuseFingerprint(value, block) {
   };
 }
 
+function nodeReferences(value, label, block) {
+  const hasNode = typeof value?.node === 'string' && value.node.length > 0;
+  const hasNodes = Array.isArray(value?.nodes) && value.nodes.length > 0;
+  if (hasNode === hasNodes) {
+    block('realization-nodes', `${label} requires exactly one of node or non-empty nodes.`);
+    return [];
+  }
+  const refs = hasNode ? [value.node] : value.nodes;
+  if (new Set(refs).size !== refs.length || refs.some((ref) => typeof ref !== 'string' || !ref)) {
+    block('realization-nodes', `${label} has invalid or duplicate node references.`);
+    return [];
+  }
+  return refs;
+}
+
+function sameValueSet(left, right) {
+  const normalize = (items) => [...new Set(items.map((item) => JSON.stringify(item)))].sort();
+  return JSON.stringify(normalize(left)) === JSON.stringify(normalize(right));
+}
+
+function valueMatchesProp(value, prop) {
+  if (prop.type === 'string' || prop.type === 'ref') return typeof value === 'string';
+  if (prop.type === 'number') return typeof value === 'number' && Number.isFinite(value);
+  if (prop.type === 'boolean') return typeof value === 'boolean';
+  if (prop.type === 'enum') return Array.isArray(prop.values) && prop.values.some((item) => sameValueSet([item], [value]));
+  if (prop.type === 'element') return typeof value === 'string' && (!Array.isArray(prop.values) || prop.values.includes(value));
+  if (prop.type === 'collection') return value !== null && typeof value === 'object';
+  if (prop.type === 'callback' || prop.type === 'node') return false;
+  return true;
+}
+
 function validateRealization(value, block) {
   const before = block.count();
   const requiredKeys = [
@@ -441,12 +474,14 @@ function validateRealization(value, block) {
     'styleSlots',
     'version',
   ];
+  const allowedKeys = [...requiredKeys, 'constraints'];
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     block('realization-missing', 'the proposed entry is missing realization v1.');
     return null;
   }
-  if (!sameKeys(value, requiredKeys)) {
-    block('realization-keys', `realization keys must be exactly ${requiredKeys.join(', ')}.`);
+  const actualKeys = Object.keys(value);
+  if (requiredKeys.some((key) => !actualKeys.includes(key)) || actualKeys.some((key) => !allowedKeys.includes(key))) {
+    block('realization-keys', `realization requires ${requiredKeys.join(', ')} and may additionally contain constraints.`);
   }
   if (value.version !== 1) block('realization-version', 'realization.version must equal 1.');
 
@@ -466,8 +501,19 @@ function validateRealization(value, block) {
     if (typeof prop.required !== 'boolean') {
       block('realization-props', `realization prop ${JSON.stringify(prop.path)} requires a boolean required field.`);
     }
-    if (prop.type === 'enum' && (!Array.isArray(prop.values) || prop.values.length === 0)) {
+    if (prop.type === 'enum' && prop.values !== undefined &&
+        (!Array.isArray(prop.values) || prop.values.length === 0 || prop.values.some((item) => !['string', 'number'].includes(typeof item) || (typeof item === 'string' && !item) || (typeof item === 'number' && !Number.isFinite(item))))) {
+      block('realization-props', `enum prop ${JSON.stringify(prop.path)} has invalid values.`);
+    }
+    if (prop.type === 'element' && prop.values !== undefined &&
+        (!Array.isArray(prop.values) || prop.values.length === 0 || prop.values.some((item) => typeof item !== 'string' || !item))) {
+      block('realization-props', `element prop ${JSON.stringify(prop.path)} has invalid safe values.`);
+    }
+    if (prop.type === 'enum' && prop.values === undefined) {
       block('realization-props', `enum prop ${JSON.stringify(prop.path)} requires values.`);
+    }
+    if (Object.hasOwn(prop, 'default') && !valueMatchesProp(prop.default, prop)) {
+      block('realization-props', `realization prop ${JSON.stringify(prop.path)} has a default incompatible with ${JSON.stringify(prop.type)}.`);
     }
   }
 
@@ -493,22 +539,127 @@ function validateRealization(value, block) {
     if (node?.parent !== null && !nodeIds.has(node?.parent)) {
       block('realization-dom', `DOM node ${JSON.stringify(node?.id)} references missing parent ${JSON.stringify(node?.parent)}.`);
     }
-    if (node?.whenProp && !propPaths.has(node.whenProp)) {
-      block('realization-dom', `DOM node ${JSON.stringify(node?.id)} references missing condition prop ${JSON.stringify(node.whenProp)}.`);
+    if (Array.isArray(node?.element)) {
+      const selection = node.elementSelection;
+      const selectionProp = props.find((prop) => prop.path === selection?.prop);
+      const cases = Array.isArray(selection?.cases) ? selection.cases : [];
+      const caseValues = cases.map((item) => item?.value);
+      const caseElements = cases.map((item) => item?.element);
+      if (!selection || typeof selection !== 'object' || Array.isArray(selection) ||
+          !selectionProp || !Array.isArray(selectionProp.values) || cases.length === 0) {
+        block('realization-dom', `DOM node ${JSON.stringify(node?.id)} element alternatives require prop-backed elementSelection cases.`);
+      } else if (
+        new Set(caseValues.map(JSON.stringify)).size !== caseValues.length ||
+        new Set(caseElements).size !== caseElements.length ||
+        cases.some((item) => !item || typeof item !== 'object' || Array.isArray(item) || typeof item.element !== 'string' || !item.element || Object.keys(item).some((key) => !['value', 'element'].includes(key))) ||
+        !sameValueSet(caseValues, selectionProp.values) ||
+        !sameValueSet(caseElements, elements)
+      ) {
+        block('realization-dom', `DOM node ${JSON.stringify(node?.id)} elementSelection must exactly cover its prop values and element alternatives.`);
+      }
+    } else if (node?.elementSelection !== undefined) {
+      block('realization-dom', `DOM node ${JSON.stringify(node?.id)} cannot declare elementSelection for one fixed element.`);
+    }
+    if (node?.attributes !== undefined && (!node.attributes || typeof node.attributes !== 'object' || Array.isArray(node.attributes))) {
+      block('realization-dom', `DOM node ${JSON.stringify(node?.id)} attributes must be an object.`);
+    }
+    for (const [attribute, source] of Object.entries(node?.attributes ?? {})) {
+      if (!attribute || IDREF_ATTRIBUTES.includes(attribute)) {
+        block('realization-dom', `DOM node ${JSON.stringify(node?.id)} has invalid owned attribute ${JSON.stringify(attribute)}.`);
+      }
+      if (source && typeof source === 'object' && !Array.isArray(source)) {
+        const keys = Object.keys(source);
+        const hasProp = keys.length === 1 && typeof source.prop === 'string' && source.prop.length > 0;
+        const hasState = keys.length === 1 && typeof source.state === 'string' && source.state.length > 0;
+        if (hasProp === hasState) block('realization-dom', `DOM node ${JSON.stringify(node?.id)} attribute ${JSON.stringify(attribute)} requires exactly one prop or state source.`);
+        if (hasProp && !propPaths.has(source.prop)) block('realization-dom', `DOM node ${JSON.stringify(node?.id)} attribute ${JSON.stringify(attribute)} references missing prop ${JSON.stringify(source.prop)}.`);
+      } else if (!['string', 'boolean', 'number'].includes(typeof source)) {
+        block('realization-dom', `DOM node ${JSON.stringify(node?.id)} attribute ${JSON.stringify(attribute)} has an unsupported value.`);
+      }
+    }
+
+    const condition = node?.condition;
+    if (node?.cardinality === 'zero-or-one' && (!condition || typeof condition !== 'object' || Array.isArray(condition))) {
+      block('realization-dom', `DOM node ${JSON.stringify(node?.id)} requires a structured condition for zero-or-one cardinality.`);
+    } else if (node?.cardinality !== 'zero-or-one' && condition !== undefined) {
+      block('realization-dom', `DOM node ${JSON.stringify(node?.id)} may declare condition only with zero-or-one cardinality.`);
+    }
+    if (condition && typeof condition === 'object' && !Array.isArray(condition)) {
+      const hasProp = typeof condition.prop === 'string' && condition.prop.length > 0;
+      const hasState = typeof condition.state === 'string' && condition.state.length > 0;
+      if (hasProp === hasState) block('realization-dom', `DOM node ${JSON.stringify(node?.id)} condition requires exactly one of prop or state.`);
+      if (hasProp && !propPaths.has(condition.prop)) block('realization-dom', `DOM node ${JSON.stringify(node?.id)} references missing condition prop ${JSON.stringify(condition.prop)}.`);
+      if (!CONDITION_PREDICATES.includes(condition.predicate)) block('realization-dom', `DOM node ${JSON.stringify(node?.id)} has unsupported condition predicate ${JSON.stringify(condition.predicate)}.`);
+      if (['equals', 'not-equals'].includes(condition.predicate) !== Object.hasOwn(condition, 'value')) {
+        block('realization-dom', `DOM node ${JSON.stringify(node?.id)} condition value does not match predicate ${JSON.stringify(condition.predicate)}.`);
+      }
+    }
+
+    const repeat = node?.repeat;
+    if (['zero-or-more', 'one-or-more'].includes(node?.cardinality)) {
+      const hasProp = typeof repeat?.prop === 'string' && repeat.prop.length > 0;
+      const hasState = typeof repeat?.state === 'string' && repeat.state.length > 0;
+      const repeatProp = props.find((prop) => prop.path === repeat?.prop);
+      if (!repeat || typeof repeat !== 'object' || Array.isArray(repeat) || hasProp === hasState || (hasProp && repeatProp?.type !== 'collection')) {
+        block('realization-dom', `DOM node ${JSON.stringify(node?.id)} requires exactly one collection prop or derived state repeat declaration.`);
+      }
+    } else if (repeat !== undefined) {
+      block('realization-dom', `DOM node ${JSON.stringify(node?.id)} may declare repeat only with repeated cardinality.`);
     }
   }
 
+  const nodesById = new Map(nodes.map((node) => [node?.id, node]));
+  for (const node of nodes) {
+    const seen = new Set([node?.id]);
+    let current = node;
+    while (current?.parent !== null && nodeIds.has(current?.parent)) {
+      if (seen.has(current.parent)) {
+        block('realization-dom', `DOM ancestry for ${JSON.stringify(node?.id)} contains a cycle at ${JSON.stringify(current.parent)}.`);
+        break;
+      }
+      seen.add(current.parent);
+      current = nodesById.get(current.parent);
+    }
+  }
+
+  if (value.constraints !== undefined && !Array.isArray(value.constraints)) block('realization-constraints', 'realization.constraints must be an array when present.');
+  for (const [index, constraint] of (Array.isArray(value.constraints) ? value.constraints : []).entries()) {
+    const when = constraint?.when;
+    const whenProp = props.find((prop) => prop.path === when?.prop);
+    if (!constraint || typeof constraint !== 'object' || Array.isArray(constraint) || JSON.stringify(Object.keys(constraint).sort()) !== JSON.stringify(['requireAny', 'when'])) {
+      block('realization-constraints', `constraint ${index} must contain exactly when and requireAny.`);
+    }
+    if (!when || typeof when !== 'object' || Array.isArray(when) || JSON.stringify(Object.keys(when).sort()) !== JSON.stringify(['equals', 'prop'])) {
+      block('realization-constraints', `constraint ${index}.when must contain exactly prop and equals.`);
+    }
+    if (!whenProp) block('realization-constraints', `constraint ${index} references missing condition prop ${JSON.stringify(when?.prop)}.`);
+    else if (!valueMatchesProp(when?.equals, whenProp)) block('realization-constraints', `constraint ${index}.when.equals is incompatible with ${JSON.stringify(whenProp.path)}.`);
+    if (!Array.isArray(constraint?.requireAny) || constraint.requireAny.length === 0) {
+      block('realization-constraints', `constraint ${index} requires a non-empty requireAny.`);
+    }
+    for (const prop of constraint?.requireAny ?? []) {
+      if (!propPaths.has(prop)) block('realization-constraints', `constraint ${index} references missing required prop ${JSON.stringify(prop)}.`);
+    }
+  }
+
+  if (!Array.isArray(value.contentBindings)) block('realization-content', 'realization.contentBindings must be an array.');
   for (const binding of Array.isArray(value.contentBindings) ? value.contentBindings : []) {
     if (!propPaths.has(binding?.prop)) block('realization-content', `content binding references missing prop ${JSON.stringify(binding?.prop)}.`);
-    if (!nodeIds.has(binding?.node)) block('realization-content', `content binding references missing node ${JSON.stringify(binding?.node)}.`);
+    for (const node of nodeReferences(binding, `content binding for ${JSON.stringify(binding?.prop)}`, block)) {
+      if (!nodeIds.has(node)) block('realization-content', `content binding references missing node ${JSON.stringify(node)}.`);
+    }
   }
+  if (!Array.isArray(value.safeAttributes)) block('realization-attributes', 'realization.safeAttributes must be an array.');
   for (const attribute of Array.isArray(value.safeAttributes) ? value.safeAttributes : []) {
     if (!propPaths.has(attribute?.prop)) block('realization-attributes', `safe attribute references missing prop ${JSON.stringify(attribute?.prop)}.`);
-    if (!nodeIds.has(attribute?.node)) block('realization-attributes', `safe attribute references missing node ${JSON.stringify(attribute?.node)}.`);
+    for (const node of nodeReferences(attribute, `safe attribute for ${JSON.stringify(attribute?.prop)}`, block)) {
+      if (!nodeIds.has(node)) block('realization-attributes', `safe attribute references missing node ${JSON.stringify(node)}.`);
+    }
     if (typeof attribute?.attribute !== 'string' || !attribute.attribute) {
       block('realization-attributes', `safe attribute for ${JSON.stringify(attribute?.prop)} requires an attribute.`);
     }
   }
+  if (!Array.isArray(value.relationships)) block('realization-idref', 'realization.relationships must be an array.');
   for (const relationship of Array.isArray(value.relationships) ? value.relationships : []) {
     if (!nodeIds.has(relationship?.from)) block('realization-idref', `relationship references missing source node ${JSON.stringify(relationship?.from)}.`);
     if (!nodeIds.has(relationship?.to)) block('realization-idref', `relationship references missing target node ${JSON.stringify(relationship?.to)}.`);
@@ -518,6 +669,7 @@ function validateRealization(value, block) {
   }
 
   const stylePaths = new Set();
+  if (!Array.isArray(value.styleSlots)) block('realization-style', 'realization.styleSlots must be an array.');
   for (const slot of Array.isArray(value.styleSlots) ? value.styleSlots : []) {
     if (typeof slot?.path !== 'string' || !slot.path.startsWith('classNames.')) {
       block('realization-style', `style slot ${JSON.stringify(slot?.path)} must start with classNames.`);
@@ -525,8 +677,14 @@ function validateRealization(value, block) {
       block('realization-style', `style slot ${JSON.stringify(slot.path)} is duplicated.`);
     }
     stylePaths.add(slot?.path);
-    if (!nodeIds.has(slot?.node)) block('realization-style', `style slot ${JSON.stringify(slot?.path)} references missing node ${JSON.stringify(slot?.node)}.`);
-    for (const property of slot?.protectedProperties ?? []) {
+    if (!propPaths.has(slot?.path)) block('realization-style', `style slot ${JSON.stringify(slot?.path)} references a missing public prop path.`);
+    for (const node of nodeReferences(slot, `style slot ${JSON.stringify(slot?.path)}`, block)) {
+      if (!nodeIds.has(node)) block('realization-style', `style slot ${JSON.stringify(slot?.path)} references missing node ${JSON.stringify(node)}.`);
+    }
+    if (!Array.isArray(slot?.protectedProperties) || slot.protectedProperties.length === 0) {
+      block('realization-style', `style slot ${JSON.stringify(slot?.path)} requires protectedProperties.`);
+    }
+    for (const property of Array.isArray(slot?.protectedProperties) ? slot.protectedProperties : []) {
       if (!REALIZATION_PROTECTED_PROPERTIES.includes(property)) {
         block('realization-style', `style slot ${JSON.stringify(slot?.path)} has unsupported protected property ${JSON.stringify(property)}.`);
       }
@@ -551,6 +709,9 @@ function validateRealization(value, block) {
     }
     if (behavior.evidence !== behavior.id) {
       block('realization-evidence', `behavior ${JSON.stringify(behavior.id)} must use the same stable evidence ID.`);
+    }
+    if (behavior.evidenceType !== 'storybook-step') {
+      block('realization-evidence', `behavior ${JSON.stringify(behavior.id)} evidenceType must equal storybook-step.`);
     }
   }
 

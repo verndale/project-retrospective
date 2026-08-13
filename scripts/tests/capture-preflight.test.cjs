@@ -599,6 +599,102 @@ test('realization accessibility evidence and IDREFs must resolve', () => {
   assertBlocked(preflight(badStandard, fixture('fake-library')), 'realization-accessibility');
 });
 
+test('realization v1 accepts governed multi-node bindings and constraints', () => {
+  const captures = tempCaptures();
+  patchEntry(captures, (entry) => {
+    entry.realization.contentBindings = [
+      { prop: 'children', nodes: ['title', 'body'] },
+    ];
+    entry.realization.constraints = [
+      { when: { prop: 'title', equals: 'Details' }, requireAny: ['children'] },
+    ];
+    entry.realization.props.push({ path: 'headingLevel', type: 'enum', required: false, values: [2, 3, 4, 5, 6], default: 2 });
+    entry.realization.dom.nodes[0].attributes = { role: 'dialog', 'aria-label': { prop: 'title' }, inert: { state: 'covered' } };
+    return entry;
+  });
+  const result = preflight(captures, fixture('fake-library'));
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
+test('realization v1 rejects malformed collections and incompatible defaults', () => {
+  const cases = [
+    { code: 'realization-content', patch: (realization) => { realization.contentBindings = {}; } },
+    { code: 'realization-attributes', patch: (realization) => { realization.safeAttributes = 'none'; } },
+    { code: 'realization-idref', patch: (realization) => { realization.relationships = {}; } },
+    { code: 'realization-style', patch: (realization) => { delete realization.styleSlots[0].protectedProperties; } },
+    { code: 'realization-constraints', patch: (realization) => { realization.constraints = {}; } },
+    { code: 'realization-dom', patch: (realization) => { realization.dom.nodes[0].attributes = { 'aria-labelledby': 'title' }; } },
+    { code: 'realization-dom', patch: (realization) => { realization.dom.nodes[0].attributes = { role: { prop: 'missing' } }; } },
+    { code: 'realization-props', patch: (realization) => { realization.props.push({ path: 'open', type: 'boolean', required: false, default: 'false' }); } },
+    { code: 'realization-props', patch: (realization) => { realization.props.push({ path: 'level', type: 'enum', required: false, values: [2, 3], default: 4 }); } },
+    { code: 'realization-props', patch: (realization) => { realization.props.push({ path: 'items', type: 'collection', required: false, default: 'not-a-collection' }); } },
+    { code: 'realization-props', patch: (realization) => { realization.props.push({ path: 'onChange', type: 'callback', required: false, default: 'noop' }); } },
+  ];
+  for (const item of cases) {
+    const captures = tempCaptures();
+    patchEntry(captures, (entry) => {
+      item.patch(entry.realization);
+      return entry;
+    });
+    assertBlocked(preflight(captures, fixture('fake-library')), item.code);
+  }
+});
+
+test('realization v1 rejects ungrounded style paths, malformed constraints, cycles, and untyped evidence', () => {
+  const cases = [
+    {
+      code: 'realization-style',
+      patch: (realization) => {
+        realization.styleSlots[0].path = 'classNames.missing';
+      },
+    },
+    {
+      code: 'realization-constraints',
+      patch: (realization) => {
+        realization.constraints = [{ when: { prop: 'missing', predicate: 'truthy' }, requireAny: [] }];
+      },
+    },
+    {
+      code: 'realization-dom',
+      patch: (realization) => {
+        realization.dom.nodes[0].parent = 'body';
+        realization.dom.nodes[2].parent = 'dialog';
+      },
+    },
+    {
+      code: 'realization-evidence',
+      patch: (realization) => {
+        delete realization.behaviors[0].evidenceType;
+      },
+    },
+  ];
+
+  for (const fixtureCase of cases) {
+    const captures = tempCaptures();
+    patchEntry(captures, (entry) => {
+      fixtureCase.patch(entry.realization);
+      return entry;
+    });
+    assertBlocked(preflight(captures, fixture('fake-library')), fixtureCase.code);
+  }
+});
+
+test('conditional, repeated, and alternative DOM shapes require deterministic declarations', () => {
+  const cases = [
+    (node) => { node.cardinality = 'zero-or-one'; },
+    (node) => { node.cardinality = 'zero-or-more'; },
+    (node) => { node.element = ['h2', 'h3']; },
+  ];
+  for (const patchNode of cases) {
+    const captures = tempCaptures();
+    patchEntry(captures, (entry) => {
+      patchNode(entry.realization.dom.nodes[1]);
+      return entry;
+    });
+    assertBlocked(preflight(captures, fixture('fake-library')), 'realization-dom');
+  }
+});
+
 test('an entry disagreeing with the Canonical line is blocked', () => {
   const captures = tempCaptures();
   patchEntry(captures, (entry) => ({ ...entry, canonical: 'Alert', slug: 'alert' }));
