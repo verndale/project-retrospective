@@ -2,7 +2,7 @@
 date: 2026-08-13
 topics: [library-capture]
 plan: plans/2026-08-13-capture-preflight-schema-v3-for-accessible-realizations.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/64
 issue: https://github.com/verndale/project-retrospective/issues/63
 ---
 # Make accessible realization part of capture preflight

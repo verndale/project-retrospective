@@ -2,7 +2,8 @@
 status: implemented
 executed: 2026-08-13
 date: 2026-08-13
-evidence: []
+evidence:
+  - "PR #64 https://github.com/verndale/project-retrospective/pull/64 (merged 2026-08-13)"
 source_tool: file
 source: "/tmp/retrospective-realization-plan.md"
 topics: [library-capture]
