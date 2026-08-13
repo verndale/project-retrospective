@@ -32,6 +32,24 @@ component-capture
 - **Project imports:** none outside the component directory.
 - **Behavior to keep verbatim:** focus containment on open and restoration to the invoking element on close — that pair is the reason this implementation is worth keeping.
 
+## Runtime architecture
+
+```json
+{
+  "mode": "hybrid",
+  "hydration": ["state", "event-handler", "portal"],
+  "serverOutput": "shell",
+  "modules": [
+    { "path": "index.ts", "role": "facade", "runtime": "server" },
+    { "path": "Modal.types.ts", "role": "types", "runtime": "server" },
+    { "path": "Modal.tsx", "role": "tree", "runtime": "server" },
+    { "path": "parts/ModalDialog.client.tsx", "role": "branch", "runtime": "client" },
+    { "path": "parts/ModalHeader.tsx", "role": "leaf", "runtime": "server" },
+    { "path": "hooks/useModal.client.ts", "role": "hook", "runtime": "client" }
+  ]
+}
+```
+
 ## Proposed library entry
 
 Path: `components/modal/`
@@ -44,6 +62,11 @@ Path: `components/modal/`
   "styling": "tailwind",
   "slots": ["title", "body", "actions"],
   "variants": ["default", "wide"],
+  "reuseFingerprint": {
+    "slots": ["heading", "body", "action"],
+    "affordance": "contain",
+    "role": "container"
+  },
   "tokens": ["color-surface-raised", "ease-standard"],
   "provenance": {
     "project": "fake-project",

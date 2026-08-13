@@ -25,6 +25,7 @@ Capture when all of these hold:
 2. **The implementation is evidenced as mature** — a build pack, colocated unit tests, a `fingerprint.json` declaring a real slot/variant surface, and accessibility work that is visible in the code rather than assumed.
 3. **The client-specific surface is separable.** If the component only makes sense with the client's content model, it is project code.
 4. **The token usage is disciplined** — semantic token utilities rather than arbitrary values, so the component can be re-themed instead of re-styled.
+5. **Its runtime boundary can be stated precisely.** Audit every hook, handler, context, portal, timer, observer, browser API, and client-only dependency. Prefer a server tree with the smallest possible client leaves; do not inherit a source file's broad `'use client'` boundary without proving it is necessary.
 
 Do not capture: page-shaped regions, anything in the hard exclusion list, thin wrappers whose whole body is another component, or a component whose only evidence is `code-scan`.
 
@@ -67,6 +68,25 @@ What the library rewrite must strip or change. Be exhaustive and specific — th
 - **Project imports:** <helpers, path aliases, config it depends on.>
 - **Behavior to keep verbatim:** <the parts that are the actual value and must survive the rewrite.>
 
+## Runtime architecture
+
+```json
+{
+  "mode": "server | hybrid | client",
+  "hydration": ["state | event-handler | effect | context | portal | timer | observer | browser-api | third-party-client"],
+  "serverOutput": "full | shell | none",
+  "modules": [{"path": "relative module path", "role": "facade | types | tree | branch | leaf | hook | styles", "runtime": "server | client"}]
+}
+```
+
+Replace each union string with one permitted value and list every module the rewrite will create, relative to `components/<slug>/`. The plan must contain exactly one `index.ts` facade, exactly one `.ts` types module, and at least two `tree` / `branch` / `leaf` `.tsx` implementation modules. Paths are unique, normalized, relative, and use forward slashes.
+
+- `server` — `hydration: []`, `serverOutput: "full"`, a server facade, and no client modules.
+- `hybrid` — at least one server tree/branch/leaf implementation and one client module, a server facade, one or more concrete hydration reasons, and `serverOutput: "shell"`. The facade alone does not count as server-rendered implementation.
+- `client` — a client `index.ts` facade, one or more concrete hydration reasons, `serverOutput: "none"`, and at least one client tree/branch/leaf module. Neutral presentation leaves may remain `runtime: "server"` when they contain no client behavior, even though importing them beneath the client facade places them in its client graph.
+- Every client module except the deliberate public `index.ts` exception ends in `.client.ts` or `.client.tsx`. The client facade itself must start with `'use client'`; server and hybrid facades must not. A hybrid client island imported directly by a server module also starts with the directive; descendants already beneath a client boundary do not repeat it.
+- Keep every `'use client'` file at or below 120 physical lines. Split interaction into client hooks/leaves rather than moving the whole tree across the boundary.
+
 ## Proposed library entry
 
 Path: `components/<slug>/`
@@ -79,6 +99,11 @@ Path: `components/<slug>/`
   "styling": "tailwind",
   "slots": ["<slot>", "<slot>"],
   "variants": ["<variant>"],
+  "reuseFingerprint": {
+    "slots": ["heading", "body", "action"],
+    "affordance": "contain",
+    "role": "container"
+  },
   "tokens": ["<semantic token group>"],
   "provenance": {
     "project": "<project slug>",
@@ -91,6 +116,8 @@ Path: `components/<slug>/`
 ```
 
 At capture time `declienting` mirrors `## De-client work`. At execution time it is rewritten to record what was **actually** removed. `ui-design-library` mandates the field but does not check it, so it is the one entry in this block nothing but the author enforces — "minor cleanup" is not an entry.
+
+`Runtime architecture` is an execution plan, not package metadata. `capture-preflight.cjs` validates and returns it separately in its schema-v2 plan; do not add it to `component.json`.
 
 Story plan — one story per meaningful state, since the story file is the library's API contract:
 
@@ -114,6 +141,7 @@ The scope is the component slug, not `library` — `ui-design-library` owns that
 - **Name the file after the canonical, not the project's label.** A capture of a project's `Tag` component whose canonical is **Badge** is `captures/badge.md`, and the parenthetical on its `## Canonical` line is `` `badge` ``. The report's `### Badge` entry, the filename, and that parenthetical must all agree — the library keys its component directories on the canonical slug, so a capture named after the label leads to a mis-slugged component.
 - **`maturity: "candidate"`** on every capture. Promoting a candidate to a supported library component is a human decision made in that repo, after the rewrite and the story exist.
 - **The de-client list is the deliverable.** A capture that says "minor cleanup needed" is useless; the value is in naming every coupling so the rewrite can be estimated and nothing client-specific leaks into shared code.
+- **The runtime graph is also a deliverable.** Missing or inconsistent runtime architecture blocks capture. Do not use `client` merely because the source starts with `'use client'`; prove the hydration reason and push the directive to the smallest leaves that need it.
 - **No client names, copy, or asset URLs in the capture body** beyond the provenance paths needed to find the source. The capture travels to a repo other projects read.
 - **One capture *file* per canonical per run — but never silently drop a second module.** When two components resolve to the same canonical, decide which case you have and record it in the report's `## Captures` prose and this capture's `## Reuse evidence`:
   - **Prop or visual variants of one component** (a wide Modal, a compact Card, a tone) fold into that single capture's `component.json.variants` array — one file, multiple entries. The golden `captures/modal.md` shows the shape (`"variants": ["default", "wide"]`).

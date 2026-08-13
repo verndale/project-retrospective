@@ -18,7 +18,7 @@ What the skill does, how to run it, and what it produces. The skill's own instru
 
 ## What it does
 
-Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what didn't resolve into reviewable proposals. It can also ingest seeded team retrospectives and post-mortems, preserve their original structure privately, and turn every action into an owned, auditable lifecycle record.
+Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what didn't resolve into reviewable proposals. Reusable component captures include an explicit server-first module graph, so applying one creates a facade/types/tree/branch/leaf structure instead of reproducing a monolithic client TSX file. The skill can also ingest seeded team retrospectives and post-mortems, preserve their original structure privately, and turn every action into an owned, auditable lifecycle record.
 
 The division of labour matters: **scripts decide structure, the model exercises judgment.** Discovery, label resolution, and output validation are deterministic and zero-LLM. Deciding whether an unresolved label is real platform vocabulary is the part that needs a model — and it is advisory. Nothing reaches the catalog without a human commit.
 
@@ -98,7 +98,7 @@ Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
-Preflight checks every capture at once, then components are written **one at a time**, each verified with `pnpm contracts` and `pnpm test` before the next starts. Read the `orphanedByRun` list it reports before anything else: those are library components claiming this run with no capture behind them.
+Preflight checks every capture at once and returns a schema-v2 plan with its validated runtime architecture. Missing/inconsistent architecture blocks. Components are then written **one at a time** in this order: facade/types → tree/parts/hooks → stories → `component.json` → `pnpm exports:sync`; each runs `pnpm contracts`, `pnpm test`, and `pnpm build` before the next starts. Read the `orphanedByRun` list first: those are library components claiming this run with no capture behind them.
 
 Then you commit, one per component:
 
@@ -106,7 +106,7 @@ Then you commit, one per component:
 cd /Users/you/Projects/ui-design-library && pnpm commit
 ```
 
-**Done when:** `pnpm test` passes in the library, each new `components/<slug>/` holds three files, and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
+**Done when:** `pnpm test` and `pnpm build` pass in the library; each new `components/<slug>/` has `index.ts`, a types module, at least two implementation TSX modules, stories, and `component.json`; the export map is synced; and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
 
 ### Step 5 — Carry the orchestration drafts over
 
@@ -187,7 +187,7 @@ Written to `Output`, never into this skill's repository:
 | `inventory.json` | Every component found, with its evidence sources, build pack, and fingerprint. |
 | `resolution.json` | Resolved labels with how they resolved; unresolved labels with occurrences and locations. |
 | `proposals/<slug>.md` | One per Promote candidate — a ready-to-apply catalog change with its evidence. |
-| `captures/<slug>.md` | Implementations mature enough to seed `ui-design-library`, with the de-clienting work each needs. Often drawn from components whose labels already resolve. |
+| `captures/<slug>.md` | Implementations mature enough to seed `ui-design-library`, with the de-clienting work and validated server/hybrid/client module architecture each needs. Often drawn from components whose labels already resolve. |
 | `orchestration-drafts.md` | Pipeline-shaped findings as paste-ready drafts for ai-orchestration. |
 | `specs-raw.json` / `specs.json` | Only when a `Specs` input was given: the model's raw Confluence capture, and the structured, approved-only spec pack (`normalize-specs.cjs`) that feeds `resolve.cjs --specs`. |
 | `retrospectives-raw.json` | Audited page/space capture: explicit and discovered candidates, source versions, converted Markdown, and every exclusion reason. |
@@ -223,7 +223,7 @@ node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <l
 | `normalize-retrospectives.cjs` | 0 success (including recorded warnings) · 1 unexpected · 2 bad invocation · 3 named input missing/unreadable |
 | `update-retrospective-register.cjs` | 0 success · 1 unexpected · 2 bad invocation · 3 action pack missing/unreadable |
 | `validate-report.cjs` | 0 pass · 1 failures · 2 bad invocation · 3 `--output` is not a directory |
-| `capture-preflight.cjs` | 0 all ready or already applied · 1 one or more blocked, or unexpected · 2 bad invocation · 3 `--captures` is not a directory · 4 `--library` is not a library checkout · 5 manifest missing/unreadable/invalid · 6 none blocked, but one or more deferred (canonical only proposed this run — promote first, then re-run) |
+| `capture-preflight.cjs` | Schema-v2 plan; 0 all ready or already applied · 1 one or more blocked, or unexpected · 2 bad invocation · 3 `--captures` is not a directory · 4 `--library` is not a library checkout · 5 manifest missing/unreadable/invalid · 6 none blocked, but one or more deferred (canonical only proposed this run — promote first, then re-run) |
 
 Inputs *within* a run never crash the script: a missing artifact, an unreadable file, or an unexpected shape records a `{ code, message }` warning and the run continues with less evidence. Read the warnings — they are what the report's Gaps section is built from. A named input that was requested but cannot be used — an unreadable inventory, a structurally invalid manifest — exits on its own code instead, because every downstream answer would otherwise be meaningless.
 
@@ -254,7 +254,9 @@ Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
-**Batch input, serial execution.** `capture-preflight.cjs` checks every capture in the directory in one pass — canonical present in the catalog, slug equality across the canonical/parenthetical/filename, whether `components/<slug>/` is free, whether declared tokens exist in the library's semantic layer, whether provenance is complete. It writes **nothing** into the library. Components are then written one at a time, each verified with `pnpm contracts` and `pnpm test` before the next begins, so the library is never left holding half-written component directories.
+**Batch input, serial execution.** `capture-preflight.cjs` checks every capture in one pass — catalog canonical, slug equality, declared tokens, provenance, governed reuse fingerprint, the exact `## Runtime architecture` contract, and the library's recursive current state. “Already applied” is an exact comparison: planned implementation modules must be present, non-empty, reachable from `index.ts`, and under the declared client boundary; no unplanned implementation module may exist; the root story and stable `component.json` fields must agree. Its schema-v2 component record returns the validated `architecture` beside `componentJson`; it never copies architecture into the manifest and writes **nothing** into the library. Components are written one at a time in the load-bearing order facade/types → tree/parts/hooks → stories → `component.json` → `pnpm exports:sync`, then verified with `pnpm contracts`, `pnpm test`, and `pnpm build` before the next begins.
+
+**Server first, not directive first.** Each architecture chooses `server`, `hybrid`, or `client` from concrete hydration needs. Server mode emits full HTML and has no client modules. Hybrid mode keeps a server facade plus a real server tree/branch/leaf implementation—the facade alone is not server output—and isolates state, handlers, effects, context, portals, timers, observers, browser APIs, or client-only dependencies in `.client.ts`/`.client.tsx` leaves. Client mode uses a client `index.ts` facade only when the public component itself cannot stay server-backed. Every `'use client'` file is at most 120 physical lines and remains SSR-safe; the directive does not disable React/Next server rendering.
 
 **Executing a capture is a rewrite, not a copy.** Project imports are replaced with library primitives, client tokens are mapped onto semantic tokens (adding one when a value has no semantic home), client copy and assets come out, and every removal is recorded in `component.json`'s `declienting` array. That array is mandated by the library but not checked by its contract script, so it is the one thing only the author enforces.
 
@@ -286,5 +288,7 @@ One project's retrospective is a snapshot; the signal gets much stronger with hi
 | Validator fails on `capture-parity` | A `### <Canonical>` entry under `## Captures` has no `captures/<kebab-canonical>.md`, or a capture file has no entry. Both directions fail — a capture the report does not list is how a component reaches the library with no evidence. |
 | Validator fails on `capture-canonical` | The capture's bolded canonical, its backticked slug, and its filename disagree. Name the file after the canonical (`Badge` → `captures/badge.md`), never after the project's label. |
 | Preflight blocks on `canonical-unknown` | The catalog has no such canonical and no `new-pattern` proposal in the run establishes it. Promote it into ui-design-brain first — the library keys on names the catalog resolves to. (If the run *does* propose it, preflight reports `deferred` — exit 6 — instead: promote that proposal, then re-run.) |
-| Preflight blocks on `library-partial` | `components/<slug>/` already exists holding some but not all three files. Finish or remove it by hand; the skill will not write into a half-built directory. |
+| Preflight blocks on `architecture-*` | The capture is missing its Runtime architecture or its mode, hydration, server output, module roles/runtimes, paths, facade/types, or TSX split is inconsistent. Fix the capture; architecture is a hard gate, never inferred during application. |
+| Preflight blocks on `library-partial` | `components/<slug>/` exists but its recursive module set, contents, reachability, client boundary, or root story is incomplete or inconsistent. Finish or remove it by hand; the skill will not write into a half-built directory. |
+| Preflight blocks on `library-drift` | The planned files exist, but stable `component.json` fields or story metadata differ from this capture. Reconcile the provenance/API evidence instead of treating a same-named directory as already applied. |
 | Preflight blocks on `slug-mismatch` | The same disagreement `capture-canonical` catches, seen at capture time. Fix the capture file rather than the library directory. |

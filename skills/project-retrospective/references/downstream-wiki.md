@@ -16,7 +16,7 @@ How `Action: promote` and `Action: capture` author a client-agnostic entry in th
 ## When it runs
 
 - **promote** — into the `Brain` checkout, after the catalog edits verify (the checklist's Verification step), before the handback. One entry per promoted proposal.
-- **capture** — into the `Library` checkout, after `pnpm contracts` and `pnpm test` pass, before the handback. One entry per component actually written.
+- **capture** — into the `Library` checkout, after `pnpm contracts`, `pnpm test`, and `pnpm build` pass, before the handback. One entry per component actually written.
 - Both — only when `<repo>/wiki/` exists. The entry is part of the same working-tree delivery as the catalog/component change, never a separate commit.
 
 ## The data boundary
@@ -57,14 +57,14 @@ The Decisions bullet is newest-first, one line, mirroring the stat bullet: `- <d
 
 ## capture → ui-design-library
 
-One entry per component **actually written** — a `ready` capture that passed `pnpm contracts` and `pnpm test`. Skip a `deferred` (preflight exit 6), `blocked` (exit 1), or `skipped` capture: nothing was written, so an entry would be an invented outcome and a dangling link. `<change-slug>` is `add-<canonical-slug>-component`; title `Add the <Name> component`; `topics: []` — this repo has no per-component catalog topic, and MECHANICS creates a topic page only once two related entries exist. No Decisions bullet.
+One entry per component **actually written** — a `ready` capture that passed `pnpm contracts`, `pnpm test`, and `pnpm build`. Skip a `deferred` (preflight exit 6), `blocked` (exit 1), or `skipped` capture: nothing was written, so an entry would be an invented outcome and a dangling link. `<change-slug>` is `add-<canonical-slug>-component`; title `Add the <Name> component`; `topics: []` — this repo has no per-component catalog topic, and MECHANICS creates a topic page only once two related entries exist. No Decisions bullet.
 
-The graph rebuild is **new work** here: capture verifies with `pnpm contracts` + `pnpm test`, which do not touch the graph. After the last component's journal entry, rebuild from the `Library` root. Prefer `pnpm graph:build` — it resolves from the library's own `package.json`; a bare `node scripts/graph/build-graph.cjs` run from the wrong directory silently rebuilds *this* skill's graph instead, because this repo has a file at the identical path. Bar to match: `wiki/journal/2026-07-30-add-stat-component.md` — match its shape, but per the data boundary do not quote the run path as its line does; point at `component.json` only.
+The graph rebuild is **new work** here: capture verifies with `pnpm contracts` + `pnpm test` + `pnpm build`, which do not touch the graph. After the last component's journal entry, rebuild from the `Library` root. Prefer `pnpm graph:build` — it resolves from the library's own `package.json`; a bare `node scripts/graph/build-graph.cjs` run from the wrong directory silently rebuilds *this* skill's graph instead, because this repo has a file at the identical path. Bar to match: `wiki/journal/2026-07-30-add-stat-component.md` — match its shape, but per the data boundary do not quote the run path as its line does; point at `component.json` only.
 
 ## Grounding each entry
 
 - **promote, from the proposal:** *Why* ← the proposal's `## Evidence` (recurrence count and rubric pass; "no existing canonical covered it", naming the confusable neighbours) — client-agnostic. *What changed* ← the proposal's `## Manifest entry` and integrity delta (canonical added, count N → N+1, aliases-or-none, reciprocal cross-references). *Files* ← the real `git -C <Brain> status --short` set. *Follow-ups* ← consumer pickup, and that the evidence stays in the private evidence store per the data boundary.
-- **capture, from the capture file and `component.json`:** *Why* ← the capture's rationale and that the pattern was promoted to the catalog as `<Name>`. *What changed* ← the de-cliented exports, what was dropped as page/brand concern, what was kept verbatim, and the token mappings — all traceable to `declienting`, citing only the semantic destination token, never the client source token. *Files* ← `components/<slug>/{<PascalCase>.tsx,<PascalCase>.stories.tsx,component.json}`. *Follow-ups* ← missing tokens or approximations. Provenance is "in `component.json`", never the run slug in prose.
+- **capture, from the capture file and `component.json`:** *Why* ← the capture's rationale and that the pattern was promoted to the catalog as `<Name>`. *What changed* ← the server-first mode/boundary, de-cliented exports, what was dropped as page/brand concern, what was kept verbatim, and token mappings — trace architecture to the capture and removals to `declienting`, citing only semantic destination tokens. *Files* ← `components/<slug>/` with `index.ts`, types, the architecture's tree/branch/leaf modules, stories, and `component.json`. *Follow-ups* ← missing tokens or approximations. Provenance is "in `component.json`", never the run slug in prose.
 
 ## Guardrails
 

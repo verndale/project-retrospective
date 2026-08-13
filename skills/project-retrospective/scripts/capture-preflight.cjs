@@ -5,14 +5,16 @@
  * Reads a run's whole `captures/` directory, checks every capture against the
  * ui-design-brain manifest and the state of a local ui-design-library checkout,
  * and emits one plan covering all of them: which are ready to execute, which are
- * blocked and why, and which are already applied. For each ready capture it emits
- * the exact `component.json` object to write, in that repo's key order.
+ * blocked and why, and which are already applied. Its schema-v2 component record
+ * emits the validated server-first architecture beside the exact `component.json`
+ * object to write. Architecture governs the rewrite and is never copied into the
+ * library manifest.
  *
  * What it deliberately does NOT do:
  *   - Write into the library. Not one byte. Executing a capture is a rewrite, not
- *     a copy, so the implementation, the stories, and the `declienting` record are
- *     the model's to author. A scaffolded component.json alone would leave the
- *     library failing its own contracts until the rewrite landed.
+ *     a copy, so the facade/types/tree/parts/hooks, stories, and `declienting`
+ *     record are the model's to author. A scaffolded component.json alone would
+ *     leave the library failing its own contracts until the rewrite landed.
  *   - Spawn `pnpm contracts` or anything else. This pre-flights the inputs to that
  *     checker so a rewrite is not wasted; it does not restate its verdicts, and it
  *     stays runnable with no node_modules anywhere.
@@ -39,6 +41,7 @@
 
 'use strict';
 
+const fs = require('node:fs');
 const path = require('node:path');
 const {
   parseArgs,
@@ -48,6 +51,7 @@ const {
   isDir,
   isFile,
   listEntries,
+  listFilesRecursive,
   normalizeLabel,
   kebab,
   sections,
@@ -71,6 +75,55 @@ const USAGE = [
 
 const MANIFEST_REL = 'skills/ui-design-brain/patterns-manifest.json';
 const CAPTURE_TYPE = 'component-capture';
+const ARCHITECTURE_KEYS = ['hydration', 'mode', 'modules', 'serverOutput'];
+const MODULE_KEYS = ['path', 'role', 'runtime'];
+const ARCHITECTURE_MODES = ['server', 'hybrid', 'client'];
+const HYDRATION_REASONS = [
+  'state',
+  'event-handler',
+  'effect',
+  'context',
+  'portal',
+  'timer',
+  'observer',
+  'browser-api',
+  'third-party-client',
+];
+const MODULE_ROLES = ['facade', 'types', 'tree', 'branch', 'leaf', 'hook', 'styles'];
+const MODULE_RUNTIMES = ['server', 'client'];
+const IMPLEMENTATION_ROLES = ['tree', 'branch', 'leaf'];
+const REUSE_SLOTS = [
+  'media',
+  'heading',
+  'body',
+  'meta',
+  'action',
+  'badge',
+  'icon',
+  'footer',
+  'stat',
+  'chart',
+  'avatar',
+  'caption',
+  'toolbar',
+  'field',
+  'panel',
+  'row',
+  'close',
+  'other',
+];
+const REUSE_AFFORDANCES = ['navigate', 'display', 'input', 'expand', 'select', 'trigger', 'contain', 'feedback', 'other'];
+const REUSE_ROLES = [
+  'entity-summary',
+  'metric',
+  'media-showcase',
+  'editorial',
+  'action-group',
+  'container',
+  'structural',
+  'notification',
+  'other',
+];
 
 // Semantic tokens are declared in component.json without the leading dashes, so
 // harvest the names the same way the library's own contract checker does.
@@ -177,21 +230,418 @@ function loadProposals(proposalsDir, warnings) {
   return out;
 }
 
+function hasClientDirective(source) {
+  return /^\s*(?:(?:\/\*[\s\S]*?\*\/|\/\/[^\n]*(?:\n|$))\s*)*(['"])use client\1\s*;/.test(source);
+}
+
+function relativeImports(source) {
+  const imports = new Set();
+  const patterns = [
+    /\b(?:import|export)\s+(?:type\s+)?[^;]*?\sfrom\s*['"]([^'"]+)['"]/g,
+    /\bimport\s*['"]([^'"]+)['"]/g,
+    /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+  ];
+  for (const pattern of patterns) {
+    for (const match of source.matchAll(pattern)) {
+      if (match[1].startsWith('.')) imports.add(match[1]);
+    }
+  }
+  return [...imports];
+}
+
+function resolveModule(from, specifier, modules) {
+  const base = path.posix.normalize(path.posix.join(path.posix.dirname(from), specifier));
+  const candidates = [base, `${base}.ts`, `${base}.tsx`, `${base}/index.ts`, `${base}/index.tsx`];
+  return candidates.find((candidate) => modules.has(candidate)) || null;
+}
+
+/** Confirm that an existing multifile implementation matches the captured graph. */
+function inspectAppliedArchitecture(dir, architecture, files) {
+  if (!architecture) return ['the capture has no validated runtime architecture'];
+  const issues = [];
+  const sources = new Map();
+
+  for (const module of architecture.modules) {
+    const source = fs.readFileSync(path.join(dir, module.path), 'utf8');
+    sources.set(module.path, source);
+    if (source.trim().length === 0) issues.push(`${module.path} is empty`);
+    const directive = hasClientDirective(source);
+    if (module.runtime === 'server' && directive) {
+      issues.push(`${module.path} is declared server but contains 'use client'`);
+    }
+  }
+
+  const modulePaths = new Set(architecture.modules.map((module) => module.path));
+  const graph = new Map(
+    [...sources].map(([modulePath, source]) => [
+      modulePath,
+      relativeImports(source)
+        .map((specifier) => resolveModule(modulePath, specifier, modulePaths))
+      .filter(Boolean),
+    ]),
+  );
+  const facadeSource = sources.get('index.ts') || '';
+  const reachable = new Set();
+  const clientReachable = new Set();
+  const visitedStates = new Set();
+  const queue = [{ modulePath: 'index.ts', client: hasClientDirective(facadeSource) }];
+  while (queue.length > 0) {
+    const { modulePath, client } = queue.shift();
+    const state = `${modulePath}:${client}`;
+    if (visitedStates.has(state)) continue;
+    visitedStates.add(state);
+    reachable.add(modulePath);
+    if (client) clientReachable.add(modulePath);
+    for (const imported of graph.get(modulePath) || []) {
+      queue.push({
+        modulePath: imported,
+        client: client || hasClientDirective(sources.get(imported) || ''),
+      });
+    }
+  }
+
+  for (const module of architecture.modules) {
+    if (!reachable.has(module.path)) issues.push(`${module.path} is not reachable from index.ts`);
+  }
+  for (const module of architecture.modules.filter((candidate) => candidate.runtime === 'client')) {
+    if (!clientReachable.has(module.path)) {
+      issues.push(`${module.path} is declared client but is not beneath a 'use client' boundary`);
+    }
+  }
+  if (architecture.mode === 'client' && !hasClientDirective(facadeSource)) {
+    issues.push("client mode requires index.ts to contain 'use client'");
+  }
+  if (architecture.mode !== 'client' && hasClientDirective(facadeSource)) {
+    issues.push(`${architecture.mode} mode requires a server index.ts facade`);
+  }
+
+  const rootStories = files.filter((file) => !file.includes('/') && file.endsWith('.stories.tsx'));
+  if (rootStories.length !== 1) issues.push('the component must contain exactly one root stories file');
+  return issues;
+}
+
 /** What `components/<slug>/` currently holds, if anything. */
-function inspectLibraryDir(libraryDir, slug) {
+function inspectLibraryDir(libraryDir, slug, architecture) {
   const dir = path.join(libraryDir, 'components', slug);
   if (!isDir(dir)) {
-    return { dir: `components/${slug}`, exists: false, has: { componentJson: false, impl: false, stories: false } };
+    return {
+      dir: `components/${slug}`,
+      exists: false,
+      files: [],
+      has: { componentJson: false, implementation: false, stories: false },
+      plannedModules: [],
+      missingModules: [],
+      unexpectedModules: [],
+      architectureIssues: [],
+      complete: false,
+    };
   }
-  const files = listEntries(dir).filter((e) => !e.dir).map((e) => e.name);
+  const files = listFilesRecursive(dir);
+  const plannedModules = architecture ? architecture.modules.map((module) => module.path) : [];
+  const missingModules = plannedModules.filter((modulePath) => !files.includes(modulePath));
+  const actualModules = files.filter((file) => /\.tsx?$/.test(file) && !/\.stories\.tsx?$/.test(file));
+  const unexpectedModules = actualModules.filter((modulePath) => !plannedModules.includes(modulePath));
+  const componentJson = files.includes('component.json');
+  const implementation = files.some((file) => file.endsWith('.tsx') && !file.endsWith('.stories.tsx'));
+  const stories = files.some((file) => !file.includes('/') && file.endsWith('.stories.tsx'));
+  const architectureIssues =
+    architecture && missingModules.length === 0 && unexpectedModules.length === 0
+      ? inspectAppliedArchitecture(dir, architecture, files)
+      : [];
   return {
     dir: `components/${slug}`,
     exists: true,
+    files,
     has: {
-      componentJson: files.includes('component.json'),
-      impl: files.some((f) => f.endsWith('.tsx') && !f.endsWith('.stories.tsx')),
-      stories: files.some((f) => f.endsWith('.stories.tsx')),
+      componentJson,
+      implementation,
+      stories,
     },
+    plannedModules,
+    missingModules,
+    unexpectedModules,
+    architectureIssues,
+    complete: Boolean(
+      architecture &&
+        componentJson &&
+        stories &&
+        missingModules.length === 0 &&
+        unexpectedModules.length === 0 &&
+        architectureIssues.length === 0
+    ),
+  };
+}
+
+function validateReuseFingerprint(value, block) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    block('reuse-fingerprint', 'the proposed entry is missing reuseFingerprint.');
+    return { slots: [], affordance: null, role: null };
+  }
+  if (!sameKeys(value, ['affordance', 'role', 'slots'])) {
+    block('reuse-fingerprint', 'reuseFingerprint keys must be exactly affordance, role, slots.');
+  }
+  if (!Array.isArray(value.slots) || value.slots.length === 0) {
+    block('reuse-fingerprint', 'reuseFingerprint.slots must be a non-empty array.');
+  } else {
+    const seen = new Set();
+    for (const slot of value.slots) {
+      if (!REUSE_SLOTS.includes(slot)) block('reuse-fingerprint', `reuseFingerprint slot ${JSON.stringify(slot)} is not governed.`);
+      if (seen.has(slot)) block('reuse-fingerprint', `reuseFingerprint slot ${JSON.stringify(slot)} is duplicated.`);
+      seen.add(slot);
+    }
+  }
+  if (!REUSE_AFFORDANCES.includes(value.affordance)) {
+    block('reuse-fingerprint', `reuseFingerprint affordance ${JSON.stringify(value.affordance)} is not governed.`);
+  }
+  if (!REUSE_ROLES.includes(value.role)) {
+    block('reuse-fingerprint', `reuseFingerprint role ${JSON.stringify(value.role)} is not governed.`);
+  }
+  return {
+    slots: Array.isArray(value.slots) ? [...value.slots] : [],
+    affordance: value.affordance ?? null,
+    role: value.role ?? null,
+  };
+}
+
+function appliedMetadataIssues(dir, files, existing, expected) {
+  const issues = [];
+  const stableKeys = [
+    'canonical',
+    'slug',
+    'framework',
+    'styling',
+    'slots',
+    'variants',
+    'reuseFingerprint',
+    'tokens',
+    'provenance',
+  ];
+  for (const key of stableKeys) {
+    if (JSON.stringify(existing?.[key]) !== JSON.stringify(expected[key])) {
+      issues.push(`component.json ${key} does not match the capture`);
+    }
+  }
+
+  const story = files.find((file) => !file.includes('/') && file.endsWith('.stories.tsx'));
+  if (story) {
+    const source = fs.readFileSync(path.join(dir, story), 'utf8');
+    const escapedTitle = expected.canonical.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (!new RegExp(`title\\s*:\\s*['"]${escapedTitle}['"]`).test(source)) {
+      issues.push(`the root story title does not match ${JSON.stringify(expected.canonical)}`);
+    }
+    const maturity = existing?.maturity;
+    if (typeof maturity !== 'string' || !source.includes(`maturity:${maturity}`)) {
+      issues.push('the root story maturity tag does not match component.json');
+    }
+  }
+  return issues;
+}
+
+function sameKeys(value, expected) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const actual = Object.keys(value).sort();
+  return actual.length === expected.length && actual.every((key, index) => key === expected[index]);
+}
+
+function safeModulePath(modulePath) {
+  if (typeof modulePath !== 'string' || !modulePath || modulePath !== modulePath.trim()) return false;
+  if (modulePath.includes('\\') || modulePath.includes(':') || /[\u0000-\u001f\u007f]/.test(modulePath)) return false;
+  if (path.posix.isAbsolute(modulePath) || /^[A-Za-z]:/.test(modulePath)) return false;
+  if (path.posix.normalize(modulePath) !== modulePath) return false;
+  if (modulePath === '.' || modulePath.startsWith('../') || modulePath.includes('/../')) return false;
+  return /\.tsx?$/.test(modulePath) && !/\.stories\.tsx?$/.test(modulePath);
+}
+
+/** Validate the exact server-first module graph a capture promises to write. */
+function validateArchitecture(value, block) {
+  const before = block.count();
+
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    block('architecture-unparsable', 'the Runtime architecture JSON must be an object.');
+    return null;
+  }
+  if (!sameKeys(value, ARCHITECTURE_KEYS)) {
+    block(
+      'architecture-keys',
+      `Runtime architecture keys must be exactly ${ARCHITECTURE_KEYS.join(', ')}.`,
+    );
+  }
+
+  const modeValid = ARCHITECTURE_MODES.includes(value.mode);
+  if (!modeValid) {
+    block('architecture-mode', `mode must be one of ${ARCHITECTURE_MODES.join(', ')}.`);
+  }
+
+  let hydration = [];
+  if (!Array.isArray(value.hydration)) {
+    block('architecture-hydration', 'hydration must be an array.');
+  } else {
+    hydration = value.hydration;
+    const seen = new Set();
+    for (const reason of hydration) {
+      if (!HYDRATION_REASONS.includes(reason)) {
+        block(
+          'architecture-hydration',
+          `hydration reason ${JSON.stringify(reason)} is not one of ${HYDRATION_REASONS.join(', ')}.`,
+        );
+      }
+      if (seen.has(reason)) {
+        block('architecture-hydration', `hydration reason ${JSON.stringify(reason)} is duplicated.`);
+      }
+      seen.add(reason);
+    }
+  }
+
+  if (!['full', 'shell', 'none'].includes(value.serverOutput)) {
+    block('architecture-server-output', 'serverOutput must be one of full, shell, none.');
+  }
+
+  const modules = [];
+  if (!Array.isArray(value.modules) || value.modules.length === 0) {
+    block('architecture-modules', 'modules must be a non-empty array.');
+  } else {
+    const paths = new Set();
+    value.modules.forEach((module, index) => {
+      if (!sameKeys(module, MODULE_KEYS)) {
+        block(
+          'architecture-module',
+          `modules[${index}] keys must be exactly ${MODULE_KEYS.join(', ')}.`,
+        );
+      }
+      if (!module || typeof module !== 'object' || Array.isArray(module)) return;
+
+      const modulePath = module.path;
+      if (!safeModulePath(modulePath)) {
+        block(
+          'architecture-path',
+          `modules[${index}].path must be a normalized, safe, relative .ts/.tsx path and must not be a story: ${JSON.stringify(modulePath)}.`,
+        );
+      } else if (paths.has(modulePath)) {
+        block('architecture-path-duplicate', `module path ${JSON.stringify(modulePath)} is duplicated.`);
+      } else {
+        paths.add(modulePath);
+      }
+      if (!MODULE_ROLES.includes(module.role)) {
+        block(
+          'architecture-module',
+          `modules[${index}].role must be one of ${MODULE_ROLES.join(', ')}.`,
+        );
+      }
+      if (!MODULE_RUNTIMES.includes(module.runtime)) {
+        block(
+          'architecture-module',
+          `modules[${index}].runtime must be one of ${MODULE_RUNTIMES.join(', ')}.`,
+        );
+      }
+      if (safeModulePath(modulePath) && MODULE_ROLES.includes(module.role) && MODULE_RUNTIMES.includes(module.runtime)) {
+        modules.push({ path: modulePath, role: module.role, runtime: module.runtime });
+      }
+    });
+  }
+
+  const facades = modules.filter((module) => module.role === 'facade');
+  if (facades.length !== 1 || facades[0]?.path !== 'index.ts') {
+    block('architecture-facade', 'modules must contain exactly one facade, and its path must be index.ts.');
+  }
+
+  const types = modules.filter((module) => module.role === 'types');
+  if (types.length !== 1 || !/^[^/]+\.types\.ts$/.test(types[0].path)) {
+    block(
+      'architecture-types',
+      'modules must contain exactly one root types module named <Component>.types.ts.',
+    );
+  }
+  if (types[0]?.runtime === 'client') {
+    block('architecture-types', 'the types module is type-only and must declare runtime "server".');
+  }
+
+  const implementationTsx = modules.filter(
+    (module) => IMPLEMENTATION_ROLES.includes(module.role) && module.path.endsWith('.tsx'),
+  );
+  if (implementationTsx.length < 2) {
+    block(
+      'architecture-tsx',
+      'modules must plan at least two tree/branch/leaf .tsx implementation modules.',
+    );
+  }
+
+  for (const module of modules) {
+    const clientNamed = /\.client\.tsx?$/.test(module.path);
+    if (module.runtime === 'client' && module.path !== 'index.ts' && !clientNamed) {
+      block(
+        'architecture-client-path',
+        `client module ${JSON.stringify(module.path)} must end in .client.ts or .client.tsx; index.ts is the only facade exception.`,
+      );
+    }
+    if (module.runtime === 'server' && clientNamed) {
+      block(
+        'architecture-client-path',
+        `server module ${JSON.stringify(module.path)} must not use the .client.ts/.client.tsx suffix.`,
+      );
+    }
+  }
+
+  if (modeValid) {
+    const facade = facades[0];
+    const executable = modules.filter((module) => !['types', 'styles'].includes(module.role));
+    const clientExecutable = executable.filter((module) => module.runtime === 'client');
+    const serverImplementation = implementationTsx.filter((module) => module.runtime === 'server');
+    const expectedOutput = { server: 'full', hybrid: 'shell', client: 'none' }[value.mode];
+
+    if (value.serverOutput !== expectedOutput) {
+      block(
+        'architecture-consistency',
+        `${value.mode} mode requires serverOutput ${JSON.stringify(expectedOutput)}.`,
+      );
+    }
+    if (value.mode === 'server') {
+      if (hydration.length !== 0) {
+        block('architecture-consistency', 'server mode requires hydration: [].');
+      }
+      if (modules.some((module) => module.runtime === 'client')) {
+        block('architecture-consistency', 'server mode cannot declare client modules.');
+      }
+      if (facade?.runtime !== 'server') {
+        block('architecture-consistency', 'server mode requires a server index.ts facade.');
+      }
+    }
+    if (value.mode === 'hybrid') {
+      if (hydration.length === 0) {
+        block('architecture-consistency', 'hybrid mode requires at least one hydration reason.');
+      }
+      if (clientExecutable.length === 0 || serverImplementation.length === 0) {
+        block(
+          'architecture-consistency',
+          'hybrid mode requires at least one server implementation module and one client module.',
+        );
+      }
+      if (facade?.runtime !== 'server') {
+        block('architecture-consistency', 'hybrid mode requires a server index.ts facade.');
+      }
+    }
+    if (value.mode === 'client') {
+      if (hydration.length === 0) {
+        block('architecture-consistency', 'client mode requires at least one hydration reason.');
+      }
+      if (facade?.runtime !== 'client') {
+        block('architecture-consistency', 'client mode requires a client index.ts facade.');
+      }
+      if (!implementationTsx.some((module) => module.runtime === 'client')) {
+        block('architecture-consistency', 'client mode requires at least one client tree/branch/leaf module.');
+      }
+    }
+  }
+
+  if (block.count() !== before) return null;
+  return {
+    mode: value.mode,
+    hydration: [...value.hydration],
+    serverOutput: value.serverOutput,
+    modules: value.modules.map((module) => ({
+      path: module.path,
+      role: module.role,
+      runtime: module.runtime,
+    })),
   };
 }
 
@@ -212,11 +662,13 @@ function readCapture(file, ctx) {
     deferral: null,
     manifest: null,
     library: null,
+    architecture: null,
     componentJson: null,
     stories: null,
     tokens: { declared: [], undefined: [] },
   };
   const block = (code, message) => record.blockers.push({ code, message });
+  block.count = () => record.blockers.length;
 
   const text = readTextSafe(file.path, 2 * 1024 * 1024, ctx.warnings);
   if (text === null) {
@@ -288,6 +740,23 @@ function readCapture(file, ctx) {
     }
   }
 
+  const architectureSection = topLevel.find((s) => s.heading === 'Runtime architecture');
+  const architectureJson = architectureSection ? fencedBlock(architectureSection.body, 'json') : null;
+  if (!architectureJson) {
+    block(
+      'architecture-missing',
+      `${name} has no fenced json block under "## Runtime architecture".`,
+    );
+  } else {
+    let architecture = null;
+    try {
+      architecture = JSON.parse(architectureJson);
+    } catch (err) {
+      block('architecture-unparsable', `${name} Runtime architecture is not valid JSON: ${err.message}`);
+    }
+    if (architecture !== null) record.architecture = validateArchitecture(architecture, block);
+  }
+
   const entrySection = topLevel.find((s) => s.heading === 'Proposed library entry');
   const entryJson = entrySection ? fencedBlock(entrySection.body, 'json') : null;
   if (!entryJson) {
@@ -318,6 +787,7 @@ function readCapture(file, ctx) {
   if (!Array.isArray(entry.slots) || entry.slots.length === 0) {
     block('slots-empty', 'the proposed entry declares no slots; ui-design-library requires a non-empty slots array.');
   }
+  const reuseFingerprint = validateReuseFingerprint(entry.reuseFingerprint, block);
   for (const key of ['project', 'source']) {
     if (!entry.provenance || !entry.provenance[key]) {
       block('provenance-incomplete', `the proposed entry has no provenance.${key}, which ui-design-library requires.`);
@@ -346,6 +816,7 @@ function readCapture(file, ctx) {
     styling: entry.styling || 'tailwind',
     slots: Array.isArray(entry.slots) ? entry.slots : [],
     variants: Array.isArray(entry.variants) ? entry.variants : [],
+    reuseFingerprint,
     tokens: declared,
     provenance: {
       project: entry.provenance?.project ?? null,
@@ -357,10 +828,9 @@ function readCapture(file, ctx) {
   };
   record.stories = { title: canonical, tag: 'maturity:candidate' };
 
-  const library = inspectLibraryDir(ctx.libraryDir, expected);
+  const library = inspectLibraryDir(ctx.libraryDir, expected, record.architecture);
   record.library = library;
-  const { componentJson, impl, stories } = library.has;
-  if (library.exists && componentJson && impl && stories) {
+  if (library.exists && library.complete) {
     // "Already applied" has to be decided on what the directory contains, not on
     // filenames alone: two projects capturing different canonicals that kebab to
     // the same slug would otherwise read as a no-op instead of a collision.
@@ -372,6 +842,15 @@ function readCapture(file, ctx) {
         'slug-occupied',
         `components/${expected}/ already holds "${existing.value?.canonical}", not "${canonical}". Two canonicals kebab to the same slug — resolve it in the catalog before capturing.`,
       );
+    } else {
+      const dir = path.join(ctx.libraryDir, 'components', expected);
+      const drift = appliedMetadataIssues(dir, library.files, existing.value, record.componentJson);
+      if (drift.length > 0) {
+        block(
+          'library-drift',
+          `components/${expected}/ has the planned files but does not match this capture: ${drift.join('; ')}.`,
+        );
+      }
     }
     // Already applied is a no-op rather than an error — but only when nothing
     // else blocks it. A mis-slugged capture that happens to point at an occupied
@@ -380,10 +859,17 @@ function readCapture(file, ctx) {
     if (record.blockers.length === 0) record.status = record.deferred ? 'deferred' : 'skipped';
     return record;
   }
-  if (library.exists && (componentJson || impl || stories)) {
+  if (library.exists) {
+    const problems = [
+      !library.has.componentJson && 'component.json',
+      !library.has.stories && 'a stories file',
+      ...library.missingModules,
+      ...library.unexpectedModules.map((modulePath) => `unexpected module ${modulePath}`),
+      ...library.architectureIssues,
+    ].filter(Boolean);
     block(
       'library-partial',
-      `components/${expected}/ already exists holding only ${[componentJson && 'component.json', impl && 'an implementation', stories && 'a stories file'].filter(Boolean).join(' + ')}. Finish or remove it before applying this capture.`,
+      `components/${expected}/ already exists but does not match the validated runtime architecture: ${problems.join(', ') || 'incomplete metadata'}. Finish or remove it before applying this capture.`,
     );
   }
 
@@ -486,7 +972,7 @@ function main() {
 
   writeOut(
     {
-      schemaVersion: 1,
+      schemaVersion: 2,
       generatedAt: new Date().toISOString(),
       captures: capturesDir,
       library: libraryDir,
