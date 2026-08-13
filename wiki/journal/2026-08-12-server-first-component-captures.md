@@ -2,7 +2,7 @@
 date: 2026-08-12
 topics: [library-capture]
 plan: plans/2026-08-12-server-first-component-architecture.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/61
 issue: https://github.com/verndale/project-retrospective/issues/60
 ---
 # Make component captures server-first and structurally explicit
