@@ -1,3 +1,36 @@
+# v1.17.0 — 2026-08-13
+
+## Summary (AI, bounded)
+- Added validation for server-first captures in project retrospectives (commit 8871afe).
+- Updated wiki documentation to sync journal, topics, and plans for issue #58 (commit b7f116f).
+- Incorporated changes from pull request merges related to bot wiki sync and codex server-first captures (commits 129af36 and 4081470).
+
+## Highlights
+- commit: Merge pull request #61 from verndale/codex/60-server-first-captures (4081470)
+- feat(project-retrospective): validate server-first captures (8871afe)
+- commit: Merge pull request #59 from verndale/bot/wiki-sync/58 (129af36)
+- docs(wiki): sync journal, topics, and plans for #58 (b7f116f)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): validate server-first captures (8871afe)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #58 (b7f116f)
+
+### Other (unknown)
+- commit: Merge pull request #59 from verndale/bot/wiki-sync/58 (129af36)
+- commit: Merge pull request #61 from verndale/codex/60-server-first-captures (4081470)
+
+## Full commit list
+- 4081470 commit: Merge pull request #61 from verndale/codex/60-server-first-captures
+- 8871afe feat(project-retrospective): validate server-first captures
+- 129af36 commit: Merge pull request #59 from verndale/bot/wiki-sync/58
+- b7f116f docs(wiki): sync journal, topics, and plans for #58
+
 # v1.16.0 — 2026-08-09
 
 ## Summary (AI, bounded)
