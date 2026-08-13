@@ -26,3 +26,9 @@ issue: https://github.com/verndale/project-retrospective/issues/63
 - `skills/project-retrospective/references/proposal-component-capture-template.md`
 - `skills/project-retrospective/references/library-integrity-checklist.md`
 - `scripts/tests/capture-preflight.test.cjs`
+
+## Adversarial follow-up
+
+Issue #66 aligned preflight with the library and orchestration validators. The existing zero-dependency checker accepts numeric enums and governed multi-node bindings, requires executable `{ when: { prop, equals }, requireAny }` constraints, validates prop defaults, accessibility-owned attribute sources, collection shapes, protected style metadata, ancestry, conditions, repetition, exhaustive element selection, and `storybook-step` evidence types. The capture template retains the authoring shape and neutral selection language; enforcement stays in the checker and fixtures.
+
+The post-remediation audit added non-primitive default checks: collection defaults must be structured, and callback/node defaults are rejected. Native label/control `for` relationships are accepted and resolved alongside ARIA IDREF relationships.

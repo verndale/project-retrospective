@@ -30,7 +30,7 @@ component-capture
 - **Client tokens:** the scrim reads `--fake-overlay-scrim`, which has no semantic equivalent; map it onto a semantic overlay token or add one.
 - **Client copy and assets:** the default close-button label is hardcoded; make it a required prop.
 - **Project imports:** none outside the component directory.
-- **Behavior to keep verbatim:** focus containment on open and restoration to the invoking element on close — that pair is the reason this implementation is worth keeping.
+- **Behavior to preserve:** focus containment on open and restoration to the invoking element on close.
 
 ## Runtime architecture
 
@@ -103,14 +103,16 @@ Path: `components/modal/`
         "kind": "semantics",
         "description": "The dialog has a resolved accessible name.",
         "wcag": ["1.3.1", "4.1.2"],
-        "evidence": "component.dialog.semantics"
+        "evidence": "component.dialog.semantics",
+        "evidenceType": "storybook-step"
       },
       {
         "id": "component.dialog.focus",
         "kind": "focus",
         "description": "Focus is contained and restored.",
         "wcag": ["2.1.2", "2.4.3"],
-        "evidence": "component.dialog.focus"
+        "evidence": "component.dialog.focus",
+        "evidenceType": "storybook-step"
       }
     ],
     "accessibility": {

@@ -9,23 +9,23 @@
 
 ## What a capture is for
 
-The catalog says what a **Card** is. A capture says "this project's Card implementation is good enough that the next project should start from it rather than rebuild it."
+The catalog defines the **Card** canonical. A capture records a project implementation proposed as the library candidate for that canonical.
 
-Captures target the private `ui-design-library` repo, not `ui-design-brain`, and they are **drafts executed by `Action: capture`**, or by a human following the same procedure. A component lifted straight out of a client project carries CMS types, client token names, and client copy; turning it into a library component is a rewrite, not a copy. The capture's job is to identify the candidate, prove it is worth the rewrite, and enumerate exactly what the rewrite has to strip.
+Captures target the private `ui-design-library` repo, not `ui-design-brain`, and they are **drafts executed by `Action: capture`**, or by a human following the same procedure. A component lifted from a client project carries CMS types, client token names, and client copy; turning it into a library component is a rewrite. The capture identifies the candidate, cites its selection evidence, and enumerates the de-client work.
 
 Write one file per candidate at `captures/<kebab-canonical>.md` — a separate directory from `proposals/`, because a capture is a library change, not a catalog change. Each file pairs with a `### <Canonical Name>` entry under `## Captures` in `report.md`; `validate-report.cjs` fails when either half is missing.
 
 ## Choosing what to capture
 
-**Capture is orthogonal to promotion.** The best capture candidates are usually components whose labels *already resolve* — a mature Card, Modal, or Breadcrumbs implementation is exactly what the next project should not rebuild. Novel labels are usually the least mature code in the project.
+**Capture is orthogonal to promotion.** Prefer components whose labels already resolve and whose implementation evidence is complete. Novel labels usually have less implementation history.
 
 Capture when all of these hold:
 
 1. **The label resolves to a canonical**, or a `new-pattern` proposal in this same run establishes one — in which case the capture is drafted now but comes back `deferred` from `capture-preflight.cjs` until that proposal is promoted (promote first, then capture). A library entry with no catalog name has nothing to key on.
-2. **The implementation is evidenced as mature** — a build pack, colocated unit tests, a `fingerprint.json` declaring a real slot/variant surface, and accessibility work that is visible in the code rather than assumed.
+2. **The implementation has concrete evidence** — a build pack, colocated unit tests, a `fingerprint.json` declaring its slot/variant surface, and accessibility behavior identifiable in code.
 3. **The client-specific surface is separable.** If the component only makes sense with the client's content model, it is project code.
 4. **The token usage is disciplined** — semantic token utilities rather than arbitrary values, so the component can be re-themed instead of re-styled.
-5. **Its runtime boundary can be stated precisely.** Audit every hook, handler, context, portal, timer, observer, browser API, and client-only dependency. Prefer a server tree with the smallest possible client leaves; do not inherit a source file's broad `'use client'` boundary without proving it is necessary.
+5. **Its runtime boundary can be stated precisely.** Audit every hook, handler, context, portal, timer, observer, browser API, and client-only dependency. Prefer a server tree with the smallest possible client leaves; retain `'use client'` only where a listed hydration reason requires it.
 
 Do not capture: page-shaped regions, anything in the hard exclusion list, thin wrappers whose whole body is another component, or a component whose only evidence is `code-scan`.
 
@@ -52,7 +52,7 @@ component-capture
 
 ## Reuse evidence
 
-- <Why this implementation, not just the concept, is worth keeping — cite paths.>
+- <Selection evidence for this implementation — cite paths.>
 - Accessibility: <the concrete techniques present in the code, with line references.>
 - Tokens: <semantic utilities used; any arbitrary values and why.>
 - Variants and slots: <the real API surface, from the fingerprint and the props.>
@@ -66,7 +66,7 @@ What the library rewrite must strip or change. Be exhaustive and specific — th
 - **Client tokens:** <token names that must map to library tokens.>
 - **Client copy and assets:** <hardcoded strings, image paths.>
 - **Project imports:** <helpers, path aliases, config it depends on.>
-- **Behavior to keep verbatim:** <the parts that are the actual value and must survive the rewrite.>
+- **Behavior to preserve:** <the behavior the rewrite must retain.>
 
 ## Runtime architecture
 
@@ -128,7 +128,8 @@ Path: `components/<slug>/`
         "kind": "semantics",
         "description": "<package-owned guarantee>",
         "wcag": ["1.3.1"],
-        "evidence": "<slug>.semantics.root"
+        "evidence": "<slug>.semantics.root",
+        "evidenceType": "storybook-step"
       }
     ],
     "accessibility": {
@@ -175,8 +176,8 @@ The scope is the component slug, not `library` — `ui-design-library` owns that
 - **Key on the canonical slug.** The library is only deterministically usable if its keys are the same vocabulary the catalog resolves to. A capture with no canonical is not ready.
 - **Name the file after the canonical, not the project's label.** A capture of a project's `Tag` component whose canonical is **Badge** is `captures/badge.md`, and the parenthetical on its `## Canonical` line is `` `badge` ``. The report's `### Badge` entry, the filename, and that parenthetical must all agree — the library keys its component directories on the canonical slug, so a capture named after the label leads to a mis-slugged component.
 - **`maturity: "candidate"`** on every capture. Promoting a candidate to a supported library component is a human decision made in that repo, after the rewrite and the story exist.
-- **The de-client list is the deliverable.** A capture that says "minor cleanup needed" is useless; the value is in naming every coupling so the rewrite can be estimated and nothing client-specific leaks into shared code.
-- **The runtime graph is also a deliverable.** Missing or inconsistent runtime architecture blocks capture. Do not use `client` merely because the source starts with `'use client'`; prove the hydration reason and push the directive to the smallest leaves that need it.
+- **The de-client list is required.** Name each coupling so the rewrite can be estimated and client-specific dependencies do not enter shared code.
+- **The runtime graph is also a deliverable.** Missing or inconsistent runtime architecture blocks capture. Do not use `client` merely because the source starts with `'use client'`; list the hydration reason and place the directive on the smallest leaves that need it.
 - **The realization is the intended de-cliented result.** Missing or inconsistent public props, DOM ownership, keyboard/focus/state/announcement behavior, WCAG 2.2 AA metadata, APG pattern, evidence IDs, protected style slots, or consumer responsibilities block capture. If Action changes the public API, DOM, keyboard model, or accessibility ownership, revise the capture and re-run preflight before writing the manifest.
 - **No client names, copy, or asset URLs in the capture body** beyond the provenance paths needed to find the source. The capture travels to a repo other projects read.
 - **One capture *file* per canonical per run — but never silently drop a second module.** When two components resolve to the same canonical, decide which case you have and record it in the report's `## Captures` prose and this capture's `## Reuse evidence`:
