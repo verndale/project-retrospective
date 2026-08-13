@@ -20,6 +20,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-08-13 — feat(capture): validate realization metadata ([PR #67](https://github.com/verndale/project-retrospective/pull/67))
 - 2026-08-13 — feat(capture): enforce realization schema v3 (#63) ([PR #64](https://github.com/verndale/project-retrospective/pull/64))
 - 2026-08-13 — feat(project-retrospective): validate server-first captures ([PR #61](https://github.com/verndale/project-retrospective/pull/61))
 - 2026-08-09 — feat(project-retrospective): Enhance project retrospective skill functio ([PR #58](https://github.com/verndale/project-retrospective/pull/58))
