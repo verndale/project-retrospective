@@ -29,7 +29,7 @@ Stop and report if any of these fail — do not partially apply:
 
 1. `Captures:` names a readable directory holding at least one `component-capture` file.
 2. `Library:` contains `components/` and `src/tokens/semantic.css`.
-3. `capture-preflight.cjs` exits 0, emits `schemaVersion: 2`, and carries both a non-null `manifest` and a non-null `architecture` for every `ready`/`skipped` capture. Exit 0 is the only green light: every capture is `ready` or `skipped`. A `blocked` one (exit 1) names its reason and is not yours to work around. A **`deferred`** one (exit 6) is valid but **not yet executable** — its canonical is established only by a sibling `new-pattern` proposal this run drafted, so it cannot be in the catalog yet. Promote that proposal first (`Action: promote`), then re-run the preflight and it becomes `ready`; do not write a deferred capture into the library now, and do not read a plan that has one as safe to start. Without `Brain` the script degrades — it warns `manifest-absent`, skips the catalog check, and still exits 0 with every capture `ready`. That is a run that verified nothing about the canonicals, and the library's own contracts will not catch it: they compare `component.json` against its own directory name, never against the catalog.
+3. `capture-preflight.cjs` exits 0, emits `schemaVersion: 3`, and carries a non-null `manifest`, `architecture`, and realization v1 for every `ready`/`skipped` capture. Exit 0 is the only green light: every capture is `ready` or `skipped`. A `blocked` one (exit 1) names its reason and is not yours to work around. A **`deferred`** one (exit 6) is valid but **not yet executable** — its canonical is established only by a sibling `new-pattern` proposal this run drafted, so it cannot be in the catalog yet. Promote that proposal first (`Action: promote`), then re-run the preflight and it becomes `ready`; do not write a deferred capture into the library now, and do not read a plan that has one as safe to start. Without `Brain` the script degrades — it warns `manifest-absent`, skips the catalog check, and still exits 0 with every capture `ready`. That is a run that verified nothing about the canonicals, and the library's own contracts will not catch it: they compare `component.json` against its own directory name, never against the catalog.
 4. **Report `orphanedByRun` before touching anything.** A library component claiming one of this set's runs with no capture behind it is the exact defect this action exists to prevent — say which component, and let the maintainer decide.
 5. `git -C <Library> status --short` is clean, or its existing changes are unrelated. Report what you found before adding to a dirty tree.
 6. `pnpm contracts` passes in the library **before** you start, so any failure afterwards is unambiguously yours.
@@ -46,6 +46,7 @@ Owned by `ui-design-library` — its `scripts/check-contracts.cjs` and `CONTRIBU
 - **Slug equality:** `component.json`'s `slug`, the directory name, and `kebab(canonical)` must all agree. This is why a new canonical is promoted to the catalog first.
 - **`slots` is non-empty.** A component declaring no slots fails.
 - **`reuseFingerprint` is governed and non-empty.** Its structural slots, primary affordance, and content role use the library's governed vocabularies; preflight emits the validated object in `componentJson` so contracts do not fail after capture.
+- **Primary realization metadata is complete.** `exportName` is a JavaScript identifier, `rendering` agrees with runtime architecture, and realization v1 describes the intended de-cliented public props, exact owned DOM, relationships, protected style slots, owned WCAG 2.2 AA/APG behaviors, evidence IDs, and governed consumer responsibilities.
 - **Tokens are declared without the leading `--`** and every one must exist in `src/tokens/semantic.css`. If a value has no semantic home, **add the token** rather than inlining the value.
 - **No raw colour in the implementation** — no hex literal, no `rgb()`/`rgba()` outside a comment.
 - **`maturity: "candidate"`**, mirrored by a `'maturity:candidate'` tag on the story meta. `pnpm contracts` fails when the two disagree, because the sidebar badge renders from the tag and two sources for one fact drift silently.
@@ -80,15 +81,17 @@ Record every removal as you go — you are writing the `declienting` array after
 - One story per entry in the capture's story plan, plus the edge states that break layouts — empty, very long content, a missing optional slot.
 - **Assert the effect, not the cause.** Computed style rather than class names; a real Tab rather than `element.focus()`; that an `aria-*` reference resolves rather than that the attribute is present.
 - Tag an animating component's story `motion` so `pnpm test:motion` re-runs it under emulated `prefers-reduced-motion`, and branch the assertion on `matchMedia`.
+- Key each realization-owned behavior in the story metadata and assert it in a `play` function under the same evidence ID. Cover keyboard, focus, resolved IDREFs, live behavior, hidden/inert focusability, and decorative-tree exclusions where the realization claims them.
 
 ## Write component.json and sync exports
 
 Last, deliberately. `components/<slug>/` holding only a `component.json` fails that repo's contracts on the missing implementation and stories — writing it first would leave the library red for the whole rewrite. **Do not run `pnpm contracts` between the previous two steps, and do not stop between them:** the directory is incomplete until this step lands.
 
-1. Paste the preflight's `componentJson` for this capture verbatim. It already carries that repo's key order and the derived fields.
+1. Paste the preflight's `componentJson` for this capture verbatim. It already carries that repo's key order, primary export/rendering identity, and validated intended realization.
 2. Fill `declienting` from what you actually removed — not from the capture's De-client work, which was the estimate.
 3. Leave `maturity` at `candidate`. Promotion to `supported` is a human decision made in that repo, after the component has been used.
 4. Do not add the preflight's `architecture` object. It governs this rewrite; it is not part of the library manifest contract.
+5. If implementation changed the planned public API, owned DOM, keyboard model, or accessibility ownership, stop: revise the capture and re-run preflight. Do not silently reshape realization metadata after the gate.
 
 Then run `pnpm exports:sync` from the library root. The public export points to `index.ts`/its compiled `index.js`; internal tree/branch/leaf modules remain private implementation details.
 
@@ -109,9 +112,9 @@ pnpm test
 pnpm build
 ```
 
-`pnpm test` typechecks, checks contracts, renders every story in a real Chromium with axe over the result, then runs the reduced-motion pass. An accessibility violation fails the run. `pnpm build` proves the public `components/<slug>` export resolves to the facade and every nested module/declaration emits.
+`pnpm test` typechecks, checks contracts, renders every story in Chromium and WebKit with axe over the result, runs accessibility modes and reduced motion, and verifies behavior evidence. An accessibility violation fails the run. `pnpm build` proves the public `components/<slug>` export resolves to the facade and every nested module/declaration emits.
 
-`pnpm test` needs a browser (`pnpm exec playwright install chromium`, once per machine). A missing browser is an environment failure, not a failing component — say so and do not spend an attempt on it.
+`pnpm test` needs browser binaries (`pnpm exec playwright install chromium webkit`, once per machine). A missing browser is an environment failure, not a failing component — say so and do not spend an attempt on it.
 
 ## Wiki
 

@@ -5,9 +5,10 @@
  * Reads a run's whole `captures/` directory, checks every capture against the
  * ui-design-brain manifest and the state of a local ui-design-library checkout,
  * and emits one plan covering all of them: which are ready to execute, which are
- * blocked and why, and which are already applied. Its schema-v2 component record
+ * blocked and why, and which are already applied. Its schema-v3 component record
  * emits the validated server-first architecture beside the exact `component.json`
- * object to write. Architecture governs the rewrite and is never copied into the
+ * object to write. Schema v3 also carries the intended de-cliented realization
+ * and accessibility ownership. Architecture governs the rewrite and is never copied into the
  * library manifest.
  *
  * What it deliberately does NOT do:
@@ -124,6 +125,30 @@ const REUSE_ROLES = [
   'notification',
   'other',
 ];
+const RENDERING_MODES = ['server', 'hybrid', 'client'];
+const REALIZATION_PROP_TYPES = ['string', 'number', 'boolean', 'node', 'callback', 'collection', 'enum', 'ref', 'element'];
+const REALIZATION_CARDINALITIES = ['one', 'zero-or-one', 'zero-or-more', 'one-or-more'];
+const REALIZATION_BEHAVIOR_KINDS = ['semantics', 'keyboard', 'focus', 'state', 'announcement', 'motion', 'pointer-alternative'];
+const REALIZATION_RESPONSIBILITIES = [
+  'accessible-copy',
+  'text-alternatives',
+  'heading-context',
+  'landmark-context',
+  'dynamic-content',
+  'token-contrast',
+  'safe-class-overrides',
+  'complete-page-assistive-technology-testing',
+];
+const REALIZATION_PROTECTED_PROPERTIES = [
+  'display',
+  'visibility',
+  'pointer-events',
+  'focus-indicator',
+  'semantics',
+  'reading-order',
+  'target-size',
+];
+const IDREF_ATTRIBUTES = ['aria-controls', 'aria-describedby', 'aria-labelledby'];
 
 // Semantic tokens are declared in component.json without the leading dashes, so
 // harvest the names the same way the library's own contract checker does.
@@ -403,6 +428,155 @@ function validateReuseFingerprint(value, block) {
   };
 }
 
+function validateRealization(value, block) {
+  const before = block.count();
+  const requiredKeys = [
+    'accessibility',
+    'behaviors',
+    'contentBindings',
+    'dom',
+    'props',
+    'relationships',
+    'safeAttributes',
+    'styleSlots',
+    'version',
+  ];
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    block('realization-missing', 'the proposed entry is missing realization v1.');
+    return null;
+  }
+  if (!sameKeys(value, requiredKeys)) {
+    block('realization-keys', `realization keys must be exactly ${requiredKeys.join(', ')}.`);
+  }
+  if (value.version !== 1) block('realization-version', 'realization.version must equal 1.');
+
+  const props = Array.isArray(value.props) ? value.props : [];
+  if (props.length === 0) block('realization-props', 'realization.props must be a non-empty array.');
+  const propPaths = new Set();
+  for (const prop of props) {
+    if (!prop || typeof prop.path !== 'string' || !prop.path) {
+      block('realization-props', 'every realization prop requires a non-empty path.');
+      continue;
+    }
+    if (propPaths.has(prop.path)) block('realization-props', `realization prop ${JSON.stringify(prop.path)} is duplicated.`);
+    propPaths.add(prop.path);
+    if (!REALIZATION_PROP_TYPES.includes(prop.type)) {
+      block('realization-props', `realization prop ${JSON.stringify(prop.path)} has unsupported type ${JSON.stringify(prop.type)}.`);
+    }
+    if (typeof prop.required !== 'boolean') {
+      block('realization-props', `realization prop ${JSON.stringify(prop.path)} requires a boolean required field.`);
+    }
+    if (prop.type === 'enum' && (!Array.isArray(prop.values) || prop.values.length === 0)) {
+      block('realization-props', `enum prop ${JSON.stringify(prop.path)} requires values.`);
+    }
+  }
+
+  const nodes = Array.isArray(value.dom?.nodes) ? value.dom.nodes : [];
+  if (nodes.length === 0) block('realization-dom', 'realization.dom.nodes must be a non-empty array.');
+  const nodeIds = new Set();
+  for (const node of nodes) {
+    if (!node || typeof node.id !== 'string' || !node.id) {
+      block('realization-dom', 'every realization DOM node requires a non-empty id.');
+      continue;
+    }
+    if (nodeIds.has(node.id)) block('realization-dom', `realization DOM node ${JSON.stringify(node.id)} is duplicated.`);
+    nodeIds.add(node.id);
+  }
+  for (const node of nodes) {
+    const elements = Array.isArray(node?.element) ? node.element : [node?.element];
+    if (elements.length === 0 || elements.some((element) => typeof element !== 'string' || !element)) {
+      block('realization-dom', `DOM node ${JSON.stringify(node?.id)} requires an element or safe element alternatives.`);
+    }
+    if (!REALIZATION_CARDINALITIES.includes(node?.cardinality)) {
+      block('realization-dom', `DOM node ${JSON.stringify(node?.id)} has unsupported cardinality ${JSON.stringify(node?.cardinality)}.`);
+    }
+    if (node?.parent !== null && !nodeIds.has(node?.parent)) {
+      block('realization-dom', `DOM node ${JSON.stringify(node?.id)} references missing parent ${JSON.stringify(node?.parent)}.`);
+    }
+    if (node?.whenProp && !propPaths.has(node.whenProp)) {
+      block('realization-dom', `DOM node ${JSON.stringify(node?.id)} references missing condition prop ${JSON.stringify(node.whenProp)}.`);
+    }
+  }
+
+  for (const binding of Array.isArray(value.contentBindings) ? value.contentBindings : []) {
+    if (!propPaths.has(binding?.prop)) block('realization-content', `content binding references missing prop ${JSON.stringify(binding?.prop)}.`);
+    if (!nodeIds.has(binding?.node)) block('realization-content', `content binding references missing node ${JSON.stringify(binding?.node)}.`);
+  }
+  for (const attribute of Array.isArray(value.safeAttributes) ? value.safeAttributes : []) {
+    if (!propPaths.has(attribute?.prop)) block('realization-attributes', `safe attribute references missing prop ${JSON.stringify(attribute?.prop)}.`);
+    if (!nodeIds.has(attribute?.node)) block('realization-attributes', `safe attribute references missing node ${JSON.stringify(attribute?.node)}.`);
+    if (typeof attribute?.attribute !== 'string' || !attribute.attribute) {
+      block('realization-attributes', `safe attribute for ${JSON.stringify(attribute?.prop)} requires an attribute.`);
+    }
+  }
+  for (const relationship of Array.isArray(value.relationships) ? value.relationships : []) {
+    if (!nodeIds.has(relationship?.from)) block('realization-idref', `relationship references missing source node ${JSON.stringify(relationship?.from)}.`);
+    if (!nodeIds.has(relationship?.to)) block('realization-idref', `relationship references missing target node ${JSON.stringify(relationship?.to)}.`);
+    if (!IDREF_ATTRIBUTES.includes(relationship?.attribute)) {
+      block('realization-idref', `relationship has unsupported IDREF attribute ${JSON.stringify(relationship?.attribute)}.`);
+    }
+  }
+
+  const stylePaths = new Set();
+  for (const slot of Array.isArray(value.styleSlots) ? value.styleSlots : []) {
+    if (typeof slot?.path !== 'string' || !slot.path.startsWith('classNames.')) {
+      block('realization-style', `style slot ${JSON.stringify(slot?.path)} must start with classNames.`);
+    } else if (stylePaths.has(slot.path)) {
+      block('realization-style', `style slot ${JSON.stringify(slot.path)} is duplicated.`);
+    }
+    stylePaths.add(slot?.path);
+    if (!nodeIds.has(slot?.node)) block('realization-style', `style slot ${JSON.stringify(slot?.path)} references missing node ${JSON.stringify(slot?.node)}.`);
+    for (const property of slot?.protectedProperties ?? []) {
+      if (!REALIZATION_PROTECTED_PROPERTIES.includes(property)) {
+        block('realization-style', `style slot ${JSON.stringify(slot?.path)} has unsupported protected property ${JSON.stringify(property)}.`);
+      }
+    }
+  }
+
+  const behaviorIds = new Set();
+  const behaviors = Array.isArray(value.behaviors) ? value.behaviors : [];
+  if (behaviors.length === 0) block('realization-behaviors', 'realization.behaviors must be a non-empty array.');
+  for (const behavior of behaviors) {
+    if (typeof behavior?.id !== 'string' || !behavior.id) {
+      block('realization-behaviors', 'every owned behavior requires a non-empty id.');
+      continue;
+    }
+    if (behaviorIds.has(behavior.id)) block('realization-behaviors', `behavior id ${JSON.stringify(behavior.id)} is duplicated.`);
+    behaviorIds.add(behavior.id);
+    if (!REALIZATION_BEHAVIOR_KINDS.includes(behavior.kind)) {
+      block('realization-behaviors', `behavior ${JSON.stringify(behavior.id)} has unsupported kind ${JSON.stringify(behavior.kind)}.`);
+    }
+    if (!Array.isArray(behavior.wcag) || behavior.wcag.length === 0 || behavior.wcag.some((id) => !/^\d+\.\d+\.\d+$/.test(id))) {
+      block('realization-accessibility', `behavior ${JSON.stringify(behavior.id)} requires WCAG criterion IDs.`);
+    }
+    if (behavior.evidence !== behavior.id) {
+      block('realization-evidence', `behavior ${JSON.stringify(behavior.id)} must use the same stable evidence ID.`);
+    }
+  }
+
+  const accessibility = value.accessibility;
+  if (!accessibility || typeof accessibility !== 'object' || Array.isArray(accessibility)) {
+    block('realization-accessibility', 'realization requires accessibility metadata.');
+  } else {
+    if (accessibility.standard !== 'WCAG-2.2-AA') {
+      block('realization-accessibility', 'accessibility.standard must equal WCAG-2.2-AA.');
+    }
+    if (!(accessibility.apgPattern === null || typeof accessibility.apgPattern === 'string')) {
+      block('realization-accessibility', 'accessibility.apgPattern must be a string or null.');
+    }
+    if (!Array.isArray(accessibility.consumerResponsibilities) || accessibility.consumerResponsibilities.length === 0) {
+      block('realization-accessibility', 'accessibility.consumerResponsibilities must be a non-empty array.');
+    } else {
+      for (const responsibility of accessibility.consumerResponsibilities) {
+        if (!REALIZATION_RESPONSIBILITIES.includes(responsibility)) {
+          block('realization-accessibility', `consumer responsibility ${JSON.stringify(responsibility)} is not governed.`);
+        }
+      }
+    }
+  }
+  return block.count() === before ? value : null;
+}
+
 function appliedMetadataIssues(dir, files, existing, expected) {
   const issues = [];
   const stableKeys = [
@@ -412,7 +586,10 @@ function appliedMetadataIssues(dir, files, existing, expected) {
     'styling',
     'slots',
     'variants',
+    'exportName',
+    'rendering',
     'reuseFingerprint',
+    'realization',
     'tokens',
     'provenance',
   ];
@@ -787,7 +964,16 @@ function readCapture(file, ctx) {
   if (!Array.isArray(entry.slots) || entry.slots.length === 0) {
     block('slots-empty', 'the proposed entry declares no slots; ui-design-library requires a non-empty slots array.');
   }
+  if (typeof entry.exportName !== 'string' || !/^[A-Za-z_$][\w$]*$/.test(entry.exportName)) {
+    block('export-name', 'the proposed entry requires an exportName JavaScript identifier.');
+  }
+  if (!RENDERING_MODES.includes(entry.rendering)) {
+    block('rendering', `the proposed entry rendering ${JSON.stringify(entry.rendering)} is not server, hybrid, or client.`);
+  } else if (record.architecture && entry.rendering !== record.architecture.mode) {
+    block('rendering', `the proposed entry rendering ${JSON.stringify(entry.rendering)} disagrees with Runtime architecture mode ${JSON.stringify(record.architecture.mode)}.`);
+  }
   const reuseFingerprint = validateReuseFingerprint(entry.reuseFingerprint, block);
+  const realization = validateRealization(entry.realization, block);
   for (const key of ['project', 'source']) {
     if (!entry.provenance || !entry.provenance[key]) {
       block('provenance-incomplete', `the proposed entry has no provenance.${key}, which ui-design-library requires.`);
@@ -816,7 +1002,10 @@ function readCapture(file, ctx) {
     styling: entry.styling || 'tailwind',
     slots: Array.isArray(entry.slots) ? entry.slots : [],
     variants: Array.isArray(entry.variants) ? entry.variants : [],
+    exportName: typeof entry.exportName === 'string' ? entry.exportName : null,
+    rendering: RENDERING_MODES.includes(entry.rendering) ? entry.rendering : null,
     reuseFingerprint,
+    realization,
     tokens: declared,
     provenance: {
       project: entry.provenance?.project ?? null,
@@ -972,7 +1161,7 @@ function main() {
 
   writeOut(
     {
-      schemaVersion: 2,
+      schemaVersion: 3,
       generatedAt: new Date().toISOString(),
       captures: capturesDir,
       library: libraryDir,

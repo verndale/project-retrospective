@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-08-13 — [Make accessible realization part of capture preflight](journal/2026-08-13-accessible-realization-capture-preflight.md) — schema-v3 capture plans hard-block drift in public props, package-owned DOM, WCAG/APG behavior evidence, protected style slots, and consuming-page responsibilities.
 - 2026-08-12 — [Make component captures server-first and structurally explicit](journal/2026-08-12-server-first-component-captures.md) — schema-v2 preflight validates explicit SSR/hydration graphs and governed reuse metadata, then verifies multifile applied state by contents and reachability rather than filenames.
 - 2026-08-09 — [Keep team-retrospective knowledge and actions alive](journal/2026-08-09-team-retrospective-ingestion.md) — seeded-space ingestion now preserves retrospective sources privately and turns every action into a validated lifecycle record.
 - 2026-08-08 — [chore(project-retrospective): Update documentation for tracking issues p](journal/2026-08-08-chore-project-retrospective-update-documentation-for-trackin.md) — AI-drafted, revise

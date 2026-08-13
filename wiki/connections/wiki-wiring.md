@@ -12,6 +12,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Make inventory discovery stack-aware](../../wiki/journal/2026-07-31-stack-aware-inventory-discovery.md) → [Make inventory discovery stack-aware and comprehensive](../../wiki/plans/2026-07-31-stack-aware-inventory-discovery.md)
 - [Keep team-retrospective knowledge and actions alive](../../wiki/journal/2026-08-09-team-retrospective-ingestion.md) → [Team Retrospective Knowledge and Accountability](../../wiki/plans/2026-08-09-team-retrospective-knowledge-and-accountability.md)
 - [Make component captures server-first and structurally explicit](../../wiki/journal/2026-08-12-server-first-component-captures.md) → [Server-first component architecture and full library migration](../../wiki/plans/2026-08-12-server-first-component-architecture.md)
+- [Make accessible realization part of capture preflight](../../wiki/journal/2026-08-13-accessible-realization-capture-preflight.md) → [Capture preflight schema v3 for accessible realizations](../../wiki/plans/2026-08-13-capture-preflight-schema-v3-for-accessible-realizations.md)
 
 ## Page → topic
 
@@ -44,6 +45,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [fix(normalize-specs): Read the gate from a bold or bare Status row](../../wiki/journal/2026-08-08-fix-normalize-specs-read-the-gate-from-a-bold-or-bare-status.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Keep team-retrospective knowledge and actions alive](../../wiki/journal/2026-08-09-team-retrospective-ingestion.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Make component captures server-first and structurally explicit](../../wiki/journal/2026-08-12-server-first-component-captures.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
+- [Make accessible realization part of capture preflight](../../wiki/journal/2026-08-13-accessible-realization-capture-preflight.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Brain promotion — Design History](../../wiki/topics/brain-promotion.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
@@ -52,3 +54,4 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Make inventory discovery stack-aware and comprehensive](../../wiki/plans/2026-07-31-stack-aware-inventory-discovery.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Team Retrospective Knowledge and Accountability](../../wiki/plans/2026-08-09-team-retrospective-knowledge-and-accountability.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Server-first component architecture and full library migration](../../wiki/plans/2026-08-12-server-first-component-architecture.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
+- [Capture preflight schema v3 for accessible realizations](../../wiki/plans/2026-08-13-capture-preflight-schema-v3-for-accessible-realizations.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)

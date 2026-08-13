@@ -99,10 +99,43 @@ Path: `components/<slug>/`
   "styling": "tailwind",
   "slots": ["<slot>", "<slot>"],
   "variants": ["<variant>"],
+  "exportName": "<PrimaryExport>",
+  "rendering": "server | hybrid | client",
   "reuseFingerprint": {
     "slots": ["heading", "body", "action"],
     "affordance": "contain",
     "role": "container"
+  },
+  "realization": {
+    "version": 1,
+    "props": [
+      { "path": "children", "type": "node", "required": true },
+      { "path": "classNames", "type": "collection", "required": false },
+      { "path": "classNames.root", "type": "string", "required": false }
+    ],
+    "contentBindings": [{ "prop": "children", "node": "root" }],
+    "safeAttributes": [],
+    "styleSlots": [
+      { "path": "classNames.root", "node": "root", "protectedProperties": ["display", "visibility", "semantics", "reading-order"] }
+    ],
+    "dom": {
+      "nodes": [{ "id": "root", "element": "div", "parent": null, "cardinality": "one" }]
+    },
+    "relationships": [],
+    "behaviors": [
+      {
+        "id": "<slug>.semantics.root",
+        "kind": "semantics",
+        "description": "<package-owned guarantee>",
+        "wcag": ["1.3.1"],
+        "evidence": "<slug>.semantics.root"
+      }
+    ],
+    "accessibility": {
+      "standard": "WCAG-2.2-AA",
+      "apgPattern": null,
+      "consumerResponsibilities": ["accessible-copy", "token-contrast", "safe-class-overrides", "complete-page-assistive-technology-testing"]
+    }
   },
   "tokens": ["<semantic token group>"],
   "provenance": {
@@ -117,7 +150,9 @@ Path: `components/<slug>/`
 
 At capture time `declienting` mirrors `## De-client work`. At execution time it is rewritten to record what was **actually** removed. `ui-design-library` mandates the field but does not check it, so it is the one entry in this block nothing but the author enforces — "minor cleanup" is not an entry.
 
-`Runtime architecture` is an execution plan, not package metadata. `capture-preflight.cjs` validates and returns it separately in its schema-v2 plan; do not add it to `component.json`.
+This entry describes the intended **de-cliented** result, not the source component as found. Realization props, exact package-owned nodes and ancestry, cardinality and conditions, IDREF relationships, protected style slots, owned behaviors, WCAG/APG metadata, and governed consumer responsibilities must agree with the code the action will write. Every owned behavior uses one stable `id`, repeats it as `evidence`, and receives a story `play` assertion under that same evidence ID.
+
+`Runtime architecture` is an execution plan, not package metadata. `capture-preflight.cjs` validates and returns it separately in its schema-v3 plan; do not add it to `component.json`. `rendering` must equal the architecture mode.
 
 Story plan — one story per meaningful state, since the story file is the library's API contract:
 
@@ -142,6 +177,7 @@ The scope is the component slug, not `library` — `ui-design-library` owns that
 - **`maturity: "candidate"`** on every capture. Promoting a candidate to a supported library component is a human decision made in that repo, after the rewrite and the story exist.
 - **The de-client list is the deliverable.** A capture that says "minor cleanup needed" is useless; the value is in naming every coupling so the rewrite can be estimated and nothing client-specific leaks into shared code.
 - **The runtime graph is also a deliverable.** Missing or inconsistent runtime architecture blocks capture. Do not use `client` merely because the source starts with `'use client'`; prove the hydration reason and push the directive to the smallest leaves that need it.
+- **The realization is the intended de-cliented result.** Missing or inconsistent public props, DOM ownership, keyboard/focus/state/announcement behavior, WCAG 2.2 AA metadata, APG pattern, evidence IDs, protected style slots, or consumer responsibilities block capture. If Action changes the public API, DOM, keyboard model, or accessibility ownership, revise the capture and re-run preflight before writing the manifest.
 - **No client names, copy, or asset URLs in the capture body** beyond the provenance paths needed to find the source. The capture travels to a repo other projects read.
 - **One capture *file* per canonical per run — but never silently drop a second module.** When two components resolve to the same canonical, decide which case you have and record it in the report's `## Captures` prose and this capture's `## Reuse evidence`:
   - **Prop or visual variants of one component** (a wide Modal, a compact Card, a tone) fold into that single capture's `component.json.variants` array — one file, multiple entries. The golden `captures/modal.md` shows the shape (`"variants": ["default", "wide"]`).

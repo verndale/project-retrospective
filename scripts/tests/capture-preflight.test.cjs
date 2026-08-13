@@ -67,6 +67,7 @@ function retarget(text, canonical, slug) {
     .replace(/\*\*Modal\*\* \(`modal`\)/, `**${canonical}** (\`${slug}\`)`)
     .replace(/"canonical": "Modal"/, `"canonical": "${canonical}"`)
     .replace(/"slug": "modal"/, `"slug": "${slug}"`)
+    .replace(/"exportName": "Modal"/, `"exportName": "${symbol}"`)
     .replaceAll('Modal.types.ts', `${symbol}.types.ts`)
     .replaceAll('Modal.tsx', `${symbol}.tsx`)
     .replaceAll('ModalDialog.client.tsx', `${symbol}Dialog.client.tsx`)
@@ -99,7 +100,7 @@ test('the envelope carries the documented key order', () => {
     'counts',
     'warnings',
   ]);
-  assert.equal(result.json.schemaVersion, 2);
+  assert.equal(result.json.schemaVersion, 3);
   assert.deepEqual(result.json.counts, {
     captures: 1,
     ready: 1,
@@ -119,7 +120,10 @@ test('componentJson matches the library key order, with declienting left to fill
     'styling',
     'slots',
     'variants',
+    'exportName',
+    'rendering',
     'reuseFingerprint',
+    'realization',
     'tokens',
     'provenance',
     'declienting',
@@ -131,6 +135,9 @@ test('componentJson matches the library key order, with declienting left to fill
     affordance: 'contain',
     role: 'container',
   });
+  assert.equal(record.componentJson.exportName, 'Modal');
+  assert.equal(record.componentJson.rendering, 'hybrid');
+  assert.equal(record.componentJson.realization.version, 1);
   assert.equal(record.componentJson.maturity, 'candidate');
   assert.ok(!Object.hasOwn(record.componentJson, 'architecture'));
   assert.deepEqual(record.stories, { title: 'Modal', tag: 'maturity:candidate' });
@@ -149,6 +156,7 @@ test('a valid server architecture passes with full server output and no hydratio
       { path: 'parts/ModalHeader.tsx', role: 'leaf', runtime: 'server' },
     ],
   }));
+  patchEntry(captures, (entry) => ({ ...entry, rendering: 'server' }));
   const result = preflight(captures, fixture('fake-library'));
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(only(result).architecture.mode, 'server');
@@ -167,6 +175,7 @@ test('a valid client architecture passes with a client facade and neutral presen
       { path: 'parts/ModalHeader.tsx', role: 'leaf', runtime: 'server' },
     ],
   }));
+  patchEntry(captures, (entry) => ({ ...entry, rendering: 'client' }));
   const result = preflight(captures, fixture('fake-library'));
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(only(result).architecture.mode, 'client');
@@ -545,6 +554,49 @@ test('a missing or ungoverned reuse fingerprint is blocked', () => {
     reuseFingerprint: { slots: ['dialog'], affordance: 'overlay', role: 'dialog' },
   }));
   assertBlocked(preflight(ungoverned, fixture('fake-library')), 'reuse-fingerprint');
+});
+
+test('exportName, rendering, and realization v1 are hard requirements', () => {
+  const missingExport = tempCaptures();
+  patchEntry(missingExport, (entry) => {
+    delete entry.exportName;
+    return entry;
+  });
+  assertBlocked(preflight(missingExport, fixture('fake-library')), 'export-name');
+
+  const wrongRendering = tempCaptures();
+  patchEntry(wrongRendering, (entry) => ({ ...entry, rendering: 'server' }));
+  assertBlocked(preflight(wrongRendering, fixture('fake-library')), 'rendering');
+
+  const missingRealization = tempCaptures();
+  patchEntry(missingRealization, (entry) => {
+    delete entry.realization;
+    return entry;
+  });
+  assertBlocked(preflight(missingRealization, fixture('fake-library')), 'realization-missing');
+});
+
+test('realization accessibility evidence and IDREFs must resolve', () => {
+  const badEvidence = tempCaptures();
+  patchEntry(badEvidence, (entry) => {
+    entry.realization.behaviors[0].evidence = 'different-id';
+    return entry;
+  });
+  assertBlocked(preflight(badEvidence, fixture('fake-library')), 'realization-evidence');
+
+  const badRelationship = tempCaptures();
+  patchEntry(badRelationship, (entry) => {
+    entry.realization.relationships[0].to = 'missing-title';
+    return entry;
+  });
+  assertBlocked(preflight(badRelationship, fixture('fake-library')), 'realization-idref');
+
+  const badStandard = tempCaptures();
+  patchEntry(badStandard, (entry) => {
+    entry.realization.accessibility.standard = 'WCAG-2.1-AA';
+    return entry;
+  });
+  assertBlocked(preflight(badStandard, fixture('fake-library')), 'realization-accessibility');
 });
 
 test('an entry disagreeing with the Canonical line is blocked', () => {
