@@ -1,3 +1,43 @@
+# v1.19.0 — 2026-08-13
+
+## Summary (AI, bounded)
+- Added validation for realization metadata in the capture module (bb67955)
+- Refreshed the knowledge graph as part of maintenance (d877d25)
+- Updated documentation by syncing journal, topics, and plans in the wiki (4cbd56e)
+- Merged pull request for aligning capture realization version 1 (8f0c918)
+- Integrated bot-driven wiki synchronization changes (c1c3a06)
+
+## Highlights
+- commit: Merge pull request #67 from verndale/codex/66-align-capture-realization-v1 (8f0c918)
+- chore(graph): refresh knowledge graph (d877d25)
+- feat(capture): validate realization metadata (bb67955)
+- commit: Merge pull request #65 from verndale/bot/wiki-sync/64 (c1c3a06)
+- docs(wiki): sync journal, topics, and plans for #64 (4cbd56e)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(capture): validate realization metadata (bb67955)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #64 (4cbd56e)
+
+### Chore
+- chore(graph): refresh knowledge graph (d877d25)
+
+### Other (unknown)
+- commit: Merge pull request #65 from verndale/bot/wiki-sync/64 (c1c3a06)
+- commit: Merge pull request #67 from verndale/codex/66-align-capture-realization-v1 (8f0c918)
+
+## Full commit list
+- 8f0c918 commit: Merge pull request #67 from verndale/codex/66-align-capture-realization-v1
+- d877d25 chore(graph): refresh knowledge graph
+- bb67955 feat(capture): validate realization metadata
+- c1c3a06 commit: Merge pull request #65 from verndale/bot/wiki-sync/64
+- 4cbd56e docs(wiki): sync journal, topics, and plans for #64
+
 # v1.18.0 — 2026-08-13
 
 ## Summary (AI, bounded)
