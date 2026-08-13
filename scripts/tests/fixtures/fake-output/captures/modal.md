@@ -62,10 +62,62 @@ Path: `components/modal/`
   "styling": "tailwind",
   "slots": ["title", "body", "actions"],
   "variants": ["default", "wide"],
+  "exportName": "Modal",
+  "rendering": "hybrid",
   "reuseFingerprint": {
     "slots": ["heading", "body", "action"],
     "affordance": "contain",
     "role": "container"
+  },
+  "realization": {
+    "version": 1,
+    "props": [
+      { "path": "title", "type": "string", "required": true },
+      { "path": "children", "type": "node", "required": true },
+      { "path": "classNames", "type": "collection", "required": false },
+      { "path": "classNames.dialog", "type": "string", "required": false },
+      { "path": "classNames.title", "type": "string", "required": false }
+    ],
+    "contentBindings": [
+      { "prop": "title", "node": "title" },
+      { "prop": "children", "node": "body" }
+    ],
+    "safeAttributes": [],
+    "styleSlots": [
+      { "path": "classNames.dialog", "node": "dialog", "protectedProperties": ["display", "visibility", "semantics"] },
+      { "path": "classNames.title", "node": "title", "protectedProperties": ["visibility", "semantics", "reading-order"] }
+    ],
+    "dom": {
+      "nodes": [
+        { "id": "dialog", "element": "div", "parent": null, "cardinality": "one" },
+        { "id": "title", "element": "h2", "parent": "dialog", "cardinality": "one" },
+        { "id": "body", "element": "div", "parent": "dialog", "cardinality": "one" }
+      ]
+    },
+    "relationships": [
+      { "from": "dialog", "attribute": "aria-labelledby", "to": "title" }
+    ],
+    "behaviors": [
+      {
+        "id": "component.dialog.semantics",
+        "kind": "semantics",
+        "description": "The dialog has a resolved accessible name.",
+        "wcag": ["1.3.1", "4.1.2"],
+        "evidence": "component.dialog.semantics"
+      },
+      {
+        "id": "component.dialog.focus",
+        "kind": "focus",
+        "description": "Focus is contained and restored.",
+        "wcag": ["2.1.2", "2.4.3"],
+        "evidence": "component.dialog.focus"
+      }
+    ],
+    "accessibility": {
+      "standard": "WCAG-2.2-AA",
+      "apgPattern": "modal-dialog",
+      "consumerResponsibilities": ["accessible-copy", "heading-context", "token-contrast", "safe-class-overrides", "complete-page-assistive-technology-testing"]
+    }
   },
   "tokens": ["color-surface-raised", "ease-standard"],
   "provenance": {

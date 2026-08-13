@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 102,
-    "edges": 247,
+    "nodes": 104,
+    "edges": 254,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 10,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 23,
-      "wiki-plan": 6,
+      "wiki-journal": 24,
+      "wiki-plan": 7,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 27,
       "covers": 22,
-      "links-to": 106,
-      "plan": 6,
+      "links-to": 110,
+      "plan": 7,
       "requires": 37,
       "tests": 12,
-      "topic": 37
+      "topic": 39
     }
   },
   "nodes": [
@@ -193,7 +193,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 34793,
+      "bytes": 36835,
       "degree": 2
     },
     {
@@ -457,7 +457,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 26334,
+      "bytes": 26639,
       "degree": 4
     },
     {
@@ -517,7 +517,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 15003,
+      "bytes": 15944,
       "degree": 3
     },
     {
@@ -541,7 +541,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10951,
+      "bytes": 13104,
       "degree": 3
     },
     {
@@ -709,7 +709,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 39576,
+      "bytes": 49731,
       "degree": 4
     },
     {
@@ -805,7 +805,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 37084,
+      "bytes": 37499,
       "degree": 49
     },
     {
@@ -817,8 +817,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 8729,
-      "degree": 33
+      "bytes": 9035,
+      "degree": 34
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1207,6 +1207,22 @@
       "degree": 4
     },
     {
+      "id": "wiki/journal/2026-08-13-accessible-realization-capture-preflight.md",
+      "label": "Make accessible realization part of capture preflight",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "63"
+      ],
+      "bytes": 1771,
+      "degree": 4
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -1321,6 +1337,20 @@
       "degree": 4
     },
     {
+      "id": "wiki/plans/2026-08-13-capture-preflight-schema-v3-for-accessible-realizations.md",
+      "label": "Capture preflight schema v3 for accessible realizations",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 1674,
+      "degree": 4
+    },
+    {
       "id": "wiki/plans/INDEX.md",
       "label": "Plan Audit",
       "type": "wiki-index",
@@ -1338,8 +1368,8 @@
         "57",
         "60"
       ],
-      "bytes": 2640,
-      "degree": 8
+      "bytes": 2824,
+      "degree": 9
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -1402,14 +1432,17 @@
         "orphaned by run",
         "de-clienting",
         "runtime architecture",
-        "server-first capture"
+        "server-first capture",
+        "realization contract",
+        "WCAG capture"
       ],
       "prs": [],
       "issues": [
+        "63",
         "60"
       ],
-      "bytes": 8016,
-      "degree": 16
+      "bytes": 8921,
+      "degree": 20
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -2156,6 +2189,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-13-accessible-realization-capture-preflight.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -2267,6 +2307,13 @@
       "anchors": []
     },
     {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-08-13-capture-preflight-schema-v3-for-accessible-realizations.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
       "source": "wiki/topics/brain-promotion.md",
       "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
       "type": "links-to",
@@ -2338,7 +2385,21 @@
     },
     {
       "source": "wiki/topics/library-capture.md",
+      "target": "wiki/journal/2026-08-13-accessible-realization-capture-preflight.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
       "target": "wiki/plans/2026-08-12-server-first-component-architecture.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
+      "target": "wiki/plans/2026-08-13-capture-preflight-schema-v3-for-accessible-realizations.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2490,6 +2551,11 @@
     {
       "source": "wiki/journal/2026-08-12-server-first-component-captures.md",
       "target": "wiki/plans/2026-08-12-server-first-component-architecture.md",
+      "type": "plan"
+    },
+    {
+      "source": "wiki/journal/2026-08-13-accessible-realization-capture-preflight.md",
+      "target": "wiki/plans/2026-08-13-capture-preflight-schema-v3-for-accessible-realizations.md",
       "type": "plan"
     },
     {
@@ -2883,6 +2949,11 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-08-13-accessible-realization-capture-preflight.md",
+      "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
@@ -2919,6 +2990,11 @@
     },
     {
       "source": "wiki/plans/2026-08-12-server-first-component-architecture.md",
+      "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-08-13-capture-preflight-schema-v3-for-accessible-realizations.md",
       "target": "wiki/topics/library-capture.md",
       "type": "topic"
     }
