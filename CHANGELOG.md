@@ -1,3 +1,37 @@
+# v1.18.0 — 2026-08-13
+
+## Summary (AI, bounded)
+- Enforced realization schema v3 in capture features (commit f96a7ae).
+- Synchronized wiki content including journal, topics, and plans (commit 02ceb1c).
+- Merged pull request for emitting realization metadata (commit 3a02aa0).
+- Merged pull request for wiki synchronization updates (commit b70560d).
+
+## Highlights
+- commit: Merge pull request #64 from verndale/codex/63-emit-realization-metadata (3a02aa0)
+- feat(capture): enforce realization schema v3 (#63) (f96a7ae)
+- commit: Merge pull request #62 from verndale/bot/wiki-sync/61 (b70560d)
+- docs(wiki): sync journal, topics, and plans for #61 (02ceb1c)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(capture): enforce realization schema v3 (#63) (f96a7ae)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #61 (02ceb1c)
+
+### Other (unknown)
+- commit: Merge pull request #62 from verndale/bot/wiki-sync/61 (b70560d)
+- commit: Merge pull request #64 from verndale/codex/63-emit-realization-metadata (3a02aa0)
+
+## Full commit list
+- 3a02aa0 commit: Merge pull request #64 from verndale/codex/63-emit-realization-metadata
+- f96a7ae feat(capture): enforce realization schema v3 (#63)
+- b70560d commit: Merge pull request #62 from verndale/bot/wiki-sync/61
+- 02ceb1c docs(wiki): sync journal, topics, and plans for #61
+
 # v1.17.0 — 2026-08-13
 
 ## Summary (AI, bounded)
