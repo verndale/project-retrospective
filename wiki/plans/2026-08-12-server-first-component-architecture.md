@@ -5,6 +5,7 @@ date: 2026-08-12
 evidence:
   - "issue #60 https://github.com/verndale/project-retrospective/issues/60"
   - "working tree"
+  - "PR #61 https://github.com/verndale/project-retrospective/pull/61 (merged 2026-08-13)"
 source_tool: codex
 source: current Codex task
 topics: [library-capture]
