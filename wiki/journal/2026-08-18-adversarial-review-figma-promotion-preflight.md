@@ -2,7 +2,7 @@
 date: 2026-08-18
 topics: [library-capture]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/70
 issue: https://github.com/verndale/project-retrospective/issues/69
 ---
 # Harden Figma promotion preflight after adversarial review

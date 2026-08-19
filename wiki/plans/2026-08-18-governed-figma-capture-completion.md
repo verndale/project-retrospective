@@ -1,7 +1,11 @@
 ---
 status: implemented
 executed: 2026-08-18
-evidence: ["issue #69", "capture-preflight tests", "skill-conformance tests"]
+evidence:
+  - "issue #69"
+  - "capture-preflight tests"
+  - "skill-conformance tests"
+  - "PR #70 https://github.com/verndale/project-retrospective/pull/70 (merged 2026-08-19)"
 source_tool: codex
 source: approved implementation plan in the active Codex task
 topics: [library-capture]
