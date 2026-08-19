@@ -1,6 +1,6 @@
 {
   "name": "@verndale/project-retrospective",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "private": true,
   "description": "Agent skill that analyzes completed frontend projects and mines promotable architectural knowledge for the ui-design-brain catalog and the ai-orchestration pipeline, distributed via the skills CLI.",
   "license": "MIT",

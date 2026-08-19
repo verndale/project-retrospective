@@ -1,3 +1,36 @@
+# v1.20.0 — 2026-08-19
+
+## Summary (AI, bounded)
+- Enhanced Figma promotion preflight checks in the project retrospective feature (ce2bf48)
+- Synced wiki journal, topics, and plans for issue #67 (24107f9)
+- Merged pull requests improving Figma promotion and wiki synchronization processes (c257967, 2e72448)
+
+## Highlights
+- commit: Merge pull request #70 from verndale/codex/69-figma-promotion-after-capture (c257967)
+- feat(project-retrospective): Enhance Figma promotion preflight checks (ce2bf48)
+- commit: Merge pull request #68 from verndale/bot/wiki-sync/67 (2e72448)
+- docs(wiki): sync journal, topics, and plans for #67 (24107f9)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Enhance Figma promotion preflight checks (ce2bf48)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #67 (24107f9)
+
+### Other (unknown)
+- commit: Merge pull request #68 from verndale/bot/wiki-sync/67 (2e72448)
+- commit: Merge pull request #70 from verndale/codex/69-figma-promotion-after-capture (c257967)
+
+## Full commit list
+- c257967 commit: Merge pull request #70 from verndale/codex/69-figma-promotion-after-capture
+- ce2bf48 feat(project-retrospective): Enhance Figma promotion preflight checks
+- 2e72448 commit: Merge pull request #68 from verndale/bot/wiki-sync/67
+- 24107f9 docs(wiki): sync journal, topics, and plans for #67
+
 # v1.19.0 — 2026-08-13
 
 ## Summary (AI, bounded)
