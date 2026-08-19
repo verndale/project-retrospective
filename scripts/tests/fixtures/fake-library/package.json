@@ -1,0 +1,13 @@
+{
+  "name": "@example/fake-library",
+  "private": true,
+  "scripts": {
+    "contracts:code": "node scripts/check-contracts.cjs",
+    "contracts:code:selftest": "node scripts/check-contracts.selftest.cjs",
+    "test:code": "pnpm typecheck && pnpm lint && pnpm architecture && pnpm architecture:selftest && pnpm contracts:code && pnpm contracts:code:selftest && pnpm accessibility:report && pnpm release:preflight:selftest && pnpm exports:check && pnpm test:ssr && pnpm accessibility && pnpm test:a11y:webkit && pnpm test:a11y:modes && pnpm test:motion",
+    "figma:coverage": "node scripts/check-figma-coverage.cjs",
+    "figma:contracts": "node scripts/check-figma-contracts.cjs",
+    "figma:live:if-token": "node scripts/check-figma-live.cjs --if-token",
+    "figma:validate": "pnpm figma:coverage && pnpm figma:contracts && pnpm figma:live:if-token"
+  }
+}

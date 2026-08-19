@@ -94,6 +94,7 @@ test('the envelope carries the documented key order', () => {
     'generatedAt',
     'captures',
     'library',
+    'figmaPromotion',
     'manifest',
     'components',
     'orphanedByRun',
@@ -101,6 +102,20 @@ test('the envelope carries the documented key order', () => {
     'warnings',
   ]);
   assert.equal(result.json.schemaVersion, 3);
+  assert.deepEqual(result.json.figmaPromotion, {
+    required: true,
+    ready: true,
+    writeCapabilityRequired: true,
+    publicationStatus: 'unpublished',
+    reviewPasses: ['adversarial', 'design'],
+    registry: 'figma/library.json',
+    checklist: 'figma/PROMOTION-CHECKLIST.md',
+    codeContractsCommand: 'pnpm contracts:code',
+    codeTestCommand: 'pnpm test:code',
+    coverageCommand: 'pnpm figma:coverage',
+    validationCommand: 'pnpm figma:validate',
+    issues: [],
+  });
   assert.deepEqual(result.json.counts, {
     captures: 1,
     ready: 1,
@@ -109,6 +124,130 @@ test('the envelope carries the documented key order', () => {
     deferred: 0,
     orphanedByRun: 1,
   });
+});
+
+test('missing governed Figma promotion surfaces block capture', () => {
+  const cases = [
+    ['figma/library.json', 'figma/library.json is missing'],
+    ['figma/PROMOTION-CHECKLIST.md', 'figma/PROMOTION-CHECKLIST.md is missing'],
+    ['package.json', 'package.json could not be read'],
+  ];
+
+  for (const [missing, expected] of cases) {
+    const library = tempFixture('fake-library');
+    fs.rmSync(path.join(library, missing));
+    const result = preflight(tempCaptures(), library);
+    assertBlocked(result, 'figma-promotion-unavailable');
+    assert.equal(result.json.figmaPromotion.ready, false);
+    assert.ok(result.json.figmaPromotion.issues.some((issue) => issue.includes(expected)));
+  }
+});
+
+test('missing Figma package scripts block capture', () => {
+  const library = tempFixture('fake-library');
+  const packageJson = JSON.parse(readFile(library, 'package.json'));
+  delete packageJson.scripts['figma:coverage'];
+  writeFile(library, 'package.json', `${JSON.stringify(packageJson, null, 2)}\n`);
+  const result = preflight(tempCaptures(), library);
+  assertBlocked(result, 'figma-promotion-unavailable');
+  assert.ok(result.json.figmaPromotion.issues.includes('package.json has no figma:coverage script'));
+});
+
+test('placeholder Figma files and commands do not satisfy promotion preflight', () => {
+  const cases = [
+    {
+      mutate(library) {
+        writeFile(library, 'figma/library.json', '{}\n');
+      },
+      expected: 'figma/library.json schemaVersion must equal 1',
+    },
+    {
+      mutate(library) {
+        writeFile(library, 'figma/PROMOTION-CHECKLIST.md', '# Placeholder\n');
+      },
+      expected: 'figma/PROMOTION-CHECKLIST.md does not require the 528px left documentation rail',
+    },
+    {
+      mutate(library) {
+        const packageJson = JSON.parse(readFile(library, 'package.json'));
+        packageJson.scripts['figma:validate'] = 'echo pnpm figma:coverage && exit 0';
+        writeFile(library, 'package.json', `${JSON.stringify(packageJson, null, 2)}\n`);
+      },
+      expected: 'package.json figma:validate must equal',
+    },
+    {
+      mutate(library) {
+        const packageJson = JSON.parse(readFile(library, 'package.json'));
+        packageJson.scripts['test:code'] = 'pnpm contracts:code';
+        writeFile(library, 'package.json', `${JSON.stringify(packageJson, null, 2)}\n`);
+      },
+      expected: 'package.json test:code must equal',
+    },
+  ];
+
+  for (const testCase of cases) {
+    const library = tempFixture('fake-library');
+    testCase.mutate(library);
+    const result = preflight(tempCaptures(), library);
+    assertBlocked(result, 'figma-promotion-unavailable');
+    assert.ok(result.json.figmaPromotion.issues.some((issue) => issue.includes(testCase.expected)));
+  }
+});
+
+test('Code Connect surfaces block capture', () => {
+  const cases = [
+    {
+      mutate(library) {
+        const packageJson = JSON.parse(readFile(library, 'package.json'));
+        packageJson.devDependencies = { '@figma/code-connect': '2.0.0' };
+        writeFile(library, 'package.json', `${JSON.stringify(packageJson, null, 2)}\n`);
+      },
+      expected: 'package.json installs @figma/code-connect',
+    },
+    {
+      mutate(library) {
+        const packageJson = JSON.parse(readFile(library, 'package.json'));
+        packageJson.scripts.devmode = 'npx @figma/code-connect publish';
+        writeFile(library, 'package.json', `${JSON.stringify(packageJson, null, 2)}\n`);
+      },
+      expected: 'package.json exposes a Code Connect script',
+    },
+    {
+      mutate(library) {
+        const registry = JSON.parse(readFile(library, 'figma/library.json'));
+        registry.library.codeConnect = { enabled: false };
+        writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
+      },
+      expected: 'figma/library.json exposes Code Connect',
+    },
+    {
+      mutate(library) {
+        fs.mkdirSync(path.join(library, 'figma/components'));
+      },
+      expected: 'figma/components must not exist',
+    },
+    {
+      mutate(library) {
+        fs.mkdirSync(path.join(library, 'tools'));
+        writeFile(library, 'tools/alert.figma.ts', 'export {};\n');
+      },
+      expected: 'tools/alert.figma.ts must not exist',
+    },
+    {
+      mutate(library) {
+        writeFile(library, 'pnpm-lock.yaml', "packages:\n  '@figma/code-connect@2.0.0': {}\n");
+      },
+      expected: 'pnpm-lock.yaml must not retain Code Connect',
+    },
+  ];
+
+  for (const testCase of cases) {
+    const library = tempFixture('fake-library');
+    testCase.mutate(library);
+    const result = preflight(tempCaptures(), library);
+    assertBlocked(result, 'figma-promotion-unavailable');
+    assert.ok(result.json.figmaPromotion.issues.some((issue) => issue.includes(testCase.expected)));
+  }
 });
 
 test('componentJson matches the library key order, with declienting left to fill', () => {

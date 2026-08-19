@@ -24,7 +24,7 @@ a run in the `ui-design-evidence` repo:
 report.md · inventory.json · resolution.json · memory-archive.json · retrospective artifacts · proposals/ · captures/ · orchestration-drafts.md
         │  human review
         ├── proposals/  → Action: promote → ui-design-brain working tree → verify → stop
-        ├── captures/   → Action: capture → ui-design-library working tree → verify → stop
+        ├── captures/   → Action: capture → code + unpublished reviewed Figma master → verify → stop
         └── orchestration-drafts.md → ai-orchestration, via its own contribution flow
                             │
                             ▼
