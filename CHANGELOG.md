@@ -1,3 +1,38 @@
+# v1.21.0 — 2026-08-19
+
+## Summary (AI, bounded)
+- Enhanced automation for project retrospective tracking issues and branches (commit f233df5).
+- Synchronized wiki content including journal entries, topics, and plans for issue #70 (commit 1ac9dfe).
+- Merged pull request to automate retrospective GitHub tracking (commit e9d0367).
+- Merged pull request related to wiki synchronization (commit be9e437).
+- No breaking changes introduced in this release.
+
+## Highlights
+- commit: Merge pull request #72 from verndale/codex/automate-retro-github-tracking (e9d0367)
+- feat(project-retrospective): Enhance tracking issue automation and branch (f233df5)
+- commit: Merge pull request #71 from verndale/bot/wiki-sync/70 (be9e437)
+- docs(wiki): sync journal, topics, and plans for #70 (1ac9dfe)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Enhance tracking issue automation and branch (f233df5)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #70 (1ac9dfe)
+
+### Other (unknown)
+- commit: Merge pull request #71 from verndale/bot/wiki-sync/70 (be9e437)
+- commit: Merge pull request #72 from verndale/codex/automate-retro-github-tracking (e9d0367)
+
+## Full commit list
+- e9d0367 commit: Merge pull request #72 from verndale/codex/automate-retro-github-tracking
+- f233df5 feat(project-retrospective): Enhance tracking issue automation and branch
+- be9e437 commit: Merge pull request #71 from verndale/bot/wiki-sync/70
+- 1ac9dfe docs(wiki): sync journal, topics, and plans for #70
+
 # v1.20.0 — 2026-08-19
 
 ## Summary (AI, bounded)
