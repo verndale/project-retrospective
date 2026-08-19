@@ -22,6 +22,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-08-19 — feat(project-retrospective): Enhance tracking issue automation and branc ([PR #72](https://github.com/verndale/project-retrospective/pull/72))
 - 2026-08-19 — Made issue filing and local branch creation automatic only after deterministic target resolution; artifact presence alone cannot create a shared-repository branch, and blocked targets expose no executable branch instruction ([plan](../plans/2026-08-19-automate-retrospective-github-tracking.md), [journal](../journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md)).
 - 2026-08-19 — feat(project-retrospective): Enhance Figma promotion preflight checks ([PR #70](https://github.com/verndale/project-retrospective/pull/70))
 - 2026-08-13 — feat(capture): validate realization metadata ([PR #67](https://github.com/verndale/project-retrospective/pull/67))

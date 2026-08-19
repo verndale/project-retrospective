@@ -2,7 +2,7 @@
 date: 2026-08-19
 topics: [retrospective-workflow, library-capture]
 plan: plans/2026-08-19-automate-retrospective-github-tracking.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/72
 ---
 # Automate conditional retrospective tracking and capture lifecycle
 
