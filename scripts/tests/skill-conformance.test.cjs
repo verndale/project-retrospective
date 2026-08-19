@@ -159,6 +159,22 @@ test('guardrails state the git prohibition and the no-guessing rule', () => {
   assert.match(guardrails, /MUST NOT fuzzy-match/);
 });
 
+test('capture completion requires governed unpublished Figma review and forbids Code Connect', () => {
+  const capture = body.split('### Action: capture')[1]?.split('## Inputs and outputs')[0] || '';
+  assert.match(capture, /figmaPromotion/);
+  assert.match(capture, /writeCapabilityRequired: true/);
+  assert.match(capture, /codeTestCommand/);
+  assert.match(capture, /pnpm test:code/);
+  assert.match(capture, /publicationStatus: "unpublished"/);
+  assert.match(capture, /adversarial pass/);
+  assert.match(capture, /design pass/);
+  assert.match(capture, /code complete, Figma promotion blocked/);
+  assert.match(capture, /do not create a Code Connect template/);
+  assert.match(capture, /pnpm figma:coverage/);
+  assert.match(capture, /pnpm figma:validate/);
+  assert.match(capture, /REST token is read-only validation and does not satisfy this requirement/);
+});
+
 test('validation loops state a numeric retry cap', () => {
   const loops = body.split('## Validation loops')[1]?.split('## Guardrails')[0] || '';
   assert.match(loops, /Cap: 3 attempts/, 'the retry cap must be stated inline, not deferred');

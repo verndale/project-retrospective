@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "library": {
+    "publishing": {
+      "figmaLibrary": "explicit-maintainer-action",
+      "ci": "read-only-validation"
+    },
+    "promotionPattern": {
+      "handoffTarget": "direct-canonical-instance",
+      "annotationPlacement": "outside-component-instance",
+      "viewportWidths": {
+        "desktop": 1440,
+        "tabletLarge": 1024,
+        "tabletSmall": 768,
+        "mobile": 390
+      }
+    }
+  },
+  "components": []
+}

@@ -1266,6 +1266,158 @@ function findOrphanedByRun(libraryDir, records, warnings) {
   return orphans;
 }
 
+/**
+ * Resolve the downstream Figma promotion contract before a capture starts.
+ * The retrospective skill never invents this interface: the target library
+ * owns the registry, checklist, and executable commands.
+ */
+function inspectFigmaPromotion(libraryDir) {
+  const registry = 'figma/library.json';
+  const checklist = 'figma/PROMOTION-CHECKLIST.md';
+  const codeContractsCommand = 'pnpm contracts:code';
+  const codeTestCommand = 'pnpm test:code';
+  const coverageCommand = 'pnpm figma:coverage';
+  const validationCommand = 'pnpm figma:validate';
+  const issues = [];
+  const codeConnectPattern = /@figma\/code-connect|figma[\s:_-]*connect|code[\s:_-]*connect/i;
+  const findCodeConnectSurfaces = (value, location = registry) => {
+    const surfaces = [];
+    if (Array.isArray(value)) {
+      value.forEach((entry, index) => surfaces.push(...findCodeConnectSurfaces(entry, `${location}[${index}]`)));
+      return surfaces;
+    }
+    if (!value || typeof value !== 'object') {
+      if (typeof value === 'string' && codeConnectPattern.test(value)) surfaces.push(location);
+      return surfaces;
+    }
+    for (const [key, entry] of Object.entries(value)) {
+      const child = `${location}.${key}`;
+      if (codeConnectPattern.test(key)) surfaces.push(child);
+      surfaces.push(...findCodeConnectSurfaces(entry, child));
+    }
+    return surfaces;
+  };
+  const findForbiddenCodeConnectFiles = () => {
+    const matches = [];
+    const ignored = new Set(['.git', 'node_modules', 'wiki', 'graphify-out']);
+    const visit = (directory, relative = '') => {
+      for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+        if (entry.isDirectory() && ignored.has(entry.name)) continue;
+        const childRelative = relative ? `${relative}/${entry.name}` : entry.name;
+        const child = path.join(directory, entry.name);
+        if (entry.isDirectory()) {
+          if (childRelative === 'figma/components') matches.push(childRelative);
+          else visit(child, childRelative);
+        } else if (/\.figma\.[cm]?[jt]sx?$/i.test(entry.name) || /code[-_.]?connect/i.test(entry.name) ||
+          /^figma\.config\./i.test(entry.name) || /^tsconfig\.figma(?:\.|$)/i.test(entry.name)) {
+          matches.push(childRelative);
+        }
+      }
+    };
+    visit(libraryDir);
+    return matches.sort();
+  };
+
+  if (!isFile(path.join(libraryDir, registry))) {
+    issues.push(`${registry} is missing`);
+  } else {
+    const registryRead = readJsonSafe(path.join(libraryDir, registry));
+    if (!registryRead.ok) issues.push(`${registry} could not be read: ${registryRead.error}`);
+    else {
+      const value = registryRead.value;
+      if (value?.schemaVersion !== 1) issues.push(`${registry} schemaVersion must equal 1`);
+      if (!Array.isArray(value?.components)) issues.push(`${registry} components must be an array`);
+      if (value?.library?.publishing?.figmaLibrary !== 'explicit-maintainer-action') {
+        issues.push(`${registry} must keep Figma publication as an explicit maintainer action`);
+      }
+      if (value?.library?.publishing?.ci !== 'read-only-validation') {
+        issues.push(`${registry} must declare read-only CI validation`);
+      }
+      const pattern = value?.library?.promotionPattern ?? {};
+      if (pattern.handoffTarget !== 'direct-canonical-instance' ||
+        pattern.annotationPlacement !== 'outside-component-instance') {
+        issues.push(`${registry} does not expose the direct-canonical documentation pattern`);
+      }
+      const widths = pattern.viewportWidths ?? {};
+      if (widths.desktop !== 1440 || widths.tabletLarge !== 1024 || widths.tabletSmall !== 768 || widths.mobile !== 390) {
+        issues.push(`${registry} does not expose the governed 1440/1024/768/390 breakpoints`);
+      }
+      const surfaces = findCodeConnectSurfaces(value);
+      if (surfaces.length > 0) issues.push(`${registry} exposes Code Connect at ${surfaces.join(', ')}`);
+      if ((value?.components ?? []).some((component) => component?.figma?.template !== undefined)) {
+        issues.push(`${registry} contains forbidden template metadata`);
+      }
+    }
+  }
+  if (!isFile(path.join(libraryDir, checklist))) issues.push(`${checklist} is missing`);
+  else {
+    const source = fs.readFileSync(path.join(libraryDir, checklist), 'utf8');
+    const requirements = [
+      ['the 528px left documentation rail', /528px[\s\S]{0,160}(?:documentation rail|rail)/i],
+      ['Button, Section header, and Alert as reference standards', /Button[\s,/]+Section header[\s,/]+(?:and\s+)?Alert/i],
+      ['the 1440/1024/768/390 responsive widths', /1440[\s\S]{0,80}1024[\s\S]{0,80}768[\s\S]{0,80}390/],
+      ['unpublished candidate status', /unpublished/i],
+      ['both adversarial and design review passes', /adversarial[\s\S]{0,120}design review/i],
+    ];
+    for (const [label, pattern] of requirements) {
+      if (!pattern.test(source)) issues.push(`${checklist} does not require ${label}`);
+    }
+  }
+
+  const packageRead = readJsonSafe(path.join(libraryDir, 'package.json'));
+  if (!packageRead.ok) {
+    issues.push(`package.json could not be read: ${packageRead.error}`);
+  } else {
+    const packageSurfaces = findCodeConnectSurfaces(packageRead.value, 'package.json');
+    if (packageSurfaces.length > 0) issues.push(`package.json exposes Code Connect at ${packageSurfaces.join(', ')}`);
+    if (packageRead.value?.dependencies?.['@figma/code-connect'] ||
+      packageRead.value?.devDependencies?.['@figma/code-connect']) {
+      issues.push('package.json installs @figma/code-connect');
+    }
+    if (Object.entries(packageRead.value?.scripts ?? {}).some(
+      ([name, command]) => codeConnectPattern.test(name) || codeConnectPattern.test(String(command)),
+    )) {
+      issues.push('package.json exposes a Code Connect script');
+    }
+    const requiredScripts = {
+      'contracts:code': 'node scripts/check-contracts.cjs',
+      'contracts:code:selftest': 'node scripts/check-contracts.selftest.cjs',
+      'test:code': 'pnpm typecheck && pnpm lint && pnpm architecture && pnpm architecture:selftest && pnpm contracts:code && pnpm contracts:code:selftest && pnpm accessibility:report && pnpm release:preflight:selftest && pnpm exports:check && pnpm test:ssr && pnpm accessibility && pnpm test:a11y:webkit && pnpm test:a11y:modes && pnpm test:motion',
+      'figma:coverage': 'node scripts/check-figma-coverage.cjs',
+      'figma:contracts': 'node scripts/check-figma-contracts.cjs',
+      'figma:live:if-token': 'node scripts/check-figma-live.cjs --if-token',
+      'figma:validate': 'pnpm figma:coverage && pnpm figma:contracts && pnpm figma:live:if-token',
+    };
+    for (const [name, expected] of Object.entries(requiredScripts)) {
+      const actual = packageRead.value?.scripts?.[name];
+      if (!String(actual ?? '').trim()) issues.push(`package.json has no ${name} script`);
+      else if (actual !== expected) issues.push(`package.json ${name} must equal "${expected}"`);
+    }
+  }
+  const lockPath = path.join(libraryDir, 'pnpm-lock.yaml');
+  if (isFile(lockPath) && codeConnectPattern.test(fs.readFileSync(lockPath, 'utf8'))) {
+    issues.push('pnpm-lock.yaml must not retain Code Connect');
+  }
+  for (const forbidden of findForbiddenCodeConnectFiles()) {
+    issues.push(`${forbidden} must not exist`);
+  }
+
+  return {
+    required: true,
+    ready: issues.length === 0,
+    writeCapabilityRequired: true,
+    publicationStatus: 'unpublished',
+    reviewPasses: ['adversarial', 'design'],
+    registry,
+    checklist,
+    codeContractsCommand,
+    codeTestCommand,
+    coverageCommand,
+    validationCommand,
+    issues,
+  };
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2), {
     keys: ['captures', 'library', 'brain', 'manifest', 'out', 'proposals'],
@@ -1309,6 +1461,14 @@ function main() {
 
   const ctx = { manifest, tokens, libraryDir, proposals, warnings };
   const components = files.map((file) => readCapture(file, ctx));
+  const figmaPromotion = inspectFigmaPromotion(libraryDir);
+  if (!figmaPromotion.ready) {
+    const message = `The target library cannot complete governed Figma promotion: ${figmaPromotion.issues.join('; ')}.`;
+    for (const component of components) {
+      component.blockers.push({ code: 'figma-promotion-unavailable', message });
+      component.status = 'blocked';
+    }
+  }
   const orphanedByRun = findOrphanedByRun(libraryDir, components, warnings);
 
   const counts = {
@@ -1326,6 +1486,7 @@ function main() {
       generatedAt: new Date().toISOString(),
       captures: capturesDir,
       library: libraryDir,
+      figmaPromotion,
       manifest: manifest ? { path: manifestPath, entries: manifest.length } : null,
       components,
       orphanedByRun,

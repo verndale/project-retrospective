@@ -18,7 +18,7 @@ What the skill does, how to run it, and what it produces. The skill's own instru
 
 ## What it does
 
-Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what didn't resolve into reviewable proposals. Reusable component captures include an explicit server-first module graph, so applying one creates a facade/types/tree/branch/leaf structure instead of reproducing a monolithic client TSX file. The skill can also ingest seeded team retrospectives and post-mortems, preserve their original structure privately, and turn every action into an owned, auditable lifecycle record.
+Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what didn't resolve into reviewable proposals. Reusable component captures include an explicit server-first module graph and finish with an unpublished, reviewed Figma master, so applying one creates aligned code, Storybook, and design-library contracts instead of reproducing a monolithic client TSX file. The skill can also ingest seeded team retrospectives and post-mortems, preserve their original structure privately, and turn every action into an owned, auditable lifecycle record.
 
 The division of labour matters: **scripts decide structure, the model exercises judgment.** Discovery, label resolution, and output validation are deterministic and zero-LLM. Deciding whether an unresolved label is real platform vocabulary is the part that needs a model — and it is advisory. Nothing reaches the catalog without a human commit.
 
@@ -98,7 +98,7 @@ Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
-Preflight checks every capture at once and returns a schema-v3 plan with its validated runtime architecture and intended realization v1. Missing/inconsistent architecture, public API, owned DOM, or accessibility evidence blocks. Components are then written **one at a time** in this order: facade/types → tree/parts/hooks → stories → `component.json` → `pnpm exports:sync`; each runs `pnpm contracts`, `pnpm test`, and `pnpm build` before the next starts. Read the `orphanedByRun` list first: those are library components claiming this run with no capture behind them.
+Preflight checks every capture at once and returns a schema-v3 plan with its validated runtime architecture, intended realization v1, and required Figma promotion interface. Missing architecture, public API, accessibility evidence, registry/checklist, or Figma commands blocks. Components are written **one at a time**: code and stories → full `pnpm test:code` plus build → unpublished Figma master/documentation → adversarial and design review with in-place fixes → review evidence → full library gates. Without a write-capable Figma session, the capture stops incomplete. Code Connect is not used; code consumption remains canonical-slug npm imports. Read `orphanedByRun` first.
 
 Then you commit, one per component:
 
@@ -106,7 +106,7 @@ Then you commit, one per component:
 cd /Users/you/Projects/ui-design-library && pnpm commit
 ```
 
-**Done when:** `pnpm test` and `pnpm build` pass in the library; each new `components/<slug>/` has `index.ts`, a types module, at least two implementation TSX modules, stories, and `component.json`; the export map is synced; and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
+**Done when:** `pnpm test` and `pnpm build` pass in the library; each new `components/<slug>/` has `index.ts`, a types module, at least two implementation TSX modules, stories, and `component.json`; the export map is synced; the unpublished Figma master is registered with passed adversarial/design evidence; `pnpm figma:coverage` and `pnpm figma:validate` pass; and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
 
 ### Step 5 — Carry the orchestration drafts over
 
@@ -254,7 +254,7 @@ Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
-**Batch input, serial execution.** `capture-preflight.cjs` checks every capture in one pass — catalog canonical, slug equality, declared tokens, export/rendering identity, provenance, governed reuse fingerprint, intended realization v1 (public props, exact owned DOM/relationships, protected style slots, WCAG/APG behaviors, evidence IDs, consumer responsibilities), the exact `## Runtime architecture` contract, and the library's recursive current state. “Already applied” is an exact comparison: planned implementation modules must be present, non-empty, reachable from `index.ts`, and under the declared client boundary; no unplanned implementation module may exist; the root story and stable `component.json` fields must agree. Its schema-v3 component record returns the validated `architecture` beside `componentJson`; it never copies architecture into the manifest and writes **nothing** into the library. Components are written one at a time in the load-bearing order facade/types → tree/parts/hooks → stories → `component.json` → `pnpm exports:sync`, then verified with `pnpm contracts`, `pnpm test`, and `pnpm build` before the next begins.
+**Batch input, serial execution.** `capture-preflight.cjs` checks every capture in one pass — catalog identity, runtime architecture, realization, library state, and the required Figma registry/checklist/commands. Its schema-v3 envelope returns additive `figmaPromotion` instructions and writes nothing. Components execute one at a time in the load-bearing order facade/types → tree/parts/hooks → stories → manifest/export sync → code-only verification → unpublished Figma promotion → adversarial/design review and fixes → journal/review evidence → full Figma and library gates. Only then may the next component begin.
 
 **Server first, not directive first.** Each architecture chooses `server`, `hybrid`, or `client` from concrete hydration needs. Server mode emits full HTML and has no client modules. Hybrid mode keeps a server facade plus a real server tree/branch/leaf implementation—the facade alone is not server output—and isolates state, handlers, effects, context, portals, timers, observers, browser APIs, or client-only dependencies in `.client.ts`/`.client.tsx` leaves. Client mode uses a client `index.ts` facade only when the public component itself cannot stay server-backed. Every `'use client'` file is at most 120 physical lines and remains SSR-safe; the directive does not disable React/Next server rendering.
 
@@ -262,7 +262,7 @@ Brain: /Users/you/Projects/ui-design-brain
 
 **Read `orphanedByRun` first.** Preflight reports any library component whose `provenance.run` names a run this capture set covers but which has no capture file behind it — a component that reached the library with no evidence. It is a detector, not a fix: decide what to do about each one before applying anything.
 
-**Each written component also gains a context-wiki entry.** Following the library's `wiki/MECHANICS.md`, a client-agnostic `wiki/journal/<date>-add-<slug>-component.md` plus one `wiki/INDEX.md` line — grounded in the `declienting` removals and the canonical, never the client — then `wiki/connections*` is rebuilt with `pnpm graph:build`. A `deferred`, `blocked`, or `skipped` capture writes nothing, so it gets no entry; the whole step is skipped when the checkout has no `wiki/`.
+**Each written component also gains review evidence.** Following the library's `wiki/MECHANICS.md`, its client-agnostic journal records the de-clienting, stable Figma node, adversarial/design findings, fixes, and final pass; `figma.review.evidence` points to that file. The graph is rebuilt with `pnpm graph:build`. A deferred, blocked, or skipped capture gets no entry.
 
 Then you commit in the library repo (`pnpm commit`), one per component, and PR.
 

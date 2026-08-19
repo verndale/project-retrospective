@@ -13,8 +13,9 @@ Executing a capture is a rewrite, not a copy. A component lifted straight out of
 - Write the tree, parts, and hooks
 - Write the stories
 - Write component.json and sync exports
-- Verification
-- Wiki
+- Code verification
+- Figma promotion and design review
+- Wiki and final verification
 - Handback
 - If verification fails
 
@@ -29,10 +30,10 @@ Stop and report if any of these fail — do not partially apply:
 
 1. `Captures:` names a readable directory holding at least one `component-capture` file.
 2. `Library:` contains `components/` and `src/tokens/semantic.css`.
-3. `capture-preflight.cjs` exits 0, emits `schemaVersion: 3`, and carries a non-null `manifest`, `architecture`, and realization v1 for every `ready`/`skipped` capture. Exit 0 is the only green light: every capture is `ready` or `skipped`. A `blocked` one (exit 1) names its reason and is not yours to work around. A **`deferred`** one (exit 6) is valid but **not yet executable** — its canonical is established only by a sibling `new-pattern` proposal this run drafted, so it cannot be in the catalog yet. Promote that proposal first (`Action: promote`), then re-run the preflight and it becomes `ready`; do not write a deferred capture into the library now, and do not read a plan that has one as safe to start. Without `Brain` the script degrades — it warns `manifest-absent`, skips the catalog check, and still exits 0 with every capture `ready`. That is a run that verified nothing about the canonicals, and the library's own contracts will not catch it: they compare `component.json` against its own directory name, never against the catalog.
+3. `capture-preflight.cjs` exits 0, emits `schemaVersion: 3`, carries a non-null `manifest`, `architecture`, and realization v1 for every `ready`/`skipped` capture, and reports `figmaPromotion.ready: true`, `writeCapabilityRequired: true`, unpublished publication status, exact adversarial/design passes, the library-owned registry/checklist paths, the complete code-test command, and coverage/validation commands. Exit 0 is the only green light. A `blocked` one (exit 1) names its reason and is not yours to work around. A **`deferred`** one (exit 6) is valid but **not yet executable** — promote its sibling new-pattern proposal first, then re-run. Without `Brain` the canonical check degrades; missing Figma capability never degrades.
 4. **Report `orphanedByRun` before touching anything.** A library component claiming one of this set's runs with no capture behind it is the exact defect this action exists to prevent — say which component, and let the maintainer decide.
 5. `git -C <Library> status --short` is clean, or its existing changes are unrelated. Report what you found before adding to a dirty tree.
-6. `pnpm contracts` passes in the library **before** you start, so any failure afterwards is unambiguously yours.
+6. The library's existing code and Figma gates pass before you start. For a newly written component, use the code-only sequence below before Figma; aggregate `pnpm contracts` intentionally fails until reviewed Figma coverage exists.
 
 ## Formatting invariants
 
@@ -95,36 +96,51 @@ Last, deliberately. `components/<slug>/` holding only a `component.json` fails t
 
 Then run `pnpm exports:sync` from the library root. The public export points to `index.ts`/its compiled `index.js`; internal tree/branch/leaf modules remain private implementation details.
 
-The complete action order is facade/types → tree/parts/hooks → stories → `component.json` → `pnpm exports:sync` → verification. Then start the next capture. **One component start-to-verify before the next** — a batch of half-written directories is the state this order exists to prevent.
+The complete action order is facade/types → tree/parts/hooks → stories → `component.json` → `pnpm exports:sync` → code verification → unpublished Figma promotion → adversarial/design review → evidence → final verification. Then start the next capture. **One component start-to-complete before the next** — a batch of half-written or code-only captures is the state this order exists to prevent.
 
-## Verification
+## Code verification
 
 From the library checkout root — `cd` into `Library` first:
 
 ```bash
-pnpm contracts
-```
-
-The fast structural pass: slug equality, recursive module architecture, client-boundary naming/line limits, non-empty slots, declared tokens defined, and the maturity tag agreeing. Exit 0 is the pass. Then the full gates:
-
-```bash
-pnpm test
+pnpm test:code
 pnpm build
 ```
 
-`pnpm test` typechecks, checks contracts, renders every story in Chromium and WebKit with axe over the result, runs accessibility modes and reduced motion, and verifies behavior evidence. An accessibility violation fails the run. `pnpm build` proves the public `components/<slug>` export resolves to the facade and every nested module/declaration emits.
+This proves the complete authored code, SSR, Storybook behavior, browser accessibility, modes, and motion surfaces before Figma exists. Use `pnpm contracts:code` only as a fast diagnostic subset. Do not run aggregate `pnpm contracts` as the pre-Figma command: it includes `figma:coverage`, and its failure is the work Step 4 is about to close.
 
-`pnpm test` needs browser binaries (`pnpm exec playwright install chromium webkit`, once per machine). A missing browser is an environment failure, not a failing component — say so and do not spend an attempt on it.
+## Figma promotion and design review
 
-## Wiki
+1. Read `<Library>/figma/PROMOTION-CHECKLIST.md` and derive the Figma master from the public types, Storybook `argTypes`, semantic tokens, and responsive behavior.
+2. Create the canonical master and documentation with a write-capable Figma session. Keep it unpublished. Do not create Code Connect dependencies, scripts, config, templates, credentials, or registry fields.
+3. Copy the established Button/Section header/Alert pattern: 528px documentation rail at x=0; Main, responsive specimens, and publish sources to its right; 1440/1024/768/390 widths when applicable; intrinsic components stay capped.
+4. Register stable node identity and run separate adversarial and design passes. Fix findings in place without replacing the master, and repeat until no actionable finding remains.
+5. If a finding belongs to React, Storybook, or `component.json`, fix the source, repeat code verification, then resync and re-review Figma.
 
-After `pnpm test` and `pnpm build` pass, author the client-agnostic context-wiki entry in the same delivery, per `references/downstream-wiki.md` — the library's own `wiki/MECHANICS.md` owns the format. Skip with a stated message when `<Library>/wiki/` is absent, and write **only for a component actually written**: a `deferred`, `blocked`, or `skipped` capture wrote nothing, so it gets no entry.
+Without a write-capable Figma session, stop with `code complete, Figma promotion blocked`. Name the canonical/slug, partial node ID if one exists, and missing capability. Do not proceed to the next component.
 
-- **Journal** — one `wiki/journal/<date>-add-<slug>-component.md` per written component, `topics: []`, `plan: none`, `pr: pending`. Ground *What changed* in the `declienting` removals (citing only the semantic destination token, never the client source token) and what was kept verbatim; provenance stays "in `component.json`", never the run slug in prose. No topic page — MECHANICS creates one only once two related entries exist.
+## Wiki and final verification
+
+After both Figma reviews pass, author the client-agnostic context-wiki entry in the same delivery, per `references/downstream-wiki.md` — the library's own `wiki/MECHANICS.md` owns the format. Skip with a stated message when `<Library>/wiki/` is absent, and write **only for a component actually written**: a `deferred`, `blocked`, or `skipped` capture wrote nothing, so it gets no entry.
+
+- **Journal** — one `wiki/journal/<date>-add-<slug>-component.md` per written component, `topics: []`, `plan: none`, `pr: pending`. Ground *What changed* in the de-clienting and what was kept verbatim, then record the Figma node identity, both review passes, findings, fixes, and final result.
+- **Registry evidence** — set `figma.review` to the Button standard, adversarial/design passes, `status: "passed"`, and the journal path only after the review is clean.
 - **INDEX** — one `wiki/INDEX.md` Journal line per new journal file, newest-first.
 - **Rebuild** — after the last entry, rebuild the graph from the `Library` root. Prefer `pnpm graph:build`; a bare `node scripts/graph/build-graph.cjs` from the wrong directory rebuilds *this* skill's graph instead — this repo has a file at the identical path. This step is new to capture: `pnpm contracts`/`pnpm test` do not touch the graph, so without it the handed-back `wiki/connections*` are stale.
 
 Client-agnostic throughout — the canonical, the count, the de-client decision; never the client name, the run slug, or client copy. Append-only.
+
+Run the complete downstream gates:
+
+```bash
+pnpm figma:coverage
+pnpm figma:validate
+pnpm contracts
+pnpm test
+pnpm build
+```
+
+`pnpm test` needs browser binaries (`pnpm exec playwright install chromium webkit`, once per machine). A missing browser is an environment failure, not a failing component.
 
 ## Handback
 
@@ -141,6 +157,10 @@ Orphaned by run (library components claiming a run in this set with no capture):
 
 Verification: pnpm contracts → exit 0; pnpm test → exit 0; pnpm build → exit 0 (run in <library path>)
 
+Figma: <canonical> → node <node-id>, unpublished; adversarial review → passed; design review → passed
+Figma evidence: wiki/journal/<date>-add-<slug>-component.md
+Figma gates: pnpm figma:coverage → exit 0; pnpm figma:validate → exit 0
+
 Wiki: wiki/journal/<date>-add-<slug>-component.md (per written component), wiki/INDEX.md
 (client-agnostic; skipped when <library path>/wiki/ is absent).
 Regenerated wiki/connections* and scripts/graph/data/graph.json via pnpm graph:build.
@@ -150,7 +170,7 @@ Suggested commits — run inside <library path>, one per component:
 Or directly:
   git commit -m "<suggested commit from the capture>"
 
-This skill does not commit, push, or open a PR.
+This skill does not commit, push, publish the Figma library, or open a PR.
 ```
 
 Commit subjects follow that repo's convention — the scope is the **component slug**, not `library`:
