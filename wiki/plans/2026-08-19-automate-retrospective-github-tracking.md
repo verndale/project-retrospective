@@ -2,7 +2,12 @@
 status: implemented
 executed: 2026-08-19
 date: 2026-08-19
-evidence: [working tree, deterministic resolver tests, capture lifecycle tests, downstream contract tests]
+evidence:
+  - working tree
+  - deterministic resolver tests
+  - capture lifecycle tests
+  - downstream contract tests
+  - "PR #72 https://github.com/verndale/project-retrospective/pull/72 (merged 2026-08-19)"
 source_tool: codex
 source: approved implementation plan in the active Codex task
 topics: [retrospective-workflow, library-capture]
