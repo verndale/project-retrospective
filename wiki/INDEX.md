@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-08-19 — [Automate conditional retrospective tracking and capture lifecycle](journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md) — deterministic targets now gate automatic issues and local branches while schema-v4 evidence resumes safely across code, Figma, and landing.
 - 2026-08-18 — [Harden Figma promotion preflight after adversarial review](journal/2026-08-18-adversarial-review-figma-promotion-preflight.md) — placeholder capabilities, ambiguous write authority, and hidden Code Connect surfaces now block capture.
 - 2026-08-18 — [Complete captures with reviewed Figma promotion](journal/2026-08-18-governed-figma-capture-completion.md) — capture preflight and handback now require an unpublished reviewed Figma master and forbid Code Connect.
 - 2026-08-13 — [Make accessible realization part of capture preflight](journal/2026-08-13-accessible-realization-capture-preflight.md) — schema-v3 capture plans hard-block drift in public props, package-owned DOM, WCAG/APG behavior evidence, protected style slots, and consuming-page responsibilities.

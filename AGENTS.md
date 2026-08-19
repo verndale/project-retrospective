@@ -76,21 +76,21 @@ The skill's `promote` action edits a **local `ui-design-brain` working tree** an
 
 Every repository the skill *writes* is edited on a working branch off that repo's `main`, never on `main` itself, so `main` never carries uncommitted skill output. Create the branch (`git -C <repo> switch -c <branch>`) before the first write to that repo, and make every edit there:
 
-- **ui-design-evidence** (`Data`) — `Action: analyze` writes the run (`runs/<project>/<date>/`) and the client wiki feed here, and `promote`/`capture` also write `## Applied` markers and regenerate its graph. Branch before the run's first write. This repo is private, so its branch name may name the run/client, matching the established run-branch pattern (e.g. `feat/<project>-<date>-run`).
+- **ui-design-evidence** (`Data`) — `Action: analyze` and `ingest-retrospectives` write runs and wiki feeds here, and `promote`/`capture` also write lifecycle markers and regenerate its graph. Branch before the run's first write. This repo is private, so its branch name may name the run/client, matching the established run-branch pattern (e.g. `feat/<project>-<date>-run`).
 - **ui-design-brain** (`Brain`) — `Action: promote` edits the catalog here.
 - **ui-design-library** (`Library`) — `Action: capture` writes components here.
 
-Branch names in the shared catalog/library repos stay **client-agnostic** — name the change, not the client (e.g. `feat/add-<slug>-pattern`). A repo the action only *reads* stays on `main`: the brain during a capture preflight, and the analyzed project (always read-only).
+Branch names in the shared catalog/library repos stay **client-agnostic** and issue-keyed: `feat/<issue-number>-catalog-promotion` and `feat/<issue-number>-library-capture`. A repo the action only *reads* stays on `main`: the brain during a capture preflight, and the analyzed project (always read-only).
 
 By default, still stop at handback with each working branch checked out and nothing committed. The explicit maintainer-authorization exception below applies only to the named repository and issue branch; it does not let a retrospective action commit or push other repositories it touches.
 
 ## File a tracking issue per repo at the end of a retro
 
-At the end of an `Action: analyze` run, the skill files one **[Feature]** GitHub issue per repo the run gives pending work, using the `github-issue-creator` skill (which drafts, confirms with the maintainer, and only then files — never silently). The executable spec — which repos, when, titles, bodies, and labels — is the vendored [`skills/project-retrospective/references/tracking-issues.md`](skills/project-retrospective/references/tracking-issues.md), invoked at Workflow Step 7; keep the two in sync.
+The skill automatically reconciles sanctioned labels, reuses or files one **[Feature]** GitHub issue per repo with deterministic pending work, links downstream tracking, and creates only the required local working branch. An explicit retrospective target is authorization for these operations; do not pause for issue approval. The executable spec is [`skills/project-retrospective/references/tracking-issues.md`](skills/project-retrospective/references/tracking-issues.md), backed by `tracking-targets.cjs`; keep the contract, script, and tests in sync.
 
-In short: the private **ui-design-evidence** repo gets a **client-named hub** issue recording the run; **ui-design-brain** gets a **client-agnostic** issue when the run drafted proposals; **ui-design-library** gets one — and its branch — only when the run flagged captures. `ai-orchestration` gets no issue (its rule drafts are carried over by hand). The shared repos' issues follow the same data boundary as the proposals and downstream wiki: describe the pattern, alias, or capture and its recurrence, never the client, the run slug, or client copy.
+In short: the private **ui-design-evidence** repo gets a client-named hub issue for a validated evidence run; **ui-design-brain** gets a client-agnostic issue for pending proposals and a branch only for an approved non-empty promote write set; **ui-design-library** gets a client-agnostic issue only when capture preflight finds actionable work and a branch only for a non-empty capable write set. Deferred/blocked/skipped/landed items and evidence-only reconciliation create no library issue or branch. `ai-orchestration` gets neither.
 
-Filing an issue is the one step here that reaches outside the working tree; get the maintainer's go-ahead first.
+Automatic issue/label/link/local-branch authority does not authorize commits, pushes, PRs, issue closure, Figma publication, merges, or releases. Authentication, label, issue, clean-main, alignment, or capability failures stop before branch creation without an approval prompt.
 
 ## Commits & release
 

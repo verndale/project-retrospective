@@ -58,7 +58,7 @@ Open `report.md`. Three of its sections each pair with an artifact and a destina
 | Section | Artifact | Goes to |
 |---|---|---|
 | `## Candidates` (Promote verdicts) | `proposals/<slug>.md` | ui-design-brain |
-| `## Captures` | `captures/<slug>.md` | ui-design-library |
+| `## Captures` | `captures/<slug>.md` or `captures/<slug>--<variant>.md` | ui-design-library |
 | `## Learnings` | `orchestration-drafts.md` | ai-orchestration |
 
 Check `## Gaps` first — it carries the script warnings verbatim, and a `mode: code-scan` run caps every verdict at Watch, which means no proposals by design.
@@ -98,7 +98,7 @@ Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
-Preflight checks every capture at once and returns a schema-v3 plan with its validated runtime architecture, intended realization v1, and required Figma promotion interface. Missing architecture, public API, accessibility evidence, registry/checklist, or Figma commands blocks. Components are written **one at a time**: code and stories → full `pnpm test:code` plus build → unpublished Figma master/documentation → adversarial and design review with in-place fixes → review evidence → full library gates. Without a write-capable Figma session, the capture stops incomplete. Code Connect is not used; code consumption remains canonical-slug npm imports. Read `orphanedByRun` first.
+Preflight checks every capture at once and returns a schema-v4 plan keyed by exact `(canonical, variant)` identity, with runtime architecture, realization v1, lifecycle state, companion default migrations, and the required Figma promotion interface. `ready` starts code, `figma-pending` resumes at Figma, `evidence-pending` resumes in private evidence, and `skipped` is fully reconciled. Without a write-capable Figma session, code-complete work remains `figma-pending` and creates no empty library branch. Code Connect is not used; imports remain `components/<slug>` and `components/<slug>--<variant>`.
 
 Then you commit, one per component:
 
@@ -187,7 +187,7 @@ Written to `Output`, never into this skill's repository:
 | `inventory.json` | Every component found, with its evidence sources, build pack, and fingerprint. |
 | `resolution.json` | Resolved labels with how they resolved; unresolved labels with occurrences and locations. |
 | `proposals/<slug>.md` | One per Promote candidate — a ready-to-apply catalog change with its evidence. |
-| `captures/<slug>.md` | Implementations mature enough to seed `ui-design-library`, with the de-clienting work and validated server/hybrid/client module architecture each needs. Often drawn from components whose labels already resolve. |
+| `captures/<slug>.md`, `captures/<slug>--<variant>.md` | Default and qualified structural implementations mature enough to seed `ui-design-library`, with exact identity, lifecycle, de-clienting, and validated architecture. |
 | `orchestration-drafts.md` | Pipeline-shaped findings as paste-ready drafts for ai-orchestration. |
 | `specs-raw.json` / `specs.json` | Only when a `Specs` input was given: the model's raw Confluence capture, and the structured, approved-only spec pack (`normalize-specs.cjs`) that feeds `resolve.cjs --specs`. |
 | `retrospectives-raw.json` | Audited page/space capture: explicit and discovered candidates, source versions, converted Markdown, and every exclusion reason. |
@@ -223,7 +223,8 @@ node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <l
 | `normalize-retrospectives.cjs` | 0 success (including recorded warnings) · 1 unexpected · 2 bad invocation · 3 named input missing/unreadable |
 | `update-retrospective-register.cjs` | 0 success · 1 unexpected · 2 bad invocation · 3 action pack missing/unreadable |
 | `validate-report.cjs` | 0 pass · 1 failures · 2 bad invocation · 3 `--output` is not a directory |
-| `capture-preflight.cjs` | Schema-v3 plan with runtime architecture and realization v1; 0 all ready or already applied · 1 one or more blocked, or unexpected · 2 bad invocation · 3 `--captures` is not a directory · 4 `--library` is not a library checkout · 5 manifest missing/unreadable/invalid · 6 none blocked, but one or more deferred (canonical only proposed this run — promote first, then re-run) |
+| `capture-preflight.cjs` | Schema-v4 exact-identity/lifecycle plan; 0 ready, resumable, or reconciled · 1 blocked/unexpected · 2 bad invocation · 3 captures path invalid · 4 library invalid · 5 manifest invalid · 6 deferred pending canonical promotion |
+| `tracking-targets.cjs` | Deterministic `skip` / `issue-pending` / `write-ready` routing from an artifact/repository snapshot; 0 resolved · 1 unexpected · 2 bad invocation · 3 input invalid |
 
 Inputs *within* a run never crash the script: a missing artifact, an unreadable file, or an unexpected shape records a `{ code, message }` warning and the run continues with less evidence. Read the warnings — they are what the report's Gaps section is built from. A named input that was requested but cannot be used — an unreadable inventory, a structurally invalid manifest — exits on its own code instead, because every downstream answer would otherwise be meaningless.
 
@@ -254,7 +255,9 @@ Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
-**Batch input, serial execution.** `capture-preflight.cjs` checks every capture in one pass — catalog identity, runtime architecture, realization, library state, and the required Figma registry/checklist/commands. Its schema-v3 envelope returns additive `figmaPromotion` instructions and writes nothing. Components execute one at a time in the load-bearing order facade/types → tree/parts/hooks → stories → manifest/export sync → code-only verification → unpublished Figma promotion → adversarial/design review and fixes → journal/review evidence → full Figma and library gates. Only then may the next component begin.
+**Batch input, serial execution.** `capture-preflight.cjs` checks every capture in one pass — exact structural key, catalog identity, runtime architecture, realization, code/Figma/evidence state, and governed promotion surfaces. Its schema-v4 envelope writes nothing. Components resume at the first incomplete boundary and execute one at a time.
+
+**Tracking is automatic and conditional.** `tracking-targets.cjs` routes exact work sets. Analyze creates the evidence hub and a brain issue only when proposals exist; it never creates shared branches. Capture creates/reuses a client-agnostic library issue only for actionable preflight work, then creates `feat/<issue-number>-library-capture` only after exact issue, labels, clean aligned main, non-empty writes, and capabilities pass. Label reconciliation, issue creation/linking, and local branch creation do not pause for approval; commits, pushes, PRs, closure, publication, merge, and release still require separate authority.
 
 **Server first, not directive first.** Each architecture chooses `server`, `hybrid`, or `client` from concrete hydration needs. Server mode emits full HTML and has no client modules. Hybrid mode keeps a server facade plus a real server tree/branch/leaf implementation—the facade alone is not server output—and isolates state, handlers, effects, context, portals, timers, observers, browser APIs, or client-only dependencies in `.client.ts`/`.client.tsx` leaves. Client mode uses a client `index.ts` facade only when the public component itself cannot stay server-backed. Every `'use client'` file is at most 120 physical lines and remains SSR-safe; the directive does not disable React/Next server rendering.
 

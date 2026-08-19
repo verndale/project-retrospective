@@ -90,9 +90,9 @@ Verdict: Reject
 
 Implementations the next project should start from rather than rebuild. Drafted in `captures/`, executed into ui-design-library by `Action: capture`. A capture whose canonical is established by a `new-pattern` proposal in this run is a **deferred** capture — note that on its entry and link the proposal; `capture-preflight.cjs` holds it `deferred` until the pattern is promoted.
 
-### <Canonical Name>
+### <Canonical Name> [/ <Structural variant label>]
 
-`captures/<slug>.md` — from `<component directory in the analyzed project>`.
+`captures/<slug>[--<variant>].md` — from `<component directory in the analyzed project>`.
 
 - <Why this implementation, not just the concept, is worth keeping — cite a path.>
 - <The de-clienting headline: the largest thing the rewrite must strip.>
@@ -147,7 +147,7 @@ What this run could not see. Script warnings verbatim, then anything the mode it
 - **Headings are matched exactly.** `## Candidates (3 evaluated)` is not `## Candidates` and fails validation — keep the frozen headings bare and put counts in the Summary table.
 - **Every `### <Label>` under `## Candidates` needs one.** A label with no verdict fails validation.
 - **Promote candidates need a matching proposal file** at `proposals/<kebab-label>.md`.
-- **Every `### <Canonical Name>` under `## Captures` needs a matching file** at `captures/<kebab-canonical>.md`, and every file needs an entry. Validation fails in both directions — a capture the report does not list is how a component reaches the library with no evidence behind it.
+- **Every capture heading needs an exact file.** Default `### <Canonical Name>` maps to `captures/<kebab-canonical>.md`; alternate `### <Canonical Name> / <Variant label>` maps to `captures/<kebab-canonical>--<kebab-variant-label>.md`. Every file needs an entry.
 - **Capture entries carry no `Verdict:` line.** There is no triage axis: the entry's presence is the assertion. *Verdict* stays reserved for Candidates.
 - **`## Captures` is required at `full` scope even when nothing qualified.** Keep the heading and say so in a sentence, with no `### ` entries under it.
 - **`### Gotchas` / `### Tips` under `## Learnings` are optional.** Use them to separate a pitfall the next project should avoid from a practice it should adopt from the start; a finding that is neither, or both, stays a bare bullet under `## Learnings`. Never force the split. These H3s carry no `Verdict:` line and need no proposal or capture file — the downstream start pack surfaces them verbatim.

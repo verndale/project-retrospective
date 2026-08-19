@@ -1,30 +1,30 @@
 {
   "counts": {
-    "nodes": 107,
-    "edges": 263,
+    "nodes": 111,
+    "edges": 279,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
       "tooling-doc": 1,
-      "test": 12,
+      "test": 13,
       "authoring-spec": 1,
       "skill-readme": 1,
       "skill-reference": 18,
-      "skill-script": 10,
+      "skill-script": 11,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 26,
-      "wiki-plan": 8,
+      "wiki-journal": 27,
+      "wiki-plan": 9,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 27,
-      "covers": 22,
-      "links-to": 115,
-      "plan": 8,
-      "requires": 37,
-      "tests": 12,
-      "topic": 42
+      "covers": 24,
+      "links-to": 121,
+      "plan": 9,
+      "requires": 39,
+      "tests": 13,
+      "topic": 46
     }
   },
   "nodes": [
@@ -37,7 +37,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10728,
+      "bytes": 10929,
       "degree": 7
     },
     {
@@ -193,7 +193,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 46374,
+      "bytes": 51631,
       "degree": 2
     },
     {
@@ -206,7 +206,7 @@
       "prs": [],
       "issues": [],
       "bytes": 1900,
-      "degree": 10
+      "degree": 11
     },
     {
       "id": "scripts/tests/inventory.test.cjs",
@@ -265,8 +265,20 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7690,
+      "bytes": 7743,
       "degree": 3
+    },
+    {
+      "id": "scripts/tests/tracking-targets.test.cjs",
+      "label": "tracking-targets.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 9074,
+      "degree": 2
     },
     {
       "id": "scripts/tests/update-retrospective-register.test.cjs",
@@ -289,7 +301,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 40830,
+      "bytes": 41279,
       "degree": 2
     },
     {
@@ -457,7 +469,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 26315,
+      "bytes": 26640,
       "degree": 4
     },
     {
@@ -541,7 +553,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 12782,
+      "bytes": 13530,
       "degree": 3
     },
     {
@@ -589,7 +601,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7035,
+      "bytes": 7056,
       "degree": 2
     },
     {
@@ -618,15 +630,15 @@
     },
     {
       "id": "skills/project-retrospective/references/tracking-issues.md",
-      "label": "Tracking issues — one per repo the retro touches",
+      "label": "Tracking issues and local branches",
       "type": "skill-reference",
       "dir": "skills/project-retrospective/references",
       "topics": [],
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 4557,
-      "degree": 3
+      "bytes": 6757,
+      "degree": 4
     },
     {
       "id": "skills/project-retrospective/references/triage-schema.md",
@@ -709,7 +721,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 69259,
+      "bytes": 78230,
       "degree": 4
     },
     {
@@ -734,7 +746,7 @@
       "prs": [],
       "issues": [],
       "bytes": 12697,
-      "degree": 9
+      "degree": 10
     },
     {
       "id": "skills/project-retrospective/scripts/normalize-retrospectives.cjs",
@@ -773,6 +785,18 @@
       "degree": 4
     },
     {
+      "id": "skills/project-retrospective/scripts/tracking-targets.cjs",
+      "label": "tracking-targets.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 11257,
+      "degree": 3
+    },
+    {
       "id": "skills/project-retrospective/scripts/update-retrospective-register.cjs",
       "label": "update-retrospective-register.cjs",
       "type": "skill-script",
@@ -793,7 +817,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 47747,
+      "bytes": 48558,
       "degree": 4
     },
     {
@@ -805,7 +829,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 40566,
+      "bytes": 40568,
       "degree": 49
     },
     {
@@ -817,8 +841,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 9522,
-      "degree": 36
+      "bytes": 9817,
+      "degree": 37
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1261,6 +1285,21 @@
       "degree": 4
     },
     {
+      "id": "wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md",
+      "label": "Automate conditional retrospective tracking and capture lifecycle",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow",
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 2099,
+      "degree": 6
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -1407,6 +1446,21 @@
       "degree": 4
     },
     {
+      "id": "wiki/plans/2026-08-19-automate-retrospective-github-tracking.md",
+      "label": "Automate retrospective GitHub tracking, branches, lifecycle, and Figma delivery",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "retrospective-workflow",
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 5833,
+      "degree": 6
+    },
+    {
       "id": "wiki/plans/INDEX.md",
       "label": "Plan Audit",
       "type": "wiki-index",
@@ -1427,8 +1481,8 @@
         "57",
         "60"
       ],
-      "bytes": 3206,
-      "degree": 10
+      "bytes": 3474,
+      "degree": 11
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -1493,7 +1547,9 @@
         "runtime architecture",
         "server-first capture",
         "realization contract",
-        "WCAG capture"
+        "WCAG capture",
+        "structural variant",
+        "capture lifecycle"
       ],
       "prs": [],
       "issues": [
@@ -1502,8 +1558,8 @@
         "63",
         "60"
       ],
-      "bytes": 11221,
-      "degree": 25
+      "bytes": 11559,
+      "degree": 29
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -1517,7 +1573,8 @@
         "component inventory",
         "label resolution",
         "evidence triage",
-        "promote watch reject"
+        "promote watch reject",
+        "automatic tracking issues"
       ],
       "prs": [
         "70",
@@ -1548,8 +1605,8 @@
       "issues": [
         "57"
       ],
-      "bytes": 11621,
-      "degree": 44
+      "bytes": 12746,
+      "degree": 50
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1769,6 +1826,11 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/references/tracking-issues.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "skills/project-retrospective/scripts/adf-to-markdown.cjs",
       "type": "covers"
     },
@@ -1790,6 +1852,11 @@
     {
       "source": "wiki/topics/retrospective-workflow.md",
       "target": "skills/project-retrospective/scripts/resolve.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/scripts/tracking-targets.cjs",
       "type": "covers"
     },
     {
@@ -2059,7 +2126,7 @@
       "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/tracking-issues.md",
       "type": "links-to",
-      "count": 6,
+      "count": 9,
       "anchors": []
     },
     {
@@ -2274,6 +2341,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -2399,6 +2473,13 @@
       "anchors": []
     },
     {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-08-19-automate-retrospective-github-tracking.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
       "source": "wiki/topics/brain-promotion.md",
       "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
       "type": "links-to",
@@ -2491,6 +2572,13 @@
     },
     {
       "source": "wiki/topics/library-capture.md",
+      "target": "wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
       "target": "wiki/plans/2026-08-12-server-first-component-architecture.md",
       "type": "links-to",
       "count": 1,
@@ -2506,6 +2594,13 @@
     {
       "source": "wiki/topics/library-capture.md",
       "target": "wiki/plans/2026-08-18-governed-figma-capture-completion.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
+      "target": "wiki/plans/2026-08-19-automate-retrospective-github-tracking.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2568,6 +2663,13 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
       "type": "links-to",
       "count": 2,
@@ -2583,6 +2685,13 @@
     {
       "source": "wiki/topics/retrospective-workflow.md",
       "target": "wiki/plans/2026-07-31-stack-aware-inventory-discovery.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/plans/2026-08-19-automate-retrospective-github-tracking.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2663,6 +2772,11 @@
       "type": "plan"
     },
     {
+      "source": "wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md",
+      "target": "wiki/plans/2026-08-19-automate-retrospective-github-tracking.md",
+      "type": "plan"
+    },
+    {
       "source": "scripts/evals/graph-check.cjs",
       "target": "scripts/graph/build-graph.cjs",
       "type": "requires"
@@ -2729,6 +2843,11 @@
     },
     {
       "source": "scripts/tests/skill-conformance.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/tracking-targets.test.cjs",
       "target": "scripts/tests/helpers.cjs",
       "type": "requires"
     },
@@ -2838,6 +2957,11 @@
       "type": "requires"
     },
     {
+      "source": "skills/project-retrospective/scripts/tracking-targets.cjs",
+      "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
       "source": "skills/project-retrospective/scripts/update-retrospective-register.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
@@ -2895,6 +3019,11 @@
     {
       "source": "scripts/tests/skill-conformance.test.cjs",
       "target": "skills/project-retrospective/SKILL.md",
+      "type": "tests"
+    },
+    {
+      "source": "scripts/tests/tracking-targets.test.cjs",
+      "target": "skills/project-retrospective/scripts/tracking-targets.cjs",
       "type": "tests"
     },
     {
@@ -3068,6 +3197,16 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md",
+      "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
@@ -3115,6 +3254,16 @@
     {
       "source": "wiki/plans/2026-08-18-governed-figma-capture-completion.md",
       "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-08-19-automate-retrospective-github-tracking.md",
+      "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-08-19-automate-retrospective-github-tracking.md",
+      "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     }
   ]
