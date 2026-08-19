@@ -2,7 +2,7 @@
 date: 2026-08-18
 topics: [library-capture]
 plan: plans/2026-08-18-governed-figma-capture-completion.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/70
 issue: https://github.com/verndale/project-retrospective/issues/69
 ---
 # Complete captures with reviewed Figma promotion
