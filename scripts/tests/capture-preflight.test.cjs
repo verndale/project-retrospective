@@ -61,11 +61,28 @@ function patchArchitecture(captures, patch) {
   patchJsonSection(captures, 'Runtime architecture', patch);
 }
 
+function registerReviewedFigma(library, canonical, componentPath, variant = null) {
+  const registry = JSON.parse(readFile(library, 'figma/library.json'));
+  registry.components.push({
+    id: `${canonical.toLowerCase().replaceAll(' ', '-')}-reviewed`,
+    canonical,
+    ...(variant ? { variant } : {}),
+    componentPath,
+    figma: {
+      nodeId: '100:200',
+      nodeKey: 'stable-node-key',
+      review: { status: 'passed', passes: ['adversarial', 'design'] },
+    },
+  });
+  writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
+}
+
 function retarget(text, canonical, slug) {
   const symbol = canonical.replace(/[^A-Za-z0-9]+(.)?/g, (_, next) => (next ? next.toUpperCase() : ''));
   return text
     .replace(/\*\*Modal\*\* \(`modal`\)/, `**${canonical}** (\`${slug}\`)`)
-    .replace(/"canonical": "Modal"/, `"canonical": "${canonical}"`)
+    .replaceAll('"canonical": "Modal"', `"canonical": "${canonical}"`)
+    .replace('"componentKey": "modal"', `"componentKey": "${slug}"`)
     .replace(/"slug": "modal"/, `"slug": "${slug}"`)
     .replace(/"exportName": "Modal"/, `"exportName": "${symbol}"`)
     .replaceAll('Modal.types.ts', `${symbol}.types.ts`)
@@ -91,7 +108,6 @@ test('the envelope carries the documented key order', () => {
   const result = preflight(tempCaptures(), fixture('fake-library'));
   assert.deepEqual(Object.keys(result.json), [
     'schemaVersion',
-    'generatedAt',
     'captures',
     'library',
     'figmaPromotion',
@@ -101,7 +117,7 @@ test('the envelope carries the documented key order', () => {
     'counts',
     'warnings',
   ]);
-  assert.equal(result.json.schemaVersion, 3);
+  assert.equal(result.json.schemaVersion, 4);
   assert.deepEqual(result.json.figmaPromotion, {
     required: true,
     ready: true,
@@ -119,6 +135,8 @@ test('the envelope carries the documented key order', () => {
   assert.deepEqual(result.json.counts, {
     captures: 1,
     ready: 1,
+    figmaPending: 0,
+    evidencePending: 0,
     blocked: 0,
     skipped: 0,
     deferred: 0,
@@ -849,7 +867,7 @@ test('a half-written component directory is blocked, not overwritten', () => {
   assertBlocked(preflight(captures, fixture('fake-library')), 'library-partial');
 });
 
-test('an already-applied capture is skipped, not blocked', () => {
+test('existing code without reviewed Figma resumes as figma-pending', () => {
   const captures = tempCaptures();
   const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
   fs.rmSync(path.join(captures, 'modal.md'));
@@ -857,9 +875,102 @@ test('an already-applied capture is skipped, not blocked', () => {
   const result = preflight(captures, fixture('fake-library'));
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}${result.stderr}`);
   const record = only(result);
-  assert.equal(record.status, 'skipped');
+  assert.equal(record.status, 'figma-pending');
   assert.ok(record.library.files.includes('parts/BadgeDialog.client.tsx'));
   assert.deepEqual(record.library.missingModules, []);
+});
+
+test('reviewed Figma without an Applied marker resumes as evidence-pending', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  const library = tempFixture('fake-library');
+  registerReviewedFigma(library, 'Badge', 'components/badge');
+
+  const result = preflight(captures, library);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(only(result).status, 'evidence-pending');
+});
+
+test('code, reviewed Figma, and an Applied marker reconcile as skipped', () => {
+  const captures = tempCaptures();
+  const text = `${retarget(readFile(captures, 'modal.md'), 'Badge', 'badge')}\n## Applied\n\n\`\`\`json\n{\n  "status": "landed",\n  "componentPath": "components/badge",\n  "figma": { "nodeId": "100:200", "nodeKey": "stable-node-key" }\n}\n\`\`\`\n`;
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  const library = tempFixture('fake-library');
+  registerReviewedFigma(library, 'Badge', 'components/badge');
+
+  const result = preflight(captures, library);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(only(result).status, 'skipped');
+});
+
+test('code-complete Progress cannot get ahead of the library implementation', () => {
+  const captures = tempCaptures();
+  patchJsonSection(captures, 'Progress', () => ({
+    status: 'code-complete',
+    componentPath: 'components/modal',
+  }));
+  const result = preflight(captures, fixture('fake-library'));
+  assertBlocked(result, 'progress-library-drift');
+});
+
+test('authored lifecycle headings cannot silently degrade when their JSON fence is missing', () => {
+  for (const [heading, code] of [['Progress', 'progress-unparsable'], ['Applied', 'applied-unparsable']]) {
+    const captures = tempCaptures();
+    let source = readFile(captures, 'modal.md');
+    if (heading === 'Progress') {
+      const start = source.indexOf('## Progress');
+      const fence = source.indexOf('```json', start);
+      source = `${source.slice(0, fence)}not-json${source.slice(source.indexOf('\n```', fence) + 4)}`;
+    } else {
+      source += '\n## Applied\n\nlanded without governed metadata\n';
+    }
+    writeFile(captures, 'modal.md', source);
+    assertBlocked(preflight(captures, fixture('fake-library')), code);
+  }
+});
+
+test('Applied node identity must match the reviewed governed Figma registration', () => {
+  const captures = tempCaptures();
+  const source = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(
+    captures,
+    'badge.md',
+    `${source}\n## Applied\n\n\`\`\`json\n{\n  "status": "landed",\n  "componentPath": "components/badge",\n  "figma": { "nodeId": "wrong:node", "nodeKey": "wrong-key" }\n}\n\`\`\`\n`,
+  );
+  const library = tempFixture('fake-library');
+  registerReviewedFigma(library, 'Badge', 'components/badge');
+  const result = preflight(captures, library);
+  assertBlocked(result, 'applied-figma-drift');
+});
+
+test('an alternate uses the compound key and reports the default companion migration', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge')
+    .replace('"componentKey": "badge"', '"componentKey": "badge--compact"')
+    .replace('"variant": null', '"variant": "compact"')
+    .replace('"variantLabel": null', '"variantLabel": "Compact"')
+    .replace('"default": true', '"default": false,\n  "companionDefault": { "variant": "standard", "variantLabel": "Standard" }')
+    .replace('"slug": "badge",', '"slug": "badge",\n  "variant": "compact",');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge--compact.md', text);
+
+  const result = preflight(captures, fixture('fake-library'));
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const record = only(result);
+  assert.equal(record.status, 'ready');
+  assert.equal(record.componentKey, 'badge--compact');
+  assert.equal(record.componentPath, 'components/badge--compact');
+  assert.deepEqual(record.componentJson.variant, 'compact');
+  assert.equal(record.stories.title, 'Badge / Compact');
+  assert.deepEqual(record.companionWrites, [{
+    componentPath: 'components/badge',
+    componentJson: { variant: 'standard', default: true },
+    figmaRegistry: { variant: 'standard', variantLabel: 'Standard', default: true, familyPage: true },
+  }]);
 });
 
 test('applied inspection follows multiline imports and directives after comments', () => {
@@ -879,7 +990,7 @@ test('applied inspection follows multiline imports and directives after comments
   );
   const result = preflight(captures, library);
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.equal(only(result).status, 'skipped');
+  assert.equal(only(result).status, 'figma-pending');
 });
 
 test('planned filenames do not hide component manifest drift', () => {
@@ -1066,11 +1177,11 @@ test('a capture set declaring no provenance.run warns that the orphan check did 
 
 test('a mixed set reports every status in one plan', () => {
   // The headline claim is "one plan covering all of them" — exercise ready,
-  // blocked, skipped, and deferred together, since that combination drives the exit rule.
+  // blocked, figma-pending, and deferred together, since that combination drives the exit rule.
   const captures = tempCaptures();
   const base = readFile(captures, 'modal.md');
 
-  writeFile(captures, 'badge.md', retarget(base, 'Badge', 'badge')); //                already applied  → skipped
+  writeFile(captures, 'badge.md', retarget(base, 'Badge', 'badge')); //           code applied → figma-pending
   writeFile(captures, 'link.md', retarget(base, 'Link', 'link')); //                   partial dir      → blocked
   writeFile(captures, 'logo-ribbon.md', retarget(base, 'Logo ribbon', 'logo-ribbon')); // in-run proposal → deferred
   // modal.md stays as-is                                                        //                → ready
@@ -1079,7 +1190,7 @@ test('a mixed set reports every status in one plan', () => {
   assert.equal(result.status, 1, 'a set containing a blocked capture must exit 1 even with a deferred one present');
   const byFile = Object.fromEntries(result.json.components.map((c) => [c.file, c.status]));
   assert.deepEqual(byFile, {
-    'badge.md': 'skipped',
+    'badge.md': 'figma-pending',
     'link.md': 'blocked',
     'logo-ribbon.md': 'deferred',
     'modal.md': 'ready',
@@ -1087,8 +1198,10 @@ test('a mixed set reports every status in one plan', () => {
   assert.deepEqual(result.json.counts, {
     captures: 4,
     ready: 1,
+    figmaPending: 1,
+    evidencePending: 0,
     blocked: 1,
-    skipped: 1,
+    skipped: 0,
     deferred: 1,
     orphanedByRun: 0,
   });

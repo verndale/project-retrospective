@@ -13,7 +13,7 @@ The catalog defines the **Card** canonical. A capture records a project implemen
 
 Captures target the private `ui-design-library` repo, not `ui-design-brain`, and they are **drafts executed by `Action: capture`**, or by a human following the same procedure. A component lifted from a client project carries CMS types, client token names, and client copy; turning it into a library component is a rewrite. The capture identifies the candidate, cites its selection evidence, and enumerates the de-client work.
 
-Write one file per candidate at `captures/<kebab-canonical>.md` — a separate directory from `proposals/`, because a capture is a library change, not a catalog change. Each file pairs with a `### <Canonical Name>` entry under `## Captures` in `report.md`; `validate-report.cjs` fails when either half is missing.
+Write one file per exact implementation identity: default `captures/<kebab-canonical>.md`; structural alternate `captures/<kebab-canonical>--<variant>.md`. Captures remain separate from `proposals/` because a capture is a library change, not a catalog change.
 
 ## Choosing what to capture
 
@@ -41,6 +41,20 @@ component-capture
 ## Canonical
 
 **<Canonical Name>** (`<slug>`) — resolved via <name | alias `X` | new-pattern proposal in this run>.
+
+## Structural implementation
+
+```json
+{
+  "componentKey": "<slug or slug--variant>",
+  "canonical": "<Canonical Name>",
+  "variant": null,
+  "variantLabel": null,
+  "default": true
+}
+```
+
+For an alternate, set `variant` to its kebab identity, `variantLabel` to its human label, and `default` to `false`. When the existing bare default has no structural fields yet, add `"companionDefault": { "variant": "<default-variant>", "variantLabel": "<Default label>" }`; schema-v4 preflight emits the companion manifest/Figma-registry write rather than leaving the family half-migrated.
 
 ## Source
 
@@ -89,12 +103,14 @@ Replace each union string with one permitted value and list every module the rew
 
 ## Proposed library entry
 
-Path: `components/<slug>/`
+Path: `components/<componentKey>/`
 
 ```json
 {
   "canonical": "<Canonical Name>",
   "slug": "<slug>",
+  "variant": "<alternate variant, or named default variant when the family has alternates>",
+  "default": true,
   "framework": "react",
   "styling": "tailwind",
   "slots": ["<slot>", "<slot>"],
@@ -153,7 +169,9 @@ At capture time `declienting` mirrors `## De-client work`. At execution time it 
 
 This entry describes the intended **de-cliented** result, not the source component as found. Realization props, exact package-owned nodes and ancestry, cardinality and conditions, IDREF relationships, protected style slots, owned behaviors, WCAG/APG metadata, and governed consumer responsibilities must agree with the code the action will write. Every owned behavior uses one stable `id`, repeats it as `evidence`, and receives a story `play` assertion under that same evidence ID.
 
-`Runtime architecture` is an execution plan, not package metadata. `capture-preflight.cjs` validates and returns it separately in its schema-v3 plan; do not add it to `component.json`. `rendering` must equal the architecture mode.
+Omit `variant` and `default` for a single-implementation canonical. A named bare default carries both `variant` and `default: true`; a compound alternate carries `variant` and omits `default`.
+
+`Runtime architecture` is an execution plan, not package metadata. `capture-preflight.cjs` validates and returns it separately in its schema-v4 plan; do not add it to `component.json`. `rendering` must equal the architecture mode.
 
 Story plan — one story per meaningful state, since the story file is the library's API contract:
 
@@ -161,7 +179,29 @@ Story plan — one story per meaningful state, since the story file is the libra
 - `<Variant>` — <what it demonstrates>
 - `<Edge state>` — <empty, long content, missing optional slot>
 
-The story meta carries `title: '<Canonical Name>'` and `tags: ['maturity:candidate']`. That repo's `pnpm contracts` fails when the tag and `component.json`'s `maturity` disagree — the sidebar badge renders from the tag, so two sources for one fact drift silently.
+The default story meta carries `title: '<Canonical Name>'`; an alternate carries `title: '<Canonical Name> / <Variant label>'`. Both use `tags: ['maturity:candidate']`.
+
+## Progress
+
+```json
+{
+  "status": "pending"
+}
+```
+
+After verified code exists, replace it with `status: "code-complete"`, exact `componentPath`, verified commands, and any `blockedOn` capability. Preflight then resumes at Figma.
+
+## Applied
+
+Add only after code, reviewed Figma, and private evidence reconcile:
+
+```json
+{
+  "status": "landed",
+  "componentPath": "components/<componentKey>",
+  "figma": { "nodeId": "<stable node id>", "nodeKey": "<stable node key>" }
+}
+```
 
 ## Suggested commit
 
@@ -174,12 +214,13 @@ The scope is the component slug, not `library` — `ui-design-library` owns that
 
 - **Captures never write into the analyzed project, the catalog, or ai-orchestration.** A capture is executed into `ui-design-library` by `Action: capture`, and that action writes nowhere else.
 - **Key on the canonical slug.** The library is only deterministically usable if its keys are the same vocabulary the catalog resolves to. A capture with no canonical is not ready.
-- **Name the file after the canonical, not the project's label.** A capture of a project's `Tag` component whose canonical is **Badge** is `captures/badge.md`, and the parenthetical on its `## Canonical` line is `` `badge` ``. The report's `### Badge` entry, the filename, and that parenthetical must all agree — the library keys its component directories on the canonical slug, so a capture named after the label leads to a mis-slugged component.
+- **Name the file after the exact structural key, never the project's label.** Default Badge is `captures/badge.md`; a qualified compact implementation is `captures/badge--compact.md`. The canonical line always declares base slug `badge`. Never re-kebab `badge--compact`; doing so destroys the delimiter.
 - **`maturity: "candidate"`** on every capture. Promoting a candidate to a supported library component is a human decision made in that repo, after the rewrite and the story exist.
 - **The de-client list is required.** Name each coupling so the rewrite can be estimated and client-specific dependencies do not enter shared code.
 - **The runtime graph is also a deliverable.** Missing or inconsistent runtime architecture blocks capture. Do not use `client` merely because the source starts with `'use client'`; list the hydration reason and place the directive on the smallest leaves that need it.
 - **The realization is the intended de-cliented result.** Missing or inconsistent public props, DOM ownership, keyboard/focus/state/announcement behavior, WCAG 2.2 AA metadata, APG pattern, evidence IDs, protected style slots, or consumer responsibilities block capture. If Action changes the public API, DOM, keyboard model, or accessibility ownership, revise the capture and re-run preflight before writing the manifest.
 - **No client names, copy, or asset URLs in the capture body** beyond the provenance paths needed to find the source. The capture travels to a repo other projects read.
-- **One capture *file* per canonical per run — but never silently drop a second module.** When two components resolve to the same canonical, decide which case you have and record it in the report's `## Captures` prose and this capture's `## Reuse evidence`:
+- **One capture file per `(canonical, variant)` identity — never silently drop a second module.** When two components resolve to the same canonical, decide which case you have:
   - **Prop or visual variants of one component** (a wide Modal, a compact Card, a tone) fold into that single capture's `component.json.variants` array — one file, multiple entries. The golden `captures/modal.md` shows the shape (`"variants": ["default", "wide"]`).
-  - **A structurally distinct module** — a different `fingerprint.json` slot / affordance / role / interaction contract, *not* a difference in styling, size, colour, copy, or a prefix/suffix word — is not a variant even when it resolves to the same canonical: it misresolved, and was never really that canonical. Route it to its **own** canonical via a `new-pattern` proposal (it must still clear all four Promote tests), then draft its capture keyed to that proposed canonical; preflight reports it `deferred` until the proposal is promoted. The library keys one directory per canonical, so this is the only way two implementations coexist.
+  - **A structural alternate with the same role, affordance, and interaction semantics** gets a qualified import `components/<slug>--<variant>` and a qualified Figma master on the canonical family page.
+  - **Different role, affordance, or interaction semantics** means it is not that canonical. Route it through a `new-pattern` proposal instead of hiding a semantic split behind a structural variant.

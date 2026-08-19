@@ -67,7 +67,7 @@ const REQUIRED_SECTIONS = {
   'new-pattern': ['## Pattern draft', '## Manifest entry', '## Evidence', '## Integrity checklist delta', '## Suggested commit'],
   'new-alias': ['## Target', '## Alias', '## Consumer evidence', '## Edits', '## Suggested commit'],
   'guidance-edit': ['## Target file(s)', '## Edit', '## Incident evidence', '## Suggested commit'],
-  'component-capture': ['## Canonical', '## Source', '## Reuse evidence', '## De-client work', '## Proposed library entry', '## Suggested commit'],
+  'component-capture': ['## Canonical', '## Structural implementation', '## Source', '## Reuse evidence', '## De-client work', '## Runtime architecture', '## Proposed library entry', '## Progress', '## Suggested commit'],
 };
 
 // Categories the rubric never promotes. Matching here is advisory: the model may
@@ -548,7 +548,11 @@ function checkReport(dir, scope, noBrain, result) {
   // misleading "the report lists no captures" on top of the real failure.
   const capturesSection = topLevel.find((s) => s.heading === 'Captures');
   const captured = capturesSection
-    ? sections(capturesSection.body, 3).map((s) => ({ canonical: s.heading }))
+    ? sections(capturesSection.body, 3).map((s) => {
+        const [canonical, ...variantParts] = s.heading.split(' / ');
+        const variantLabel = variantParts.length > 0 ? variantParts.join(' / ') : null;
+        return { canonical, variantLabel };
+      })
     : [];
   const capturesSectionPresent = Boolean(capturesSection);
 
@@ -624,10 +628,19 @@ function checkProposalFile(file, manifestEntries, result, allowedTypes = PROPOSA
     } else {
       const expected = kebab(parsed.canonical);
       const stem = path.basename(file, '.md');
-      if (parsed.slug !== expected || stem !== expected) {
+      const structuralSection = sections(text, 2).find((s) => s.heading === 'Structural implementation');
+      const structuralJson = structuralSection ? fencedBlock(structuralSection.body, 'json') : null;
+      let structural = null;
+      try {
+        structural = structuralJson ? JSON.parse(structuralJson) : null;
+      } catch {
+        structural = null;
+      }
+      const componentKey = structural?.componentKey;
+      if (parsed.slug !== expected || componentKey !== stem || structural?.canonical !== parsed.canonical) {
         result.fail(
           'capture-canonical',
-          `${name} declares canonical "${parsed.canonical}" (kebab: "${expected}") but its slug is "${parsed.slug}" and its filename is "${stem}.md" — all three must agree`,
+          `${name} must declare base slug "${expected}" and Structural implementation componentKey "${stem}" for canonical "${parsed.canonical}"`,
         );
       }
     }
@@ -813,7 +826,8 @@ function checkCaptures(dir, captured, capturesSectionPresent, result) {
   // thing and never naming the duplicate.
   const claimed = new Set();
   for (const entry of captured) {
-    const expected = `${kebab(entry.canonical)}.md`;
+    const variant = entry.variantLabel ? kebab(entry.variantLabel) : null;
+    const expected = `${kebab(entry.canonical)}${variant ? `--${variant}` : ''}.md`;
     if (claimed.has(expected)) {
       result.fail('capture-parity', `"## Captures" lists more than one entry resolving to captures/${expected} (last was "${entry.canonical}")`);
       continue;

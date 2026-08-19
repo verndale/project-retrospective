@@ -5,10 +5,10 @@
  * Reads a run's whole `captures/` directory, checks every capture against the
  * ui-design-brain manifest and the state of a local ui-design-library checkout,
  * and emits one plan covering all of them: which are ready to execute, which are
- * blocked and why, and which are already applied. Its schema-v3 component record
+ * blocked and why, and which resume at code, Figma, or evidence. Its schema-v4 component record
  * emits the validated server-first architecture beside the exact `component.json`
- * object to write. Schema v3 also carries the intended de-cliented realization
- * and accessibility ownership. Architecture governs the rewrite and is never copied into the
+ * object to write. Schema v4 also carries the structural identity, lifecycle,
+ * intended de-cliented realization, and accessibility ownership. Architecture governs the rewrite and is never copied into the
  * library manifest.
  *
  * What it deliberately does NOT do:
@@ -151,6 +151,8 @@ const REALIZATION_PROTECTED_PROPERTIES = [
 ];
 const IDREF_ATTRIBUTES = ['aria-controls', 'aria-describedby', 'aria-labelledby', 'for'];
 const CONDITION_PREDICATES = ['present', 'truthy', 'equals', 'not-equals', 'non-empty'];
+const CAPTURE_PROGRESS_STATES = ['pending', 'code-complete'];
+const CAPTURE_APPLIED_STATES = ['landed'];
 
 // Semantic tokens are declared in component.json without the leading dashes, so
 // harvest the names the same way the library's own contract checker does.
@@ -738,11 +740,13 @@ function validateRealization(value, block) {
   return block.count() === before ? value : null;
 }
 
-function appliedMetadataIssues(dir, files, existing, expected) {
+function appliedMetadataIssues(dir, files, existing, expected, expectedStoryTitle) {
   const issues = [];
   const stableKeys = [
     'canonical',
     'slug',
+    'variant',
+    'default',
     'framework',
     'styling',
     'slots',
@@ -763,9 +767,9 @@ function appliedMetadataIssues(dir, files, existing, expected) {
   const story = files.find((file) => !file.includes('/') && file.endsWith('.stories.tsx'));
   if (story) {
     const source = fs.readFileSync(path.join(dir, story), 'utf8');
-    const escapedTitle = expected.canonical.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedTitle = expectedStoryTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     if (!new RegExp(`title\\s*:\\s*['"]${escapedTitle}['"]`).test(source)) {
-      issues.push(`the root story title does not match ${JSON.stringify(expected.canonical)}`);
+      issues.push(`the root story title does not match ${JSON.stringify(expectedStoryTitle)}`);
     }
     const maturity = existing?.maturity;
     if (typeof maturity !== 'string' || !source.includes(`maturity:${maturity}`)) {
@@ -994,6 +998,11 @@ function readCapture(file, ctx) {
     file: name,
     canonical: null,
     slug: stem,
+    componentKey: stem,
+    componentPath: `components/${stem}`,
+    variant: null,
+    variantLabel: null,
+    default: true,
     status: 'blocked',
     blockers: [],
     deferred: false,
@@ -1003,6 +1012,11 @@ function readCapture(file, ctx) {
     architecture: null,
     componentJson: null,
     stories: null,
+    structuralImplementation: null,
+    progress: { status: 'pending' },
+    applied: null,
+    companionWrites: [],
+    figma: null,
     tokens: { declared: [], undefined: [] },
   };
   const block = (code, message) => record.blockers.push({ code, message });
@@ -1022,7 +1036,7 @@ function readCapture(file, ctx) {
     return record;
   }
 
-  // Canonical, slug, filename — all three or the library gets a mis-slugged directory.
+  // Canonical, structural identity, and filename form one exact library key.
   const canonicalSection = topLevel.find((s) => s.heading === 'Canonical');
   const parsed = canonicalSection ? parseCanonicalLine(canonicalSection.body) : null;
   if (!parsed) {
@@ -1039,10 +1053,62 @@ function readCapture(file, ctx) {
   record.canonical = canonical;
   record.slug = expected;
 
-  if (declaredSlug !== expected || stem !== expected) {
+  const structuralSection = topLevel.find((s) => s.heading === 'Structural implementation');
+  const structuralJson = structuralSection ? fencedBlock(structuralSection.body, 'json') : null;
+  let structural = null;
+  if (!structuralJson) {
+    block('structural-implementation-missing', `${name} has no fenced json block under "## Structural implementation".`);
+  } else {
+    try {
+      structural = JSON.parse(structuralJson);
+    } catch (err) {
+      block('structural-implementation-unparsable', `${name} Structural implementation is not valid JSON: ${err.message}`);
+    }
+  }
+  if (!structural || typeof structural !== 'object' || Array.isArray(structural)) {
+    if (structuralJson) block('structural-implementation-unparsable', `${name} Structural implementation must be a JSON object.`);
+    structural = {};
+  }
+  const variant = structural.variant == null ? null : structural.variant;
+  const variantLabel = structural.variantLabel == null ? null : structural.variantLabel;
+  const isDefault = structural.default !== false;
+  if (!(variant === null || (typeof variant === 'string' && variant.length > 0 && libraryKebab(variant) === variant))) {
+    block('structural-variant', 'variant must be null or a non-empty kebab-case string.');
+  }
+  if (variant !== null && (typeof variantLabel !== 'string' || !variantLabel.trim())) {
+    block('structural-variant-label', 'a structural variant requires a non-empty variantLabel.');
+  }
+  if (structural.default !== true && structural.default !== false) {
+    block('structural-default', 'default must be a boolean.');
+  }
+  if (!isDefault && variant === null) {
+    block('structural-variant', 'an alternate structural implementation requires variant.');
+  }
+  const componentKey = isDefault ? expected : `${expected}--${variant}`;
+  if (structural.componentKey !== componentKey) {
+    block('component-key', `Structural implementation componentKey must equal ${JSON.stringify(componentKey)}.`);
+  }
+  if (structural.canonical !== canonical) {
+    block('structural-canonical', `Structural implementation canonical must equal ${JSON.stringify(canonical)}.`);
+  }
+  record.variant = variant;
+  record.variantLabel = variantLabel;
+  record.default = isDefault;
+  record.componentKey = componentKey;
+  record.componentPath = `components/${componentKey}`;
+  record.structuralImplementation = {
+    componentKey,
+    canonical,
+    variant,
+    variantLabel,
+    default: isDefault,
+    ...(structural.companionDefault ? { companionDefault: structural.companionDefault } : {}),
+  };
+
+  if (declaredSlug !== expected || stem !== componentKey) {
     block(
       'slug-mismatch',
-      `canonical "${canonical}" kebabs to "${expected}", but the declared slug is "${declaredSlug}" and the filename is "${stem}.md" — all three must agree.`,
+      `canonical "${canonical}" kebabs to base slug "${expected}" and structural identity requires "${componentKey}.md", but the declared slug is "${declaredSlug}" and the filename is "${stem}.md".`,
     );
   }
   if (libraryKebab(canonical) !== expected) {
@@ -1050,6 +1116,43 @@ function readCapture(file, ctx) {
       'kebab-divergence',
       `this repo kebabs "${canonical}" to "${expected}" but ui-design-library's own checker produces "${libraryKebab(canonical)}" — the component directory would fail its slug-equality contract.`,
     );
+  }
+
+  const progressSection = topLevel.find((s) => s.heading === 'Progress');
+  const progressJson = progressSection ? fencedBlock(progressSection.body, 'json') : null;
+  if (progressSection && !progressJson) {
+    block('progress-unparsable', `${name} Progress requires a fenced json block.`);
+  } else if (progressJson) {
+    try {
+      const progress = JSON.parse(progressJson);
+      if (!progress || !CAPTURE_PROGRESS_STATES.includes(progress.status)) {
+        block('progress-status', `Progress status must be one of ${CAPTURE_PROGRESS_STATES.join(', ')}.`);
+      } else if (progress.status === 'code-complete' && progress.componentPath !== `components/${componentKey}`) {
+        block('progress-component-path', `code-complete Progress componentPath must equal "components/${componentKey}".`);
+      } else {
+        record.progress = progress;
+      }
+    } catch (err) {
+      block('progress-unparsable', `${name} Progress is not valid JSON: ${err.message}`);
+    }
+  }
+  const appliedSection = topLevel.find((s) => s.heading === 'Applied');
+  const appliedJson = appliedSection ? fencedBlock(appliedSection.body, 'json') : null;
+  if (appliedSection && !appliedJson) {
+    block('applied-unparsable', `${name} Applied requires a fenced json block.`);
+  } else if (appliedJson) {
+    try {
+      const applied = JSON.parse(appliedJson);
+      if (!applied || !CAPTURE_APPLIED_STATES.includes(applied.status)) {
+        block('applied-status', `Applied status must equal ${CAPTURE_APPLIED_STATES.join(', ')}.`);
+      } else if (applied.componentPath !== `components/${componentKey}` || !applied.figma?.nodeId || !applied.figma?.nodeKey) {
+        block('applied-evidence', `landed Applied metadata requires componentPath "components/${componentKey}" and stable Figma nodeId/nodeKey.`);
+      } else {
+        record.applied = applied;
+      }
+    } catch (err) {
+      block('applied-unparsable', `${name} Applied is not valid JSON: ${err.message}`);
+    }
   }
 
   if (ctx.manifest) {
@@ -1122,6 +1225,12 @@ function readCapture(file, ctx) {
       `the proposed entry declares "${entry.canonical}" (${entry.slug}) but "## Canonical" declares "${canonical}" (${expected}).`,
     );
   }
+  if ((entry.variant ?? null) !== variant || Boolean(entry.default) !== (isDefault && variant !== null)) {
+    block(
+      'entry-structural-identity',
+      'the proposed entry variant/default fields must match Structural implementation; a bare default declares default:true only when it has a named structural variant.',
+    );
+  }
   if (!Array.isArray(entry.slots) || entry.slots.length === 0) {
     block('slots-empty', 'the proposed entry declares no slots; ui-design-library requires a non-empty slots array.');
   }
@@ -1159,6 +1268,8 @@ function readCapture(file, ctx) {
   record.componentJson = {
     canonical,
     slug: expected,
+    ...(variant !== null ? { variant } : {}),
+    ...(isDefault && variant !== null ? { default: true } : {}),
     framework: entry.framework || 'react',
     styling: entry.styling || 'tailwind',
     slots: Array.isArray(entry.slots) ? entry.slots : [],
@@ -1176,29 +1287,60 @@ function readCapture(file, ctx) {
     declienting: [],
     maturity: 'candidate',
   };
-  record.stories = { title: canonical, tag: 'maturity:candidate' };
+  record.stories = { title: isDefault ? canonical : `${canonical} / ${variantLabel}`, tag: 'maturity:candidate' };
 
-  const library = inspectLibraryDir(ctx.libraryDir, expected, record.architecture);
+  if (!isDefault) {
+    const defaultRead = readJsonSafe(path.join(ctx.libraryDir, 'components', expected, 'component.json'));
+    if (!defaultRead.ok) {
+      block('default-companion-missing', `alternate ${componentKey} requires the bare default components/${expected}/component.json.`);
+    } else if (defaultRead.value?.variant == null || defaultRead.value?.default !== true) {
+      const companion = structural.companionDefault;
+      if (!companion || typeof companion.variant !== 'string' || libraryKebab(companion.variant) !== companion.variant ||
+        typeof companion.variantLabel !== 'string' || !companion.variantLabel.trim()) {
+        block('default-companion-migration', 'the existing bare default has no structural identity; companionDefault requires kebab variant and variantLabel.');
+      } else {
+        record.companionWrites.push({
+          componentPath: `components/${expected}`,
+          componentJson: { variant: companion.variant, default: true },
+          figmaRegistry: { variant: companion.variant, variantLabel: companion.variantLabel, default: true, familyPage: true },
+        });
+      }
+    }
+  }
+
+  const library = inspectLibraryDir(ctx.libraryDir, componentKey, record.architecture);
   record.library = library;
+  if (record.progress.status === 'code-complete' && !library.complete) {
+    block(
+      'progress-library-drift',
+      `Progress claims code-complete, but components/${componentKey}/ is not a complete matching implementation.`,
+    );
+  }
+  if (record.applied && !library.complete) {
+    block(
+      'applied-library-drift',
+      `Applied claims landed, but components/${componentKey}/ is not a complete matching implementation.`,
+    );
+  }
   if (library.exists && library.complete) {
     // "Already applied" has to be decided on what the directory contains, not on
     // filenames alone: two projects capturing different canonicals that kebab to
     // the same slug would otherwise read as a no-op instead of a collision.
-    const existing = readJsonSafe(path.join(ctx.libraryDir, 'components', expected, 'component.json'));
+    const existing = readJsonSafe(path.join(ctx.libraryDir, 'components', componentKey, 'component.json'));
     if (!existing.ok) {
-      block('library-partial', `components/${expected}/component.json exists but could not be parsed: ${existing.error}`);
+      block('library-partial', `components/${componentKey}/component.json exists but could not be parsed: ${existing.error}`);
     } else if (existing.value?.canonical !== canonical) {
       block(
         'slug-occupied',
-        `components/${expected}/ already holds "${existing.value?.canonical}", not "${canonical}". Two canonicals kebab to the same slug — resolve it in the catalog before capturing.`,
+        `components/${componentKey}/ already holds "${existing.value?.canonical}", not "${canonical}". Resolve the occupied structural key before capturing.`,
       );
     } else {
-      const dir = path.join(ctx.libraryDir, 'components', expected);
-      const drift = appliedMetadataIssues(dir, library.files, existing.value, record.componentJson);
+      const dir = path.join(ctx.libraryDir, 'components', componentKey);
+      const drift = appliedMetadataIssues(dir, library.files, existing.value, record.componentJson, record.stories.title);
       if (drift.length > 0) {
         block(
           'library-drift',
-          `components/${expected}/ has the planned files but does not match this capture: ${drift.join('; ')}.`,
+          `components/${componentKey}/ has the planned files but does not match this capture: ${drift.join('; ')}.`,
         );
       }
     }
@@ -1206,7 +1348,52 @@ function readCapture(file, ctx) {
     // else blocks it. A mis-slugged capture that happens to point at an occupied
     // directory is still mis-slugged, and reporting it as "already applied"
     // would hide exactly the defect this script exists to catch.
-    if (record.blockers.length === 0) record.status = record.deferred ? 'deferred' : 'skipped';
+    if (record.blockers.length === 0) {
+      const registryRead = readJsonSafe(path.join(ctx.libraryDir, 'figma/library.json'));
+      const registrations = registryRead.ok && Array.isArray(registryRead.value?.components)
+        ? registryRead.value.components
+        : [];
+      const registration = registrations.find((candidate) =>
+        candidate?.componentPath === `components/${componentKey}` &&
+        candidate?.canonical === canonical &&
+        (candidate?.variant ?? null) === variant,
+      ) || null;
+      const reviewPasses = registration?.figma?.review?.passes ?? [];
+      const figmaComplete = Boolean(
+        registration?.figma?.nodeId &&
+        registration?.figma?.nodeKey &&
+        registration?.figma?.review?.status === 'passed' &&
+        reviewPasses.includes('adversarial') &&
+        reviewPasses.includes('design'),
+      );
+      record.figma = registration
+        ? {
+            registrationId: registration.id ?? null,
+            complete: figmaComplete,
+            nodeId: registration.figma?.nodeId ?? null,
+            nodeKey: registration.figma?.nodeKey ?? null,
+          }
+        : { registrationId: null, complete: false, nodeId: null, nodeKey: null };
+      if (record.applied && (
+        !figmaComplete ||
+        record.applied.figma.nodeId !== record.figma.nodeId ||
+        record.applied.figma.nodeKey !== record.figma.nodeKey
+      )) {
+        block(
+          'applied-figma-drift',
+          'Applied Figma nodeId/nodeKey must exactly match the reviewed governed registry entry.',
+        );
+      }
+      if (record.blockers.length === 0) {
+        record.status = record.deferred
+          ? 'deferred'
+          : !figmaComplete
+            ? 'figma-pending'
+            : !record.applied
+              ? 'evidence-pending'
+              : 'skipped';
+      }
+    }
     return record;
   }
   if (library.exists) {
@@ -1219,7 +1406,7 @@ function readCapture(file, ctx) {
     ].filter(Boolean);
     block(
       'library-partial',
-      `components/${expected}/ already exists but does not match the validated runtime architecture: ${problems.join(', ') || 'incomplete metadata'}. Finish or remove it before applying this capture.`,
+      `components/${componentKey}/ already exists but does not match the validated runtime architecture: ${problems.join(', ') || 'incomplete metadata'}. Finish or remove it before applying this capture.`,
     );
   }
 
@@ -1248,7 +1435,7 @@ function findOrphanedByRun(libraryDir, records, warnings) {
     return [];
   }
 
-  const captured = new Set(records.map((r) => r.slug));
+  const captured = new Set(records.map((r) => r.componentKey));
   const componentsDir = path.join(libraryDir, 'components');
   const orphans = [];
 
@@ -1474,6 +1661,8 @@ function main() {
   const counts = {
     captures: components.length,
     ready: components.filter((c) => c.status === 'ready').length,
+    figmaPending: components.filter((c) => c.status === 'figma-pending').length,
+    evidencePending: components.filter((c) => c.status === 'evidence-pending').length,
     blocked: components.filter((c) => c.status === 'blocked').length,
     skipped: components.filter((c) => c.status === 'skipped').length,
     deferred: components.filter((c) => c.status === 'deferred').length,
@@ -1482,8 +1671,7 @@ function main() {
 
   writeOut(
     {
-      schemaVersion: 3,
-      generatedAt: new Date().toISOString(),
+      schemaVersion: 4,
       captures: capturesDir,
       library: libraryDir,
       figmaPromotion,

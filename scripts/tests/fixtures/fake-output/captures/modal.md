@@ -8,6 +8,18 @@ component-capture
 
 **Modal** (`modal`) — resolved via name.
 
+## Structural implementation
+
+```json
+{
+  "componentKey": "modal",
+  "canonical": "Modal",
+  "variant": null,
+  "variantLabel": null,
+  "default": true
+}
+```
+
 ## Source
 
 - Entry: `src/components/ui/modal/Modal.tsx`
@@ -137,6 +149,14 @@ Story plan — one story per meaningful state, since the story file is the libra
 - `Default` — title, body, and one action.
 - `Wide` — the `wide` variant at the breakpoint where the layout changes.
 - `NoActions` — the optional `actions` slot omitted.
+
+## Progress
+
+```json
+{
+  "status": "pending"
+}
+```
 
 ## Suggested commit
 

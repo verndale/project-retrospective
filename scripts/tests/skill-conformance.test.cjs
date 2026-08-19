@@ -168,7 +168,8 @@ test('capture completion requires governed unpublished Figma review and forbids 
   assert.match(capture, /publicationStatus: "unpublished"/);
   assert.match(capture, /adversarial pass/);
   assert.match(capture, /design pass/);
-  assert.match(capture, /code complete, Figma promotion blocked/);
+  assert.match(capture, /persist `## Progress` as `code-complete`/);
+  assert.match(capture, /report `figma-pending`/);
   assert.match(capture, /do not create a Code Connect template/);
   assert.match(capture, /pnpm figma:coverage/);
   assert.match(capture, /pnpm figma:validate/);

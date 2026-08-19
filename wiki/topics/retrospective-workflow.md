@@ -1,6 +1,6 @@
 ---
-aliases: [analyze path, retrospective run, component inventory, label resolution, evidence triage, promote watch reject]
-covers: [skills/project-retrospective/SKILL.md, skills/project-retrospective/scripts/inventory.cjs, skills/project-retrospective/scripts/resolve.cjs, skills/project-retrospective/scripts/validate-report.cjs, skills/project-retrospective/scripts/normalize-specs.cjs, skills/project-retrospective/scripts/normalize-retrospectives.cjs, skills/project-retrospective/scripts/update-retrospective-register.cjs, skills/project-retrospective/scripts/adf-to-markdown.cjs, skills/project-retrospective/references/spec-capture.md, skills/project-retrospective/references/team-retrospectives.md]
+aliases: [analyze path, retrospective run, component inventory, label resolution, evidence triage, promote watch reject, automatic tracking issues]
+covers: [skills/project-retrospective/SKILL.md, skills/project-retrospective/scripts/inventory.cjs, skills/project-retrospective/scripts/resolve.cjs, skills/project-retrospective/scripts/validate-report.cjs, skills/project-retrospective/scripts/tracking-targets.cjs, skills/project-retrospective/scripts/normalize-specs.cjs, skills/project-retrospective/scripts/normalize-retrospectives.cjs, skills/project-retrospective/scripts/update-retrospective-register.cjs, skills/project-retrospective/scripts/adf-to-markdown.cjs, skills/project-retrospective/references/spec-capture.md, skills/project-retrospective/references/team-retrospectives.md, skills/project-retrospective/references/tracking-issues.md]
 ---
 # Retrospective workflow — Design History
 
@@ -17,9 +17,12 @@ The analyze path: what a completed project is read for, how its labels are resol
 - The report's three downstream sections each pair with one artifact and one repo: `## Candidates` with `proposals/` for ui-design-brain, `## Captures` with `captures/` for ui-design-library, `## Learnings` with `orchestration-drafts.md` for ai-orchestration.
 - Team retrospectives are an optional evidence source and an append-only backfill scope. Explicit pages are included, automatic discovery stays inside seeded spaces, and every candidate is reconciled as included or excluded. Retrospective evidence can affect component triage only when it names an inventoried component and agrees with strong non-code-scan as-built evidence.
 - Retrospective actions receive stable IDs, a destination, owner, next step, and lifecycle state. Missing owners escalate to `needs-owner`; `done` needs proof and `wont-do` needs rationale. Raw pages, people, and issue links stay in the private evidence repo, while shared-repo work moves only through client-neutral proposals, captures, and orchestration drafts.
+- `tracking-targets.cjs` deterministically separates skip, issue-pending, and write-ready targets. Analyze branches only evidence; promote branches brain only after approval and a non-empty write set; capture branches library only for actionable writes with all capabilities. An executable branch name is withheld while authentication, labels, issue identity, clean main, or alignment is unresolved.
+- Governed targets file or reuse exact open issues automatically with sanctioned labels. This does not authorize commits, pushes, PRs, closure, Figma publication, merging, or releases.
 
 ## Decisions
 
+- 2026-08-19 — Made issue filing and local branch creation automatic only after deterministic target resolution; artifact presence alone cannot create a shared-repository branch, and blocked targets expose no executable branch instruction ([plan](../plans/2026-08-19-automate-retrospective-github-tracking.md), [journal](../journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md)).
 - 2026-08-19 — feat(project-retrospective): Enhance Figma promotion preflight checks ([PR #70](https://github.com/verndale/project-retrospective/pull/70))
 - 2026-08-13 — feat(capture): validate realization metadata ([PR #67](https://github.com/verndale/project-retrospective/pull/67))
 - 2026-08-13 — feat(capture): enforce realization schema v3 (#63) ([PR #64](https://github.com/verndale/project-retrospective/pull/64))

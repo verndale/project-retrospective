@@ -19,7 +19,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [report.md template](../../skills/project-retrospective/references/report-template.md)
 - [Spec capture](../../skills/project-retrospective/references/spec-capture.md)
 - [Team retrospective capture](../../skills/project-retrospective/references/team-retrospectives.md)
-- [Tracking issues — one per repo the retro touches](../../skills/project-retrospective/references/tracking-issues.md)
+- [Tracking issues and local branches](../../skills/project-retrospective/references/tracking-issues.md)
 - [triage.json schema](../../skills/project-retrospective/references/triage-schema.md)
 - [wiki client page template](../../skills/project-retrospective/references/wiki-client-template.md)
 - [Wiki feed](../../skills/project-retrospective/references/wiki-feed.md)

@@ -16,12 +16,13 @@ Every agent plan executed for this repo, gathered from Claude plan stores and Co
 - **out-of-scope** — targets another repo/product.
 - **not-verified** — recovered by `pnpm wiki:find-plans --archive`; nobody has checked yet whether it shipped.
 
-Totals: 7 implemented · 1 partial (8 plans).
+Totals: 8 implemented · 1 partial (9 plans).
 
 ## Plans
 
 | Date | Plan | Status | Evidence | Topics |
 | --- | --- | --- | --- | --- |
+| 2026-08-19 | [Automate retrospective GitHub tracking, branches, lifecycle, and Figma delivery](2026-08-19-automate-retrospective-github-tracking.md) | implemented | working tree, deterministic resolver and lifecycle tests | retrospective-workflow, library-capture |
 | 2026-08-18 | [Governed Figma completion for Action capture](2026-08-18-governed-figma-capture-completion.md) | implemented | [issue #69](https://github.com/verndale/project-retrospective/issues/69), preflight/conformance tests, [PR #70](https://github.com/verndale/project-retrospective/pull/70) | library-capture |
 | 2026-07-26 | [project-retrospective — critique + build plan](2026-07-26-project-retrospective-critique-build-plan.md) | implemented | commit caebd12, commit 012a6f0, [PR #1](https://github.com/verndale/project-retrospective/pull/1) | skill-authoring, retrospective-workflow, brain-promotion |
 | 2026-07-26 | [Port the knowledge-graph + context-wiki subsystem into project-retrospective](2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) | implemented | [PR #1](https://github.com/verndale/project-retrospective/pull/1) | graph-wiki-subsystem |

@@ -1,47 +1,89 @@
-# Tracking issues — one per repo the retro touches
+# Tracking issues and local branches
 
-At the end of an `Action: analyze` run (Workflow Step 7), file a GitHub issue for each repo the run gives pending work, using the `github-issue-creator` skill — it drafts the issue, shows you the exact title and body, waits for your yes, and only then runs `gh issue create`. Never file silently. Filing reaches outside the working tree: get the maintainer's go-ahead first.
+GitHub tracking is deterministic and automatic. An explicit retrospective target authorizes sanctioned label reconciliation, exact open-issue reuse, issue creation, issue linking, and the required local `git switch -c`. Do not pause for approval. This authority does not include commits, pushes, PRs, issue closure, Figma publication, merges, or releases.
 
-These issues are the tracking counterpart to the branches the skill's write-actions create off `main`: the **evidence** hub records the whole run, and the **brain** and **library** issues track the promote/capture work still to apply. `ai-orchestration` is out of scope here — its pipeline drafts are paste-ready notes the maintainer carries over by hand, with no issue and no branch.
+Run `tracking-targets.cjs` before a write and again after issue/repository checks. It emits `skip`, `issue-pending`, or `write-ready` for every repository, with artifact IDs, an opaque `issueMatchKey`, `issueRequired`, labels, the exact open issue when supplied, blockers, and the required local branch. Scripts decide the work set; the model writes the five-section issue prose. Never file from `issue-pending` unless `issueRequired` is true; evidence prewrite failures use that state only to stop the branch.
 
-## Which repos get an issue
+## Contents
 
-Skip a repo with no pending work.
+- Target matrix
+- Deterministic sequence
+- Issue content
+- Sanctioned labels
+- Evidence hub and downstream linking
+- Failure behavior
 
-| Repo | File an issue when | Title | Names the client? |
+## Target matrix
+
+| Repository | Issue trigger | Local branch trigger | Labels |
 |---|---|---|---|
-| `verndale/ui-design-evidence` | the run landed under a `Data` = evidence checkout (Step 6 ran) | `[Feature] Record the <Client> <date> retrospective run` | yes — private repo |
-| `verndale/ui-design-brain` | the run drafted catalog proposals (`proposals/*.md`) | `[Feature] <short pattern/alias summary>` | no — shared/public |
-| `verndale/ui-design-library` | the run drafted captures (`captures/*.md`) | `[Feature] <short capture summary>` | no — shared/public |
+| `verndale/ui-design-evidence` | a validated analyze or retrospective-ingestion run is written in the evidence checkout | before the run/wiki's first write | `Feature`, `area: retrospectives` |
+| `verndale/ui-design-brain` | at least one pending catalog proposal exists | promote has an approved proposal and a non-empty brain write set | `Feature`, `area: catalog` |
+| `verndale/ui-design-library` | capture preflight reports actionable library work | capture has a non-empty library write set and required capabilities | `Feature`, `area: components` |
+| `ai-orchestration` | never | never | none |
 
-- **ui-design-library** gets neither a branch nor an issue unless the run flagged a capture. No captures → no `Action: capture`, no library branch, no library issue.
-- **ai-orchestration** gets no issue.
-- In the home fallback (no `Data` = evidence checkout), there is no evidence repo to record — skip the evidence hub and say so; the brain and library issues still apply when their work exists.
+- Analyze never creates brain or library branches.
+- A proposal creates brain tracking, never library tracking.
+- A draft capture does not itself create library tracking. `ready` or `figma-pending` work from schema-v4 capture preflight does; `deferred`, `blocked`, `skipped`, `landed`, and evidence-only reconciliation do not.
+- A missing Figma writer keeps actionable work `issue-pending` and creates no empty library branch.
+- Home fallback creates no evidence issue or branch.
 
-## Title and body
+## Deterministic sequence
 
-Title is the github-issue-creator `[Feature] <summary>` format. The body uses that skill's fixed five sections (Summary / Context / Details / Expected Outcome / Additional Notes). Put the repo's pending work as a checklist in **Details**:
+1. Write a JSON snapshot of the action, exact artifact IDs, capture statuses, existing exact open issues, repository readiness, and capabilities. Analyze/ingest use `stage: "prewrite"` before the evidence write and `stage: "postvalidate"` only after the run validator passes. Run:
 
-- **brain** — one checkbox per proposal in `proposals/*.md`: each new pattern and each new alias to apply, named by canonical.
-- **library** — one checkbox per capture in `captures/*.md`, named by canonical.
+   ```bash
+   node <skill>/scripts/tracking-targets.cjs --input <snapshot.json> --pretty
+   ```
 
-The brain and library issues are **client-agnostic** — the same data boundary the proposals and downstream wiki follow. Describe the pattern, alias, or capture and its recurrence; never the client name, the run slug, retrospective source URLs, action owners, private issue links, or client copy. Team-retrospective actions reach these shared repositories only through an already-approved proposal, capture, or orchestration draft; never file a shared issue straight from raw retrospective content.
+2. On analyze/ingest `prewrite`, create only the evidence branch emitted as `write-ready`; do not file the evidence or brain issue yet. On `postvalidate`, each `issue-pending` target is authorized: reconcile only the sanctioned labels, search open issues for the exact `Tracking key: <issueMatchKey>` line, and reuse it or use `github-issue-creator` to file immediately without a confirmation pause.
+3. Link a later library issue from the private evidence hub. Never put the private hub URL or run identity in the shared library issue.
+4. Before a promote/capture target becomes `write-ready`, require successful GitHub authentication/issue creation, exact labels, a clean local `main`, and local `main` aligned with `origin/main`. Evidence prewrite also requires authentication, exact labels, clean main, and alignment, but its hub issue is deliberately post-validation. Rerun the resolver with those checks and the exact issue number where an issue is required.
+5. Create only the emitted branch and only while the target is `write-ready`:
+   - Evidence: `feat/<project>-<date>-run`
+   - Brain: `feat/<issue-number>-catalog-promotion`
+   - Library: `feat/<issue-number>-library-capture`
+6. Keep the branch local. Stop at handback with nothing committed or pushed.
 
-## Labels
+Compute a branch from actual planned writes, never artifact presence alone. If the work set becomes empty after preflight, do not create the branch.
 
-Label sets differ per repo, so run `gh label list --repo <owner>/<repo>` first. Then:
+## Issue content
 
-- **Type** — `Feature` on `ui-design-brain`, `ui-design-library`, and `ui-design-evidence`.
-- **Area** — one label in the `area: <area>` convention (a space after the colon, lowercase): `area: catalog` (brain), `area: components` (library). Reuse an existing area label when one fits; create one in the `area: <area>` format when none does. Never apply a label the repo lacks.
+Use the github-issue-creator `[Feature] <summary>` title and its fixed five body sections: Summary, Context, Details, Expected Outcome, and Additional Notes.
 
-## The evidence hub
+Put `Tracking key: <issueMatchKey>` on its own line in Additional Notes. This opaque repository-plus-artifact-set key, not a mutable title, defines an exact match.
 
-`ui-design-evidence` is private, so its issue alone may name the client and cite run paths. It uses the same github-issue-creator five sections as the others — map the run-record content into them:
+- Brain Details: one checkbox per pending proposal, named by client-agnostic canonical/alias and proposal type.
+- Library Details: one checkbox per actionable exact `(canonical, variant)` capture identity.
+- Reuse an exact matching open issue instead of creating a duplicate.
 
-- **Summary** — the run: `<Client> <project-slug> <date>`.
-- **Context** — that this records a completed retrospective run, on the run branch `feat/<project>-<date>-run`.
-- **Details** — what's included: the run outputs (`runs/<project-slug>/<date>/`) and the wiki feed Step 6 wrote; link the brain issue, and the library issue when one was filed. When the run contains `retrospective-actions.json`, add one checkbox per not-done action, prefixed by its deterministic action ID and naming its destination, owner (or `needs-owner`), and next step. Link the living `wiki/actions/<client-slug>/<project-slug>.md` register rather than copying private source text.
-- **Expected Outcome** — the run is recorded and its downstream issues applied.
-- **Additional Notes** — anything else, or "None".
+Brain and library content is client-agnostic. Describe the pattern, alias, component, structural import, and recurrence; never include client names, run slugs, private URLs, owners, source copy, or client paths.
 
-The evidence-hub checklist mirrors the run at filing time; the private action register remains canonical for later owner and lifecycle changes. A `needs-owner` item is never treated as informational or complete merely because the issue exists.
+## Sanctioned labels
+
+Retrospective automation may create or repair only these exact definitions, idempotently. It must not modify unrelated labels.
+
+| Repository | Label | Color | Description |
+|---|---|---|---|
+| all three | `Feature` | `0E8A16` | `New feature or request` |
+| evidence | `area: retrospectives` | `1D76DB` | `Retrospective runs, lifecycle records, and downstream tracking` |
+| evidence | `area: tooling` | `C5DEF5` | `Repository tooling, build, CI, linting, and developer workflows` |
+| brain | `area: catalog` | `1D76DB` | `Pattern catalog content, aliases, and manifest` |
+| brain | `area: tooling` | `C5DEF5` | `Repository tooling, build, CI, linting, and developer workflows` |
+| library | `area: components` | `1D76DB` | `Component library implementations, contracts, and Figma promotion` |
+
+## Evidence hub and downstream linking
+
+The evidence issue alone may name the client and run. Its five sections record:
+
+- Summary: `<Client> <project-slug> <date>`.
+- Context: the completed run and `feat/<project>-<date>-run` branch.
+- Details: run/wiki artifacts, downstream issue links, and not-done retrospective actions from the private living register.
+- Expected Outcome: the run is recorded and downstream work reaches `landed`.
+- Additional Notes: other private handoff context or `None`.
+
+Deferred captures remain only in this hub. When a later capture preflight makes one actionable, create/reuse the library issue automatically and append its URL to the hub automatically. The shared issue must not link back to the private hub.
+
+## Failure behavior
+
+Authentication/issue failure, label failure, dirty or stale main, and missing required capability stop before branch creation. Diagnose the condition and return it; do not ask for approval and do not downgrade it to a successful no-op. Publication actions remain separately authorized.
