@@ -408,9 +408,19 @@ function addCaptureEntry(dir, canonical) {
   writeFile(dir, 'report.md', report);
 }
 
+function addSourceParity(dir, canonical, componentKey) {
+  const artifact = JSON.parse(readFile(dir, 'source-parity/modal.json'));
+  artifact.componentKey = componentKey;
+  artifact.canonical = canonical;
+  artifact.capture = `captures/${componentKey}.md`;
+  artifact.observations[0].id = `sp-${componentKey}-001`;
+  writeFile(dir, `source-parity/${componentKey}.json`, `${JSON.stringify(artifact, null, 2)}\n`);
+}
+
 test('a well-formed component capture passes', () => {
   const dir = tempOutput();
   writeFile(dir, 'captures/link.md', captureFile('Link', 'link'));
+  addSourceParity(dir, 'Link', 'link');
   addCaptureEntry(dir, 'Link');
   const result = validate(dir);
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
@@ -491,6 +501,7 @@ test('a bolded alias on the canonical line is not mistaken for the canonical', (
 test('a run that captured nothing passes with the section still present', () => {
   const dir = tempOutput();
   fs.rmSync(path.join(dir, 'captures'), { recursive: true });
+  fs.rmSync(path.join(dir, 'source-parity'), { recursive: true });
   writeFile(
     dir,
     'report.md',
@@ -506,6 +517,7 @@ test('a run that captured nothing passes with the section still present', () => 
 test('an empty captures/ directory warns but does not fail', () => {
   const dir = tempOutput();
   fs.rmSync(path.join(dir, 'captures/modal.md'));
+  fs.rmSync(path.join(dir, 'source-parity/modal.json'));
   writeFile(
     dir,
     'report.md',
@@ -517,6 +529,22 @@ test('an empty captures/ directory warns but does not fail', () => {
   const result = validate(dir, ['--json']);
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
   assert.ok(result.json.warnings.some((w) => w.check === 'capture-empty'));
+});
+
+test('source parity cannot remain when a run has no captures', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'captures/modal.md'));
+  writeFile(
+    dir,
+    'report.md',
+    readFile(dir, 'report.md').replace(
+      /## Captures\n[\s\S]*?\n## Learnings/,
+      '## Captures\n\nNo implementation in this project met the capture bar.\n\n## Learnings',
+    ),
+  );
+  const result = validate(dir, ['--json']);
+  assert.equal(result.status, 1);
+  assert.ok(result.json.failures.some((failure) => failure.check === 'source-parity'));
 });
 
 test('--scope candidates does not require the Captures section', () => {

@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "componentKey": "modal",
+  "canonical": "Modal",
+  "capture": "captures/modal.md",
+  "status": "cleared",
+  "remediationStatus": "not-required",
+  "sourceSnapshot": {
+    "project": "synthetic-project",
+    "run": "runs/synthetic-project/2026-01-01/",
+    "entry": "src/components/ui/modal/Modal.tsx",
+    "revision": {
+      "strategy": "legacy-untracked",
+      "commit": null,
+      "inventoryGeneratedAt": "2026-01-01T00:00:00.000Z"
+    },
+    "citations": [
+      {
+        "id": "src-modal",
+        "path": "src/components/ui/modal/Modal.tsx",
+        "startLine": 1,
+        "endLine": 4,
+        "sha256": "87eb41a469aecf14cc6894746fe5666216f660b3d5a3806b3426c9d9af03f8f1"
+      }
+    ]
+  },
+  "sourceInspection": {
+    "entryPoints": {
+      "status": "reviewed",
+      "paths": ["src/components/ui/modal/Modal.tsx"]
+    },
+    "tests": {
+      "status": "not-present",
+      "paths": []
+    },
+    "styles": {
+      "status": "not-present",
+      "paths": []
+    },
+    "buildPacks": {
+      "status": "not-present",
+      "paths": []
+    },
+    "directImporters": {
+      "status": "not-present",
+      "paths": []
+    },
+    "composedConsumers": {
+      "status": "not-present",
+      "paths": []
+    }
+  },
+  "coverage": {
+    "sourceBehavior": "reviewed",
+    "sourceVisualLayout": "reviewed",
+    "sourceInvariants": "reviewed",
+    "normalizedCode": "reviewed",
+    "storybook": "reviewed",
+    "figma": "reviewed",
+    "aiRegistry": "reviewed"
+  },
+  "observations": [
+    {
+      "id": "sp-modal-001",
+      "kind": "behavior",
+      "sourceFact": "The dialog owns its open state and accessible modal semantics.",
+      "sourceValues": {},
+      "sourceCitationIds": ["src-modal"],
+      "normalizedEvidence": {
+        "code": ["components/modal/Modal.tsx"],
+        "storybook": ["Modal / Default"],
+        "figma": ["Modal master"],
+        "aiRegistry": ["canonical Modal"]
+      },
+      "comparison": "preserved",
+      "classification": null,
+      "decision": "document",
+      "implementationStatus": "not-required",
+      "targetSurfaces": []
+    }
+  ],
+  "reviews": {
+    "sourceParity": {
+      "status": "passed",
+      "phase": "decision",
+      "evidence": ["synthetic source-parity review"]
+    },
+    "adversarial": {
+      "status": "not-required",
+      "evidence": []
+    },
+    "design": {
+      "status": "not-required",
+      "evidence": []
+    }
+  }
+}

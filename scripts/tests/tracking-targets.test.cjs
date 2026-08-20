@@ -8,6 +8,7 @@ const path = require('node:path');
 const { runJson } = require('./helpers.cjs');
 
 const READY_REPOS = {
+  'project-retrospective': { authenticated: true, labelsReady: true, mainClean: true, mainAligned: true },
   evidence: { authenticated: true, labelsReady: true, mainClean: true, mainAligned: true },
   brain: { authenticated: true, labelsReady: true, mainClean: true, mainAligned: true },
   library: { authenticated: true, labelsReady: true, mainClean: true, mainAligned: true },
@@ -28,6 +29,7 @@ function base(action) {
     evidenceCheckout: true,
     repositories: READY_REPOS,
     existingIssues: {
+      'project-retrospective': { number: 5, url: 'https://example.test/project-retrospective/5' },
       evidence: { number: 10, url: 'https://example.test/evidence/10' },
       brain: { number: 20, url: 'https://example.test/brain/20' },
       library: { number: 30, url: 'https://example.test/library/30' },
@@ -43,6 +45,57 @@ test('analyze routes the run to evidence, proposals to brain, and never branches
   assert.equal(result.json.targets.brain.state, 'issue-pending');
   assert.equal(result.json.targets.brain.requiredWriteBranch, null);
   assert.equal(result.json.targets.library.state, 'skip');
+});
+
+test('source-parity audit routes foundation work and only actionable component remediation', () => {
+  const result = resolve({
+    ...base('source-parity-audit'),
+    sourceParity: {
+      contractArtifacts: ['contract:source-parity:v1'],
+      evidenceArtifacts: ['audit:library-source-parity:2026-08-19'],
+      governanceArtifacts: ['governance:source-parity:v1'],
+      writeSets: {
+        'project-retrospective': true,
+        evidence: true,
+        library: true,
+        brain: false,
+      },
+      componentRemediations: [
+        { id: 'carousel', status: 'actionable', writeSetNonEmpty: true },
+        { id: 'modal', status: 'cleared', writeSetNonEmpty: false },
+      ],
+      brainCanonicals: [],
+    },
+    existingIssues: {
+      ...base('source-parity-audit').existingIssues,
+      'component:carousel': { number: 40, url: 'https://example.test/library/40' },
+    },
+  });
+  assert.equal(result.status, 0);
+  assert.equal(result.json.schemaVersion, 2);
+  assert.equal(result.json.targets['project-retrospective'].requiredWriteBranch, 'feat/5-source-parity-contract');
+  assert.equal(result.json.targets.evidence.requiredWriteBranch, 'feat/10-source-parity-audit');
+  assert.equal(result.json.targets.library.requiredWriteBranch, 'feat/30-source-parity-governance');
+  assert.equal(result.json.componentTargets.length, 1);
+  assert.equal(result.json.componentTargets[0].componentKey, 'carousel');
+  assert.equal(result.json.componentTargets[0].requiredWriteBranch, 'feat/40-carousel-source-parity');
+  assert.equal(result.json.targets.brain.state, 'skip');
+});
+
+test('source-parity brain tracking exists only for a confirmed canonical change', () => {
+  const result = resolve({
+    ...base('source-parity-audit'),
+    sourceParity: {
+      contractArtifacts: [],
+      evidenceArtifacts: [],
+      governanceArtifacts: [],
+      writeSets: { brain: true },
+      componentRemediations: [],
+      brainCanonicals: ['canonical:disclosure-rail'],
+    },
+  });
+  assert.equal(result.json.targets.brain.requiredWriteBranch, 'feat/20-catalog-promotion');
+  assert.deepEqual(result.json.componentTargets, []);
 });
 
 test('analyze with no proposals or captures creates no shared-repository work', () => {

@@ -2,7 +2,8 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { run, runJson, fixture } = require('./helpers.cjs');
+const { spawnSync } = require('node:child_process');
+const { run, runJson, fixture, tempFixture } = require('./helpers.cjs');
 
 const PROJECT = fixture('fake-project');
 const BARE = fixture('fake-project-bare');
@@ -22,9 +23,22 @@ test('artifacts mode is detected when pipeline evidence exists', () => {
   const inv = inventory(PROJECT);
   assert.equal(inv.schemaVersion, 1);
   assert.equal(inv.mode, 'artifacts');
-  assert.deepEqual(inv.warnings, [], 'a complete fixture project should produce no warnings');
+  assert.equal(inv.sourceSnapshot.strategy, 'recorded');
+  assert.match(inv.sourceSnapshot.commit, /^[a-f0-9]{40}$/);
+  assert.equal(typeof inv.sourceSnapshot.dirty, 'boolean');
   assert.equal(inv.config.present, true);
   assert.equal(inv.config.artifactsRoot, 'artifacts');
+});
+
+test('a Git project records the exact clean HEAD for future source parity', () => {
+  const project = tempFixture('fake-project');
+  assert.equal(spawnSync('git', ['init'], { cwd: project }).status, 0);
+  assert.equal(spawnSync('git', ['add', '.'], { cwd: project }).status, 0);
+  assert.equal(spawnSync('git', ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test', 'commit', '-m', 'fixture'], { cwd: project }).status, 0);
+  const inv = inventory(project);
+  assert.equal(inv.sourceSnapshot.strategy, 'recorded');
+  assert.match(inv.sourceSnapshot.commit, /^[a-f0-9]{40}$/);
+  assert.equal(inv.sourceSnapshot.dirty, false);
 });
 
 test('component-index, code-scan, and build-pack-only components are all unioned', () => {

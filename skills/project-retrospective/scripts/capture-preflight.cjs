@@ -5,7 +5,7 @@
  * Reads a run's whole `captures/` directory, checks every capture against the
  * ui-design-brain manifest and the state of a local ui-design-library checkout,
  * and emits one plan covering all of them: which are ready to execute, which are
- * blocked and why, and which resume at code, Figma, or evidence. Its schema-v4 component record
+ * blocked and why, and which resume at code, Figma, or evidence. Its schema-v5 component record
  * emits the validated server-first architecture beside the exact `component.json`
  * object to write. Schema v4 also carries the structural identity, lifecycle,
  * intended de-cliented realization, and accessibility ownership. Architecture governs the rewrite and is never copied into the
@@ -62,6 +62,7 @@ const {
   writeOut,
   usage,
 } = require('./lib/util.cjs');
+const { validateSourceParityDirectory } = require('./source-parity.cjs');
 
 const USAGE = [
   'Usage: node capture-preflight.cjs --captures <dir> --library <dir> [--brain <dir> | --manifest <file>] [--out <file>] [--pretty]',
@@ -1363,6 +1364,7 @@ function readCapture(file, ctx) {
         registration?.figma?.nodeId &&
         registration?.figma?.nodeKey &&
         registration?.figma?.review?.status === 'passed' &&
+        reviewPasses.includes('source-parity') &&
         reviewPasses.includes('adversarial') &&
         reviewPasses.includes('design'),
       );
@@ -1544,7 +1546,7 @@ function inspectFigmaPromotion(libraryDir) {
       ['Button, Section header, and Alert as reference standards', /Button[\s,/]+Section header[\s,/]+(?:and\s+)?Alert/i],
       ['the 1440/1024/768/390 responsive widths', /1440[\s\S]{0,80}1024[\s\S]{0,80}768[\s\S]{0,80}390/],
       ['unpublished candidate status', /unpublished/i],
-      ['both adversarial and design review passes', /adversarial[\s\S]{0,120}design review/i],
+      ['source-parity, adversarial, and design review passes', /source[- ]parity[\s\S]{0,160}adversarial[\s\S]{0,160}design review/i],
     ];
     for (const [label, pattern] of requirements) {
       if (!pattern.test(source)) issues.push(`${checklist} does not require ${label}`);
@@ -1594,7 +1596,7 @@ function inspectFigmaPromotion(libraryDir) {
     ready: issues.length === 0,
     writeCapabilityRequired: true,
     publicationStatus: 'unpublished',
-    reviewPasses: ['adversarial', 'design'],
+    reviewPasses: ['source-parity', 'adversarial', 'design'],
     registry,
     checklist,
     codeContractsCommand,
@@ -1648,6 +1650,42 @@ function main() {
 
   const ctx = { manifest, tokens, libraryDir, proposals, warnings };
   const components = files.map((file) => readCapture(file, ctx));
+  const sourceParity = validateSourceParityDirectory({
+    sourceParityDir: path.resolve(capturesDir, '..', 'source-parity'),
+    capturesDir,
+    verifySource: false,
+  });
+  const parityByKey = new Map(sourceParity.records.map((record) => [record.componentKey, record.artifact]));
+  for (const component of components) {
+    const artifact = parityByKey.get(component.componentKey) || null;
+    component.sourceParity = artifact
+      ? {
+          status: artifact.status,
+          remediationStatus: artifact.remediationStatus,
+          review: artifact.reviews.sourceParity,
+          decisions: (Array.isArray(artifact.observations) ? artifact.observations : []).map((observation) => ({
+            id: observation.id,
+            comparison: observation.comparison,
+            classification: observation.classification,
+            decision: observation.decision,
+            implementationStatus: observation.implementationStatus,
+            targetSurfaces: observation.targetSurfaces,
+          })),
+        }
+      : null;
+  }
+  for (const failure of sourceParity.issues) {
+    const affected = failure.componentKey
+      ? components.filter((component) => component.componentKey === failure.componentKey)
+      : components;
+    for (const component of affected) {
+      component.blockers.push({ code: 'source-parity', message: `[${failure.code}] ${failure.message}` });
+      component.status = 'blocked';
+    }
+  }
+  for (const warning of sourceParity.warnings) {
+    warnings.add('source-parity', `${warning.componentKey ? `${warning.componentKey}: ` : ''}[${warning.code}] ${warning.message}`);
+  }
   const figmaPromotion = inspectFigmaPromotion(libraryDir);
   if (!figmaPromotion.ready) {
     const message = `The target library cannot complete governed Figma promotion: ${figmaPromotion.issues.join('; ')}.`;
@@ -1671,8 +1709,13 @@ function main() {
 
   writeOut(
     {
-      schemaVersion: 4,
+      schemaVersion: 5,
       captures: capturesDir,
+      sourceParity: {
+        directory: sourceParity.sourceParityDir,
+        counts: sourceParity.counts,
+        issues: sourceParity.issues,
+      },
       library: libraryDir,
       figmaPromotion,
       manifest: manifest ? { path: manifestPath, entries: manifest.length } : null,

@@ -15,7 +15,28 @@ function tempCaptures() {
   return path.join(dir, 'captures');
 }
 
+function syncSourceParity(captures) {
+  const parityDir = path.resolve(captures, '..', 'source-parity');
+  const templatePath = path.join(parityDir, 'modal.json');
+  const template = fs.existsSync(templatePath) ? JSON.parse(fs.readFileSync(templatePath, 'utf8')) : null;
+  if (!template) return;
+  fs.rmSync(parityDir, { recursive: true, force: true });
+  fs.mkdirSync(parityDir, { recursive: true });
+  for (const name of fs.readdirSync(captures).filter((entry) => entry.endsWith('.md'))) {
+    const componentKey = path.basename(name, '.md');
+    const source = fs.readFileSync(path.join(captures, name), 'utf8');
+    const canonical = source.match(/\*\*([^*]+)\*\* \(`/)?.[1] || componentKey;
+    const artifact = structuredClone(template);
+    artifact.componentKey = componentKey;
+    artifact.canonical = canonical;
+    artifact.capture = `captures/${name}`;
+    artifact.observations[0].id = `sp-${componentKey}-001`;
+    fs.writeFileSync(path.join(parityDir, `${componentKey}.json`), `${JSON.stringify(artifact, null, 2)}\n`);
+  }
+}
+
 function preflight(captures, library, args = ['--brain', BRAIN]) {
+  syncSourceParity(captures);
   return runJson('capture-preflight.cjs', ['--captures', captures, '--library', library, ...args]);
 }
 
@@ -71,7 +92,7 @@ function registerReviewedFigma(library, canonical, componentPath, variant = null
     figma: {
       nodeId: '100:200',
       nodeKey: 'stable-node-key',
-      review: { status: 'passed', passes: ['adversarial', 'design'] },
+      review: { status: 'passed', passes: ['source-parity', 'adversarial', 'design'] },
     },
   });
   writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
@@ -104,11 +125,19 @@ test('the golden captures pass preflight', () => {
   assert.deepEqual(record.blockers, []);
 });
 
+test('a capture without its source-parity companion is blocked', () => {
+  const captures = tempCaptures();
+  fs.rmSync(path.resolve(captures, '..', 'source-parity/modal.json'));
+  const result = runJson('capture-preflight.cjs', ['--captures', captures, '--library', fixture('fake-library'), '--brain', BRAIN]);
+  assertBlocked(result, 'source-parity');
+});
+
 test('the envelope carries the documented key order', () => {
   const result = preflight(tempCaptures(), fixture('fake-library'));
   assert.deepEqual(Object.keys(result.json), [
     'schemaVersion',
     'captures',
+    'sourceParity',
     'library',
     'figmaPromotion',
     'manifest',
@@ -117,13 +146,13 @@ test('the envelope carries the documented key order', () => {
     'counts',
     'warnings',
   ]);
-  assert.equal(result.json.schemaVersion, 4);
+  assert.equal(result.json.schemaVersion, 5);
   assert.deepEqual(result.json.figmaPromotion, {
     required: true,
     ready: true,
     writeCapabilityRequired: true,
     publicationStatus: 'unpublished',
-    reviewPasses: ['adversarial', 'design'],
+    reviewPasses: ['source-parity', 'adversarial', 'design'],
     registry: 'figma/library.json',
     checklist: 'figma/PROMOTION-CHECKLIST.md',
     codeContractsCommand: 'pnpm contracts:code',

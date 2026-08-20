@@ -3,8 +3,8 @@
  * tracking-targets.cjs — deterministic issue and local-branch routing.
  *
  * The script reads an artifact snapshot, never GitHub or the network. It emits
- * `skip`, `issue-pending`, or `write-ready` for evidence, brain, library, and
- * ai-orchestration. The caller performs the sanctioned label/issue operations,
+ * `skip`, `issue-pending`, or `write-ready` for project-retrospective, evidence,
+ * brain, library, and ai-orchestration. The caller performs the sanctioned label/issue operations,
  * supplies exact open-issue matches and local-main checks, then reruns before
  * creating a branch.
  *
@@ -31,6 +31,7 @@ const USAGE = [
 ];
 
 const LABELS = {
+  'project-retrospective': ['Feature', 'area:tooling'],
   evidence: ['Feature', 'area: retrospectives'],
   brain: ['Feature', 'area: catalog'],
   library: ['Feature', 'area: components'],
@@ -143,8 +144,8 @@ function writeTarget(repository, artifacts, existingIssue, branch, repo, reason)
 
 function validate(snapshot) {
   if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) throw new Error('input must be a JSON object');
-  if (!['analyze', 'ingest-retrospectives', 'promote', 'capture'].includes(snapshot.action)) {
-    throw new Error('action must be analyze, ingest-retrospectives, promote, or capture');
+  if (!['analyze', 'ingest-retrospectives', 'promote', 'capture', 'source-parity-audit'].includes(snapshot.action)) {
+    throw new Error('action must be analyze, ingest-retrospectives, promote, capture, or source-parity-audit');
   }
   if (snapshot.stage !== undefined && !['prewrite', 'postvalidate'].includes(snapshot.stage)) {
     throw new Error('stage must be prewrite or postvalidate when supplied');
@@ -168,12 +169,70 @@ function computeTargets(snapshot) {
   const evidenceEnabled = snapshot.evidenceCheckout === true && snapshot.homeFallback !== true;
   const postvalidate = snapshot.stage === 'postvalidate';
   const targets = {
+    'project-retrospective': baseTarget('project-retrospective'),
     evidence: baseTarget('evidence'),
     brain: baseTarget('brain'),
     library: baseTarget('library'),
     'ai-orchestration': baseTarget('ai-orchestration'),
   };
   targets['ai-orchestration'].reason = 'tracking-forbidden';
+
+  if (snapshot.action === 'source-parity-audit') {
+    const work = snapshot.sourceParity && typeof snapshot.sourceParity === 'object' ? snapshot.sourceParity : {};
+    const definitions = [
+      ['project-retrospective', strings(work.contractArtifacts), 'source-parity-contract'],
+      ['evidence', strings(work.evidenceArtifacts), 'source-parity-audit'],
+      ['library', strings(work.governanceArtifacts), 'source-parity-governance'],
+    ];
+    for (const [repository, artifacts, suffix] of definitions) {
+      if (artifacts.length === 0) continue;
+      const existing = issue(issues[repository]);
+      const writeSet = work.writeSets?.[repository] === true;
+      const branch = existing && writeSet ? `feat/${existing.number}-${suffix}` : null;
+      targets[repository] = writeTarget(repository, artifacts, existing, branch, repos[repository], 'source-parity-foundation');
+      if (!existing) targets[repository].blockers.unshift('tracking-issue');
+      if (!writeSet) {
+        targets[repository].state = 'issue-pending';
+        targets[repository].requiredWriteBranch = null;
+      }
+    }
+
+    const componentTargets = [];
+    for (const remediation of Array.isArray(work.componentRemediations) ? work.componentRemediations : []) {
+      if (!remediation || typeof remediation.id !== 'string' || remediation.status !== 'actionable') continue;
+      const existing = issue(issues[`component:${remediation.id}`]);
+      const writeSet = remediation.writeSetNonEmpty === true;
+      const branch = existing && writeSet ? `feat/${existing.number}-${remediation.id}-source-parity` : null;
+      const target = writeTarget(
+        'library',
+        [`remediation:${remediation.id}`],
+        existing,
+        branch,
+        repos.library,
+        'actionable-source-parity-remediation',
+      );
+      target.componentKey = remediation.id;
+      if (!existing) target.blockers.unshift('tracking-issue');
+      if (!writeSet) {
+        target.state = 'issue-pending';
+        target.requiredWriteBranch = null;
+      }
+      componentTargets.push(target);
+    }
+
+    const brainCanonicals = strings(work.brainCanonicals);
+    if (brainCanonicals.length > 0) {
+      const existing = issue(issues.brain);
+      const branch = existing && work.writeSets?.brain === true ? `feat/${existing.number}-catalog-promotion` : null;
+      targets.brain = writeTarget('brain', brainCanonicals, existing, branch, repos.brain, 'source-parity-canonical-change');
+      if (!existing) targets.brain.blockers.unshift('tracking-issue');
+      if (work.writeSets?.brain !== true) {
+        targets.brain.state = 'issue-pending';
+        targets.brain.requiredWriteBranch = null;
+      }
+    }
+    return { schemaVersion: 2, action: snapshot.action, targets, componentTargets };
+  }
 
   if (snapshot.action === 'analyze' || snapshot.action === 'ingest-retrospectives') {
     if (evidenceEnabled) {
@@ -211,7 +270,7 @@ function computeTargets(snapshot) {
     targets.library.reason = snapshot.action === 'analyze' && captures.length > 0
       ? 'capture-preflight-required'
       : 'no-actionable-captures';
-    return { schemaVersion: 1, action: snapshot.action, targets };
+    return { schemaVersion: 2, action: snapshot.action, targets, componentTargets: [] };
   }
 
   if (snapshot.action === 'promote') {
@@ -233,7 +292,7 @@ function computeTargets(snapshot) {
         'applied-marker-write-set',
       );
     }
-    return { schemaVersion: 1, action: snapshot.action, targets };
+    return { schemaVersion: 2, action: snapshot.action, targets, componentTargets: [] };
   }
 
   const actionable = captures.filter((capture) => ['ready', 'figma-pending'].includes(capture.status));
@@ -270,7 +329,7 @@ function computeTargets(snapshot) {
       'capture-evidence-reconciliation',
     );
   }
-  return { schemaVersion: 1, action: snapshot.action, targets };
+  return { schemaVersion: 2, action: snapshot.action, targets, componentTargets: [] };
 }
 
 function main() {
