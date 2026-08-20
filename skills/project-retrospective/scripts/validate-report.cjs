@@ -44,6 +44,7 @@ const {
   parseCanonicalLine,
   usage,
 } = require('./lib/util.cjs');
+const { validateSourceParityDirectory } = require('./source-parity.cjs');
 
 const USAGE = [
   'Usage: node validate-report.cjs --output <dir> [--scope full|inventory|candidates|retrospectives] [--no-brain] [--manifest <file>] [--data <dir>] [--json]',
@@ -121,6 +122,13 @@ function checkInventory(dir, result) {
   if (!Array.isArray(inv.warnings)) result.fail('inventory-warnings', 'inventory.json has no warnings array');
   if (Array.isArray(inv.components) && inv.counts?.components !== inv.components.length) {
     result.fail('inventory-counts', `inventory.json counts.components (${inv.counts?.components}) does not match components.length (${inv.components.length})`);
+  }
+  if (inv.sourceSnapshot === undefined) {
+    result.warn('inventory-source-snapshot', 'inventory.json predates pinned source revisions; any capture must use legacy-untracked source parity.');
+  } else if (!inv.sourceSnapshot || typeof inv.sourceSnapshot !== 'object' ||
+    !['recorded', 'unavailable'].includes(inv.sourceSnapshot.strategy) ||
+    (inv.sourceSnapshot.strategy === 'recorded' && !/^[a-f0-9]{40}$/.test(String(inv.sourceSnapshot.commit || '')))) {
+    result.fail('inventory-source-snapshot', 'inventory.json sourceSnapshot must be recorded with a full Git SHA or explicitly unavailable');
   }
   return inv;
 }
@@ -792,7 +800,7 @@ function checkProposals(dir, promoted, manifestEntries, result) {
  * reaches ui-design-library with no evidence behind it, and a listed capture with no
  * file is a claim the run cannot support — both are failures, in both directions.
  */
-function checkCaptures(dir, captured, capturesSectionPresent, result) {
+function checkCaptures(dir, captured, capturesSectionPresent, inventory, result) {
   const capturesDir = path.join(dir, 'captures');
   const files = isDir(capturesDir)
     ? listEntries(capturesDir).filter((e) => !e.dir && e.name.endsWith('.md'))
@@ -810,6 +818,13 @@ function checkCaptures(dir, captured, capturesSectionPresent, result) {
     // cause — the same stacking the Candidates path deliberately avoids.
     if (files.length > 0 && capturesSectionPresent) {
       result.fail('capture-parity', `captures/ has ${files.length} file(s) but the report's "## Captures" section lists none`);
+    }
+    const sourceParityDir = path.join(dir, 'source-parity');
+    const orphanedParity = isDir(sourceParityDir)
+      ? listEntries(sourceParityDir).filter((entry) => !entry.dir && entry.name.endsWith('.json'))
+      : [];
+    for (const orphan of orphanedParity) {
+      result.fail('source-parity', `source-parity/${orphan.name} has no matching capture`);
     }
     return;
   }
@@ -845,6 +860,19 @@ function checkCaptures(dir, captured, capturesSectionPresent, result) {
 
   for (const file of files) {
     checkProposalFile(file.path, null, result, [CAPTURE_TYPE]);
+  }
+
+  const parity = validateSourceParityDirectory({
+    sourceParityDir: path.join(dir, 'source-parity'),
+    capturesDir,
+    projectDir: typeof inventory?.project === 'string' ? inventory.project : null,
+    verifySource: true,
+  });
+  for (const failure of parity.issues) {
+    result.fail('source-parity', `${failure.componentKey ? `${failure.componentKey}: ` : ''}[${failure.code}] ${failure.message}`);
+  }
+  for (const warning of parity.warnings) {
+    result.warn('source-parity', `${warning.componentKey ? `${warning.componentKey}: ` : ''}[${warning.code}] ${warning.message}`);
   }
 }
 
@@ -979,7 +1007,7 @@ function main() {
     }
   }
 
-  if (scope !== 'retrospectives') checkInventory(dir, result);
+  const inventory = scope !== 'retrospectives' ? checkInventory(dir, result) : null;
   if (!['inventory', 'retrospectives'].includes(scope) && !noBrain) checkResolution(dir, result);
   // Identity is required wherever the run has candidates (full and candidates
   // scopes); an inventory-only run has no client wiki to feed.
@@ -1001,7 +1029,7 @@ function main() {
 
   if (scope === 'full') {
     checkProposals(dir, promoted, manifestEntries, result);
-    checkCaptures(dir, captured, capturesSectionPresent, result);
+    checkCaptures(dir, captured, capturesSectionPresent, inventory, result);
     checkOrchestrationDrafts(dir, result);
   }
 

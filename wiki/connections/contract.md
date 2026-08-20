@@ -4,7 +4,7 @@ Every reference and script `SKILL.md` declares. These edges are the build's inte
 
 Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm evals:graph`.
 
-## References (18)
+## References (19)
 
 - [Brain integrity checklist](../../skills/project-retrospective/references/brain-integrity-checklist.md)
 - [Code-scan mode](../../skills/project-retrospective/references/code-scan-mode.md)
@@ -17,6 +17,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Proposal template — new alias](../../skills/project-retrospective/references/proposal-new-alias-template.md)
 - [Proposal template — new pattern](../../skills/project-retrospective/references/proposal-new-pattern-template.md)
 - [report.md template](../../skills/project-retrospective/references/report-template.md)
+- [Source-parity inventory](../../skills/project-retrospective/references/source-parity.md)
 - [Spec capture](../../skills/project-retrospective/references/spec-capture.md)
 - [Team retrospective capture](../../skills/project-retrospective/references/team-retrospectives.md)
 - [Tracking issues and local branches](../../skills/project-retrospective/references/tracking-issues.md)

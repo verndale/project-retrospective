@@ -23,6 +23,7 @@
 'use strict';
 
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 const {
   parseArgs,
   checkArgs,
@@ -105,6 +106,33 @@ const DEFAULT_PROFILE = {
   granularity: 'recursive',
   storybook: true,
 };
+
+/** Record the exact local Git revision used for all future source citations. */
+function sourceSnapshot(projectDir, warnings) {
+  const git = (args) => spawnSync('git', ['-C', projectDir, ...args], { encoding: 'utf8' });
+  const inside = git(['rev-parse', '--is-inside-work-tree']);
+  if (inside.status !== 0 || inside.stdout.trim() !== 'true') {
+    warnings.add('git-snapshot-unavailable', 'Project is not a readable Git worktree — sourceSnapshot has no pinned commit.');
+    return { strategy: 'unavailable', commit: null, dirty: null };
+  }
+  const head = git(['rev-parse', 'HEAD']);
+  if (head.status !== 0 || !/^[a-f0-9]{40}$/.test(head.stdout.trim())) {
+    warnings.add('git-snapshot-unavailable', 'Project Git HEAD could not be resolved — sourceSnapshot has no pinned commit.');
+    return { strategy: 'unavailable', commit: null, dirty: null };
+  }
+  const status = git(['status', '--porcelain', '--untracked-files=normal']);
+  if (status.status !== 0) {
+    warnings.add('git-dirty-state-unavailable', 'Project Git dirty state could not be read; the pinned commit is still recorded.');
+  }
+  const dirty = status.status === 0 ? Boolean(status.stdout.trim()) : null;
+  if (dirty) {
+    warnings.add(
+      'git-worktree-dirty',
+      'Project has uncommitted changes; future source-parity citations must read the pinned commit rather than the current worktree.',
+    );
+  }
+  return { strategy: 'recorded', commit: head.stdout.trim(), dirty };
+}
 
 /** Resolve a stackAdapter to its discovery profile; warns when it falls back to the default. */
 function profileFor(stackAdapter, warnings) {
@@ -742,6 +770,7 @@ function main() {
   }
 
   const warnings = new Warnings();
+  const snapshot = sourceSnapshot(projectDir, warnings);
   const config = loadConfig(projectDir, warnings);
   const profile = profileFor(config.stackAdapter, warnings);
   const fileRe = makeFileRe(profile.exts);
@@ -884,6 +913,7 @@ function main() {
       schemaVersion: 1,
       generatedAt: new Date().toISOString(),
       project: projectDir,
+      sourceSnapshot: snapshot,
       mode,
       config,
       components,

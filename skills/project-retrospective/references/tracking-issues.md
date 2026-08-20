@@ -17,6 +17,7 @@ Run `tracking-targets.cjs` before a write and again after issue/repository check
 
 | Repository | Issue trigger | Local branch trigger | Labels |
 |---|---|---|---|
+| `verndale/project-retrospective` | an approved source-parity contract changes the skill/tooling | a non-empty contract write set exists | `Feature`, `area:tooling` |
 | `verndale/ui-design-evidence` | a validated analyze or retrospective-ingestion run is written in the evidence checkout | before the run/wiki's first write | `Feature`, `area: retrospectives` |
 | `verndale/ui-design-brain` | at least one pending catalog proposal exists | promote has an approved proposal and a non-empty brain write set | `Feature`, `area: catalog` |
 | `verndale/ui-design-library` | capture preflight reports actionable library work | capture has a non-empty library write set and required capabilities | `Feature`, `area: components` |
@@ -24,7 +25,8 @@ Run `tracking-targets.cjs` before a write and again after issue/repository check
 
 - Analyze never creates brain or library branches.
 - A proposal creates brain tracking, never library tracking.
-- A draft capture does not itself create library tracking. `ready` or `figma-pending` work from schema-v4 capture preflight does; `deferred`, `blocked`, `skipped`, `landed`, and evidence-only reconciliation do not.
+- A draft capture does not itself create library tracking. `ready` or `figma-pending` work from schema-v5 capture preflight does; `deferred`, `blocked`, `skipped`, `landed`, and evidence-only reconciliation do not.
+- `source-parity-audit` uses one foundation issue per repository with a non-empty contract/audit/governance write set, then one library issue per `actionable` component remediation. Cleared components and absent brain canonicals create no downstream issue or branch.
 - A missing Figma writer keeps actionable work `issue-pending` and creates no empty library branch.
 - Home fallback creates no evidence issue or branch.
 
@@ -65,7 +67,9 @@ Retrospective automation may create or repair only these exact definitions, idem
 
 | Repository | Label | Color | Description |
 |---|---|---|---|
-| all three | `Feature` | `0E8A16` | `New feature or request` |
+| project-retrospective | `Feature` | `0E8A16` | `New feature or request` |
+| project-retrospective | `area:tooling` | `C5DEF5` | `Repository tooling, build, CI, linting, and developer workflows` |
+| governed repos | `Feature` | `0E8A16` | `New feature or request` |
 | evidence | `area: retrospectives` | `1D76DB` | `Retrospective runs, lifecycle records, and downstream tracking` |
 | evidence | `area: tooling` | `C5DEF5` | `Repository tooling, build, CI, linting, and developer workflows` |
 | brain | `area: catalog` | `1D76DB` | `Pattern catalog content, aliases, and manifest` |

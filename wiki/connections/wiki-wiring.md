@@ -15,6 +15,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Make accessible realization part of capture preflight](../../wiki/journal/2026-08-13-accessible-realization-capture-preflight.md) → [Capture preflight schema v3 for accessible realizations](../../wiki/plans/2026-08-13-capture-preflight-schema-v3-for-accessible-realizations.md)
 - [Complete captures with reviewed Figma promotion](../../wiki/journal/2026-08-18-governed-figma-capture-completion.md) → [Governed Figma completion for Action capture](../../wiki/plans/2026-08-18-governed-figma-capture-completion.md)
 - [Automate conditional retrospective tracking and capture lifecycle](../../wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md) → [Automate retrospective GitHub tracking, branches, lifecycle, and Figma delivery](../../wiki/plans/2026-08-19-automate-retrospective-github-tracking.md)
+- [Require source parity before component capture](../../wiki/journal/2026-08-19-source-parity-capture-contract.md) → [Source-parity capture contract](../../wiki/plans/2026-08-19-source-parity-capture-contract.md)
 
 ## Page → topic
 
@@ -52,6 +53,8 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Complete captures with reviewed Figma promotion](../../wiki/journal/2026-08-18-governed-figma-capture-completion.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Automate conditional retrospective tracking and capture lifecycle](../../wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Automate conditional retrospective tracking and capture lifecycle](../../wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
+- [Require source parity before component capture](../../wiki/journal/2026-08-19-source-parity-capture-contract.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
+- [Require source parity before component capture](../../wiki/journal/2026-08-19-source-parity-capture-contract.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Brain promotion — Design History](../../wiki/topics/brain-promotion.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
@@ -64,3 +67,5 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Governed Figma completion for Action capture](../../wiki/plans/2026-08-18-governed-figma-capture-completion.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Automate retrospective GitHub tracking, branches, lifecycle, and Figma delivery](../../wiki/plans/2026-08-19-automate-retrospective-github-tracking.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Automate retrospective GitHub tracking, branches, lifecycle, and Figma delivery](../../wiki/plans/2026-08-19-automate-retrospective-github-tracking.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
+- [Source-parity capture contract](../../wiki/plans/2026-08-19-source-parity-capture-contract.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
+- [Source-parity capture contract](../../wiki/plans/2026-08-19-source-parity-capture-contract.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)

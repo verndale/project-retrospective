@@ -13,7 +13,7 @@ The catalog defines the **Card** canonical. A capture records a project implemen
 
 Captures target the private `ui-design-library` repo, not `ui-design-brain`, and they are **drafts executed by `Action: capture`**, or by a human following the same procedure. A component lifted from a client project carries CMS types, client token names, and client copy; turning it into a library component is a rewrite. The capture identifies the candidate, cites its selection evidence, and enumerates the de-client work.
 
-Write one file per exact implementation identity: default `captures/<kebab-canonical>.md`; structural alternate `captures/<kebab-canonical>--<variant>.md`. Captures remain separate from `proposals/` because a capture is a library change, not a catalog change.
+Write one file per exact implementation identity: default `captures/<kebab-canonical>.md`; structural alternate `captures/<kebab-canonical>--<variant>.md`. Write its mandatory one-to-one `source-parity/<component-key>.json` companion from the source-parity contract loaded directly from `SKILL.md`. Captures remain separate from `proposals/` because a capture is a library change, not a catalog change.
 
 ## Choosing what to capture
 
@@ -54,7 +54,7 @@ component-capture
 }
 ```
 
-For an alternate, set `variant` to its kebab identity, `variantLabel` to its human label, and `default` to `false`. When the existing bare default has no structural fields yet, add `"companionDefault": { "variant": "<default-variant>", "variantLabel": "<Default label>" }`; schema-v4 preflight emits the companion manifest/Figma-registry write rather than leaving the family half-migrated.
+For an alternate, set `variant` to its kebab identity, `variantLabel` to its human label, and `default` to `false`. When the existing bare default has no structural fields yet, add `"companionDefault": { "variant": "<default-variant>", "variantLabel": "<Default label>" }`; schema-v5 preflight emits the companion manifest/Figma-registry write rather than leaving the family half-migrated.
 
 ## Source
 
@@ -171,7 +171,7 @@ This entry describes the intended **de-cliented** result, not the source compone
 
 Omit `variant` and `default` for a single-implementation canonical. A named bare default carries both `variant` and `default: true`; a compound alternate carries `variant` and omits `default`.
 
-`Runtime architecture` is an execution plan, not package metadata. `capture-preflight.cjs` validates and returns it separately in its schema-v4 plan; do not add it to `component.json`. `rendering` must equal the architecture mode.
+`Runtime architecture` and source parity are execution inputs, not package metadata. `capture-preflight.cjs` validates and returns both separately in its schema-v5 plan; do not add either private artifact to `component.json`. `rendering` must equal the architecture mode.
 
 Story plan — one story per meaningful state, since the story file is the library's API contract:
 

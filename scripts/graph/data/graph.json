@@ -1,30 +1,30 @@
 {
   "counts": {
-    "nodes": 111,
-    "edges": 279,
+    "nodes": 116,
+    "edges": 301,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
       "tooling-doc": 1,
-      "test": 13,
+      "test": 14,
       "authoring-spec": 1,
       "skill-readme": 1,
-      "skill-reference": 18,
-      "skill-script": 11,
+      "skill-reference": 19,
+      "skill-script": 12,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 27,
-      "wiki-plan": 9,
+      "wiki-journal": 28,
+      "wiki-plan": 10,
       "wiki-topic": 5
     },
     "byEdgeType": {
-      "contracts": 27,
-      "covers": 24,
-      "links-to": 121,
-      "plan": 9,
-      "requires": 39,
-      "tests": 13,
-      "topic": 46
+      "contracts": 28,
+      "covers": 28,
+      "links-to": 128,
+      "plan": 10,
+      "requires": 43,
+      "tests": 14,
+      "topic": 50
     }
   },
   "nodes": [
@@ -193,7 +193,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 51631,
+      "bytes": 53116,
       "degree": 2
     },
     {
@@ -206,7 +206,7 @@
       "prs": [],
       "issues": [],
       "bytes": 1900,
-      "degree": 11
+      "degree": 12
     },
     {
       "id": "scripts/tests/inventory.test.cjs",
@@ -217,7 +217,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 21747,
+      "bytes": 22540,
       "degree": 2
     },
     {
@@ -269,6 +269,18 @@
       "degree": 3
     },
     {
+      "id": "scripts/tests/source-parity.test.cjs",
+      "label": "source-parity.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 7667,
+      "degree": 2
+    },
+    {
       "id": "scripts/tests/tracking-targets.test.cjs",
       "label": "tracking-targets.test.cjs",
       "type": "test",
@@ -277,7 +289,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 9074,
+      "bytes": 11409,
       "degree": 2
     },
     {
@@ -301,7 +313,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 41279,
+      "bytes": 42410,
       "degree": 2
     },
     {
@@ -469,7 +481,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 26640,
+      "bytes": 27680,
       "degree": 4
     },
     {
@@ -529,7 +541,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 17249,
+      "bytes": 17744,
       "degree": 3
     },
     {
@@ -553,7 +565,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 13530,
+      "bytes": 13714,
       "degree": 3
     },
     {
@@ -605,6 +617,18 @@
       "degree": 2
     },
     {
+      "id": "skills/project-retrospective/references/source-parity.md",
+      "label": "Source-parity inventory",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 10077,
+      "degree": 4
+    },
+    {
       "id": "skills/project-retrospective/references/spec-capture.md",
       "label": "Spec capture",
       "type": "skill-reference",
@@ -637,7 +661,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 6757,
+      "bytes": 7395,
       "degree": 4
     },
     {
@@ -721,8 +745,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 78230,
-      "degree": 4
+      "bytes": 80185,
+      "degree": 5
     },
     {
       "id": "skills/project-retrospective/scripts/inventory.cjs",
@@ -733,7 +757,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 38382,
+      "bytes": 39986,
       "degree": 5
     },
     {
@@ -746,7 +770,7 @@
       "prs": [],
       "issues": [],
       "bytes": 12697,
-      "degree": 10
+      "degree": 11
     },
     {
       "id": "skills/project-retrospective/scripts/normalize-retrospectives.cjs",
@@ -785,6 +809,18 @@
       "degree": 4
     },
     {
+      "id": "skills/project-retrospective/scripts/source-parity.cjs",
+      "label": "source-parity.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 22866,
+      "degree": 6
+    },
+    {
       "id": "skills/project-retrospective/scripts/tracking-targets.cjs",
       "label": "tracking-targets.cjs",
       "type": "skill-script",
@@ -793,7 +829,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 11257,
+      "bytes": 14293,
       "degree": 3
     },
     {
@@ -817,8 +853,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 48558,
-      "degree": 4
+      "bytes": 50239,
+      "degree": 5
     },
     {
       "id": "skills/project-retrospective/SKILL.md",
@@ -829,8 +865,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 40568,
-      "degree": 49
+      "bytes": 41764,
+      "degree": 51
     },
     {
       "id": "wiki/INDEX.md",
@@ -841,8 +877,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 9817,
-      "degree": 37
+      "bytes": 10095,
+      "degree": 38
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1302,6 +1338,23 @@
       "degree": 6
     },
     {
+      "id": "wiki/journal/2026-08-19-source-parity-capture-contract.md",
+      "label": "Require source parity before component capture",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "library-capture",
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "75"
+      ],
+      "bytes": 2160,
+      "degree": 6
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -1465,6 +1518,21 @@
       "degree": 6
     },
     {
+      "id": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
+      "label": "Source-parity capture contract",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "library-capture",
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 1612,
+      "degree": 6
+    },
+    {
       "id": "wiki/plans/INDEX.md",
       "label": "Plan Audit",
       "type": "wiki-index",
@@ -1486,8 +1554,8 @@
         "57",
         "60"
       ],
-      "bytes": 3543,
-      "degree": 11
+      "bytes": 3726,
+      "degree": 12
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -1558,13 +1626,14 @@
       ],
       "prs": [],
       "issues": [
+        "75",
         "69",
         "66",
         "63",
         "60"
       ],
-      "bytes": 11559,
-      "degree": 29
+      "bytes": 12237,
+      "degree": 35
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -1609,10 +1678,11 @@
         "1"
       ],
       "issues": [
+        "75",
         "57"
       ],
-      "bytes": 12906,
-      "degree": 50
+      "bytes": 13435,
+      "degree": 56
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -1688,6 +1758,11 @@
     {
       "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/report-template.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/source-parity.md",
       "type": "contracts"
     },
     {
@@ -1817,7 +1892,22 @@
     },
     {
       "source": "wiki/topics/library-capture.md",
+      "target": "skills/project-retrospective/references/source-parity.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
       "target": "skills/project-retrospective/scripts/capture-preflight.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
+      "target": "skills/project-retrospective/scripts/source-parity.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/references/source-parity.md",
       "type": "covers"
     },
     {
@@ -1858,6 +1948,11 @@
     {
       "source": "wiki/topics/retrospective-workflow.md",
       "target": "skills/project-retrospective/scripts/resolve.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/scripts/source-parity.cjs",
       "type": "covers"
     },
     {
@@ -2116,6 +2211,13 @@
     },
     {
       "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/source-parity.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/spec-capture.md",
       "type": "links-to",
       "count": 2,
@@ -2354,6 +2456,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-19-source-parity-capture-contract.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -2486,6 +2595,13 @@
       "anchors": []
     },
     {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
       "source": "wiki/topics/brain-promotion.md",
       "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
       "type": "links-to",
@@ -2585,6 +2701,13 @@
     },
     {
       "source": "wiki/topics/library-capture.md",
+      "target": "wiki/journal/2026-08-19-source-parity-capture-contract.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
       "target": "wiki/plans/2026-08-12-server-first-component-architecture.md",
       "type": "links-to",
       "count": 1,
@@ -2607,6 +2730,13 @@
     {
       "source": "wiki/topics/library-capture.md",
       "target": "wiki/plans/2026-08-19-automate-retrospective-github-tracking.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
+      "target": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2676,6 +2806,13 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/journal/2026-08-19-source-parity-capture-contract.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
       "type": "links-to",
       "count": 2,
@@ -2698,6 +2835,13 @@
     {
       "source": "wiki/topics/retrospective-workflow.md",
       "target": "wiki/plans/2026-08-19-automate-retrospective-github-tracking.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2783,6 +2927,11 @@
       "type": "plan"
     },
     {
+      "source": "wiki/journal/2026-08-19-source-parity-capture-contract.md",
+      "target": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
+      "type": "plan"
+    },
+    {
       "source": "scripts/evals/graph-check.cjs",
       "target": "scripts/graph/build-graph.cjs",
       "type": "requires"
@@ -2849,6 +2998,11 @@
     },
     {
       "source": "scripts/tests/skill-conformance.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/source-parity.test.cjs",
       "target": "scripts/tests/helpers.cjs",
       "type": "requires"
     },
@@ -2943,6 +3097,11 @@
       "type": "requires"
     },
     {
+      "source": "skills/project-retrospective/scripts/capture-preflight.cjs",
+      "target": "skills/project-retrospective/scripts/source-parity.cjs",
+      "type": "requires"
+    },
+    {
       "source": "skills/project-retrospective/scripts/inventory.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
@@ -2963,6 +3122,11 @@
       "type": "requires"
     },
     {
+      "source": "skills/project-retrospective/scripts/source-parity.cjs",
+      "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
       "source": "skills/project-retrospective/scripts/tracking-targets.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
@@ -2975,6 +3139,11 @@
     {
       "source": "skills/project-retrospective/scripts/validate-report.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "skills/project-retrospective/scripts/validate-report.cjs",
+      "target": "skills/project-retrospective/scripts/source-parity.cjs",
       "type": "requires"
     },
     {
@@ -3025,6 +3194,11 @@
     {
       "source": "scripts/tests/skill-conformance.test.cjs",
       "target": "skills/project-retrospective/SKILL.md",
+      "type": "tests"
+    },
+    {
+      "source": "scripts/tests/source-parity.test.cjs",
+      "target": "skills/project-retrospective/scripts/source-parity.cjs",
       "type": "tests"
     },
     {
@@ -3213,6 +3387,16 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-08-19-source-parity-capture-contract.md",
+      "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-08-19-source-parity-capture-contract.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
@@ -3269,6 +3453,16 @@
     },
     {
       "source": "wiki/plans/2026-08-19-automate-retrospective-github-tracking.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
+      "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
       "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     }
