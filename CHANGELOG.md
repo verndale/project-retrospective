@@ -1,3 +1,37 @@
+# v1.22.0 — 2026-08-20
+
+## Summary (AI, bounded)
+- Introduced a feature to enforce the source-parity capture contract in project retrospectives (commit a9edf0a).
+- Synced wiki journal, topics, and plans documentation as part of ongoing documentation updates (commit 4a70b9d).
+- Included merges of pull requests related to source-parity contract and wiki synchronization (commits 5803584, b395f2a).
+- No breaking changes were introduced in this release.
+
+## Highlights
+- commit: Merge pull request #76 from verndale/feat/75-source-parity-contract (5803584)
+- feat(project-retrospective): Enforce source-parity capture contract (a9edf0a)
+- commit: Merge pull request #74 from verndale/bot/wiki-sync/72 (b395f2a)
+- docs(wiki): sync journal, topics, and plans for #72 (4a70b9d)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Enforce source-parity capture contract (a9edf0a)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #72 (4a70b9d)
+
+### Other (unknown)
+- commit: Merge pull request #74 from verndale/bot/wiki-sync/72 (b395f2a)
+- commit: Merge pull request #76 from verndale/feat/75-source-parity-contract (5803584)
+
+## Full commit list
+- 5803584 commit: Merge pull request #76 from verndale/feat/75-source-parity-contract
+- a9edf0a feat(project-retrospective): Enforce source-parity capture contract
+- b395f2a commit: Merge pull request #74 from verndale/bot/wiki-sync/72
+- 4a70b9d docs(wiki): sync journal, topics, and plans for #72
+
 # v1.21.0 — 2026-08-19
 
 ## Summary (AI, bounded)
