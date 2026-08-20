@@ -22,7 +22,7 @@ Totals: 9 implemented · 1 partial (10 plans).
 
 | Date | Plan | Status | Evidence | Topics |
 | --- | --- | --- | --- | --- |
-| 2026-08-19 | [Source-parity capture contract](2026-08-19-source-parity-capture-contract.md) | implemented | issue #75, local validation | library-capture, retrospective-workflow |
+| 2026-08-19 | [Source-parity capture contract](2026-08-19-source-parity-capture-contract.md) | implemented | issue #75, local validation, [PR #76](https://github.com/verndale/project-retrospective/pull/76) | library-capture, retrospective-workflow |
 | 2026-08-19 | [Automate retrospective GitHub tracking, branches, lifecycle, and Figma delivery](2026-08-19-automate-retrospective-github-tracking.md) | implemented | working tree, deterministic resolver and lifecycle tests, [PR #72](https://github.com/verndale/project-retrospective/pull/72) | retrospective-workflow, library-capture |
 | 2026-08-18 | [Governed Figma completion for Action capture](2026-08-18-governed-figma-capture-completion.md) | implemented | [issue #69](https://github.com/verndale/project-retrospective/issues/69), preflight/conformance tests, [PR #70](https://github.com/verndale/project-retrospective/pull/70) | library-capture |
 | 2026-07-26 | [project-retrospective — critique + build plan](2026-07-26-project-retrospective-critique-build-plan.md) | implemented | commit caebd12, commit 012a6f0, [PR #1](https://github.com/verndale/project-retrospective/pull/1) | skill-authoring, retrospective-workflow, brain-promotion |
