@@ -2,7 +2,7 @@
 date: 2026-08-19
 topics: [library-capture, retrospective-workflow]
 plan: plans/2026-08-19-source-parity-capture-contract.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/76
 issue: https://github.com/verndale/project-retrospective/issues/75
 ---
 # Require source parity before component capture

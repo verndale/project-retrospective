@@ -2,7 +2,10 @@
 status: implemented
 executed: 2026-08-19
 date: 2026-08-19
-evidence: ["issue #75", "local validation"]
+evidence:
+  - "issue #75"
+  - "local validation"
+  - "PR #76 https://github.com/verndale/project-retrospective/pull/76 (merged 2026-08-20)"
 source_tool: codex
 source: codex-session:source-parity-contract
 topics: [library-capture, retrospective-workflow]
