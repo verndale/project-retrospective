@@ -1365,11 +1365,13 @@
         "graph-wiki-subsystem"
       ],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "80"
+      ],
       "issues": [
         "79"
       ],
-      "bytes": 1625,
+      "bytes": 1675,
       "degree": 4
     },
     {
@@ -1561,9 +1563,11 @@
         "graph-wiki-subsystem"
       ],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "80"
+      ],
       "issues": [],
-      "bytes": 2018,
+      "bytes": 2109,
       "degree": 4
     },
     {
@@ -1582,14 +1586,15 @@
         "27",
         "58",
         "61",
-        "64"
+        "64",
+        "80"
       ],
       "issues": [
         "69",
         "57",
         "60"
       ],
-      "bytes": 4019,
+      "bytes": 4088,
       "degree": 13
     },
     {
@@ -1631,6 +1636,7 @@
         "graph freshness"
       ],
       "prs": [
+        "80",
         "7",
         "4",
         "1"
@@ -1638,7 +1644,7 @@
       "issues": [
         "79"
       ],
-      "bytes": 5084,
+      "bytes": 5213,
       "degree": 18
     },
     {
@@ -1688,6 +1694,7 @@
         "automatic tracking issues"
       ],
       "prs": [
+        "80",
         "76",
         "72",
         "70",
@@ -1719,7 +1726,7 @@
         "75",
         "57"
       ],
-      "bytes": 13590,
+      "bytes": 13719,
       "degree": 56
     },
     {
