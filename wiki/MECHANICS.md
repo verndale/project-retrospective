@@ -48,14 +48,14 @@ Capture is backed by automation under `scripts/wiki/` — a safety net, not a re
 
 The knowledge graph renders a set of machine-generated connection pages — the exception to the closed set of authored page types:
 
-- [connections.md](connections.md) — a small index that routes to per-section files under `wiki/connections/`: [skill contract](connections/contract.md), [coverage](connections/coverage.md), [document links](connections/links.md), [wiki wiring](connections/wiki-wiring.md) — all rendered from the knowledge graph by [`scripts/graph/build-graph.cjs`](../scripts/graph/build-graph.cjs). **Do not hand-edit them.** They are rebuilt + staged by `.husky/pre-commit`, staged by the wiki bots, and verified byte-fresh by `pnpm evals:graph`; an edit that isn't a rebuild fails CI. To change them, change the skill or wiki and run `pnpm graph:build`.
+- [connections.md](connections.md) — a small index that routes to per-section files under `wiki/connections/`: [skill contract](connections/contract.md), [coverage](connections/coverage.md), [document links](connections/links.md), [wiki wiring](connections/wiki-wiring.md) — all rendered from the knowledge graph by [`scripts/graph/build-graph.cjs`](../scripts/graph/build-graph.cjs). **Do not hand-edit them.** They are rebuilt + staged by `.husky/pre-commit`, staged by the wiki bots, and verified byte-fresh by `pnpm graph:check`; an edit that isn't a rebuild fails CI. To change them, change the skill or wiki and run `pnpm graph:build`.
 
 The pages are deliberately excluded from the graph's own nodes so they never become self-referential mega-nodes.
 
 ## Content rules
 
 - Record the why and what was ruled out — the parts `git log` and CHANGELOG.md cannot tell you. Link to commits/PRs instead of duplicating them.
-- Topic frontmatter is part of navigation: `aliases` lists grounded natural-language lookup terms, and `covers` lists exact repo-relative surfaces the topic explains (a reference, a script, a doc). Covered paths must resolve to a graph node — a stale path fails `pnpm evals:graph` as a dangling edge.
+- Topic frontmatter is part of navigation: `aliases` lists grounded natural-language lookup terms, and `covers` lists exact repo-relative surfaces the topic explains (a reference, a script, a doc). Covered paths must resolve to a graph node — a stale path fails `pnpm graph:check` as a dangling edge.
 - Plain statements, no emphasis language. H2/H3 headers only.
 
 ## Size and pruning

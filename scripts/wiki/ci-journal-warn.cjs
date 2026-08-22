@@ -30,7 +30,7 @@ function warningForPaths(paths) {
 function main() {
   const idx = process.argv.indexOf("--files");
   if (idx === -1) return 0;
-  let paths = [];
+  let paths;
   try {
     paths = fs.readFileSync(process.argv[idx + 1], "utf8").split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
   } catch {

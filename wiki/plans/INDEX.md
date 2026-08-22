@@ -16,7 +16,7 @@ Every agent plan executed for this repo, gathered from Claude plan stores and Co
 - **out-of-scope** — targets another repo/product.
 - **not-verified** — recovered by `pnpm wiki:find-plans --archive`; nobody has checked yet whether it shipped.
 
-Totals: 9 implemented · 1 partial (10 plans).
+Totals: 10 implemented · 1 partial (11 plans).
 
 ## Plans
 
@@ -32,3 +32,4 @@ Totals: 9 implemented · 1 partial (10 plans).
 | 2026-08-09 | [Team Retrospective Knowledge and Accountability](2026-08-09-team-retrospective-knowledge-and-accountability.md) | partial | https://github.com/verndale/project-retrospective/issues/57, [PR #58](https://github.com/verndale/project-retrospective/pull/58) | retrospective-workflow |
 | 2026-08-12 | [Server-first component architecture and full library migration](2026-08-12-server-first-component-architecture.md) | implemented | issue #60 https://github.com/verndale/project-retrospective/issues/60, working tree, [PR #61](https://github.com/verndale/project-retrospective/pull/61) | library-capture |
 | 2026-08-13 | [Capture preflight schema v3 for accessible realizations](2026-08-13-capture-preflight-schema-v3-for-accessible-realizations.md) | implemented | [PR #64](https://github.com/verndale/project-retrospective/pull/64) | library-capture |
+| 2026-08-22 | [Standardize Retrospective quality and graph lifecycle](2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md) | implemented | working tree implementation for issue #79 | graph-wiki-subsystem |

@@ -2,7 +2,7 @@
 
 How the context wiki connects: journal → plan and page → topic.
 
-Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm evals:graph`.
+Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm graph:check`.
 
 ## Journal → plan
 
@@ -16,6 +16,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Complete captures with reviewed Figma promotion](../../wiki/journal/2026-08-18-governed-figma-capture-completion.md) → [Governed Figma completion for Action capture](../../wiki/plans/2026-08-18-governed-figma-capture-completion.md)
 - [Automate conditional retrospective tracking and capture lifecycle](../../wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md) → [Automate retrospective GitHub tracking, branches, lifecycle, and Figma delivery](../../wiki/plans/2026-08-19-automate-retrospective-github-tracking.md)
 - [Require source parity before component capture](../../wiki/journal/2026-08-19-source-parity-capture-contract.md) → [Source-parity capture contract](../../wiki/plans/2026-08-19-source-parity-capture-contract.md)
+- [Standardize quality and graph lifecycle](../../wiki/journal/2026-08-22-standardize-quality-and-graph-lifecycle.md) → [Standardize Retrospective quality and graph lifecycle](../../wiki/plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md)
 
 ## Page → topic
 
@@ -55,6 +56,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Automate conditional retrospective tracking and capture lifecycle](../../wiki/journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Require source parity before component capture](../../wiki/journal/2026-08-19-source-parity-capture-contract.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Require source parity before component capture](../../wiki/journal/2026-08-19-source-parity-capture-contract.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
+- [Standardize quality and graph lifecycle](../../wiki/journal/2026-08-22-standardize-quality-and-graph-lifecycle.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Brain promotion — Design History](../../wiki/topics/brain-promotion.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
@@ -69,3 +71,4 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Automate retrospective GitHub tracking, branches, lifecycle, and Figma delivery](../../wiki/plans/2026-08-19-automate-retrospective-github-tracking.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Source-parity capture contract](../../wiki/plans/2026-08-19-source-parity-capture-contract.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Source-parity capture contract](../../wiki/plans/2026-08-19-source-parity-capture-contract.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
+- [Standardize Retrospective quality and graph lifecycle](../../wiki/plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)

@@ -2,7 +2,7 @@
 
 Every reference and script `SKILL.md` declares. These edges are the build's integrity gate: if one of these files goes missing, `pnpm graph:build` fails.
 
-Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm evals:graph`.
+Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm graph:check`.
 
 ## References (19)
 

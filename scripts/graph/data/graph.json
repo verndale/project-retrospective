@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 116,
-    "edges": 301,
+    "nodes": 118,
+    "edges": 308,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 12,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 28,
-      "wiki-plan": 10,
+      "wiki-journal": 29,
+      "wiki-plan": 11,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 28,
       "covers": 28,
-      "links-to": 128,
-      "plan": 10,
+      "links-to": 132,
+      "plan": 11,
       "requires": 43,
       "tests": 14,
-      "topic": 50
+      "topic": 52
     }
   },
   "nodes": [
@@ -61,7 +61,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 6947,
+      "bytes": 8713,
       "degree": 6
     },
     {
@@ -73,7 +73,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 12323,
+      "bytes": 12756,
       "degree": 8
     },
     {
@@ -85,7 +85,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7434,
+      "bytes": 7394,
       "degree": 2
     },
     {
@@ -97,7 +97,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 4963,
+      "bytes": 4876,
       "degree": 3
     },
     {
@@ -121,7 +121,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 6705,
+      "bytes": 6732,
       "degree": 5
     },
     {
@@ -337,7 +337,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 1593,
+      "bytes": 1588,
       "degree": 1
     },
     {
@@ -409,7 +409,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 4987,
+      "bytes": 4952,
       "degree": 2
     },
     {
@@ -745,7 +745,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 80185,
+      "bytes": 80285,
       "degree": 5
     },
     {
@@ -781,7 +781,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 16073,
+      "bytes": 16130,
       "degree": 4
     },
     {
@@ -817,7 +817,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 22866,
+      "bytes": 22835,
       "degree": 6
     },
     {
@@ -853,7 +853,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 50239,
+      "bytes": 50232,
       "degree": 5
     },
     {
@@ -877,8 +877,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10095,
-      "degree": 38
+      "bytes": 10343,
+      "degree": 39
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1357,6 +1357,22 @@
       "degree": 6
     },
     {
+      "id": "wiki/journal/2026-08-22-standardize-quality-and-graph-lifecycle.md",
+      "label": "Standardize quality and graph lifecycle",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "79"
+      ],
+      "bytes": 1625,
+      "degree": 4
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -1537,6 +1553,20 @@
       "degree": 6
     },
     {
+      "id": "wiki/plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md",
+      "label": "Standardize Retrospective quality and graph lifecycle",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 2018,
+      "degree": 4
+    },
+    {
       "id": "wiki/plans/INDEX.md",
       "label": "Plan Audit",
       "type": "wiki-index",
@@ -1559,8 +1589,8 @@
         "57",
         "60"
       ],
-      "bytes": 3795,
-      "degree": 12
+      "bytes": 4019,
+      "degree": 13
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -1605,9 +1635,11 @@
         "4",
         "1"
       ],
-      "issues": [],
-      "bytes": 4454,
-      "degree": 14
+      "issues": [
+        "79"
+      ],
+      "bytes": 5084,
+      "degree": 18
     },
     {
       "id": "wiki/topics/library-capture.md",
@@ -2469,6 +2501,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-22-standardize-quality-and-graph-lifecycle.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -2608,6 +2647,13 @@
       "anchors": []
     },
     {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
       "source": "wiki/topics/brain-promotion.md",
       "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
       "type": "links-to",
@@ -2644,9 +2690,23 @@
     },
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/journal/2026-08-22-standardize-quality-and-graph-lifecycle.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "type": "links-to",
       "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md",
+      "type": "links-to",
+      "count": 1,
       "anchors": []
     },
     {
@@ -2935,6 +2995,11 @@
     {
       "source": "wiki/journal/2026-08-19-source-parity-capture-contract.md",
       "target": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
+      "type": "plan"
+    },
+    {
+      "source": "wiki/journal/2026-08-22-standardize-quality-and-graph-lifecycle.md",
+      "target": "wiki/plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md",
       "type": "plan"
     },
     {
@@ -3403,6 +3468,11 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-08-22-standardize-quality-and-graph-lifecycle.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
@@ -3470,6 +3540,11 @@
     {
       "source": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
       "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
     }
   ]

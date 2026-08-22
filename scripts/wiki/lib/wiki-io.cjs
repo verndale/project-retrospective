@@ -6,7 +6,6 @@
 // the merge automation can re-run without duplicating lines.
 
 const fs = require("node:fs");
-const path = require("node:path");
 
 function slugify(s) {
   return String(s || "")

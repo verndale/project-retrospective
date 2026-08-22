@@ -122,14 +122,14 @@ Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| [`commitlint.yml`](.github/workflows/commitlint.yml) | PRs to `main`, pushes to non-`main` | Commitlint on the PR title + commit range via the `@verndale/ai-commit` preset. |
+| [`commitlint.yml`](.github/workflows/commitlint.yml) | PRs to `main` (including title edits) | Blocking Commitlint check on the immutable PR title + base/head commit range via the public `@verndale/ai-commit` preset. |
 | [`pr.yml`](.github/workflows/pr.yml) | Pushes to non-`main`, `workflow_dispatch` | Creates/updates a draft PR by running `pnpm run pr:create` (`@verndale/ai-pr`). |
-| [`test.yml`](.github/workflows/test.yml) | PRs to `main`, pushes to non-`main`, `workflow_dispatch` | Runs `pnpm test` — the suites under `scripts/tests/` plus the graph freshness gate. |
+| [`quality.yml`](.github/workflows/quality.yml) | PRs to `main`, `workflow_dispatch` | Required `Quality / quality` check: full-repository ESLint, the Node suite, and check-only graph validation. |
 | [`release.yml`](.github/workflows/release.yml) | Pushes to `main` | Runs `semantic-release` to version, tag, write `CHANGELOG.md`, and cut a GitHub Release. |
 | [`wiki-sync.yml`](.github/workflows/wiki-sync.yml) | PR merged | Fills a journal entry's pending PR link, drafts a stub for an uncaptured substantive PR, and opens a `bot/wiki-sync/<pr>` PR. Never pushes to `main`. |
 | [`wiki-issue-sync.yml`](.github/workflows/wiki-issue-sync.yml) | Nightly, `workflow_dispatch` | Marks issues cited under a topic's Open threads as closed once they close. |
 
-Locally, the same commit standard is enforced by Husky hooks (`commit-msg`, `prepare-commit-msg`) installed via the `prepare` script. A `pre-commit` hook warns when a substantive change stages no journal entry and rebuilds + stages the knowledge graph; it never blocks. Add repository secret `PR_BOT_TOKEN` (classic PAT with `repo`) for `pr.yml` and the two wiki workflows; `pr.yml` falls back to the built-in `GITHUB_TOKEN` when unset.
+Locally, the same commit standard is enforced by Husky hooks (`commit-msg`, `prepare-commit-msg`) installed via the `prepare` script. `pre-commit` first auto-fixes staged JavaScript with lint-staged and blocks on remaining lint errors, then emits the advisory journal reminder, and finally rebuilds + stages the knowledge graph when no unstaged graph input is present; graph build/write failures remain advisory because CI validates freshness check-only. `pre-push` blocks on the stable Node suite. Add repository secret `PR_BOT_TOKEN` (classic PAT with `repo`) for `pr.yml` and the two wiki workflows; `pr.yml` falls back to the built-in `GITHUB_TOKEN` when unset.
 
 ### Knowledge graph & context wiki
 
@@ -137,8 +137,8 @@ Locally, the same commit standard is enforced by Husky hooks (`commit-msg`, `pre
 
 ```bash
 pnpm graph:build   # rebuild the committed graph + generated connections pages
-pnpm graph:view    # interactive Sigma.js viewer at http://localhost:4175
-pnpm evals:graph   # freshness, determinism, and the integrity gate
+pnpm graph:view    # interactive Sigma.js viewer at http://127.0.0.1:4175
+pnpm graph:check   # check-only freshness, determinism, and integrity gate
 ```
 
 The gate is the skill's own contract: `SKILL.md` declares its references and scripts, and a build that cannot resolve one of them fails. It runs inside `pnpm test`, so there is no separate workflow for it.
@@ -154,7 +154,10 @@ Releases use Conventional Commit types (`feat` → minor, `fix` → patch, `BREA
 
 ```bash
 pnpm install
-pnpm test        # the suites under scripts/tests/, then pnpm evals:graph — the quality gate
+pnpm lint          # full first-party JavaScript lint, no fixes
+pnpm test:fast     # stable Node suite used by pre-push
+pnpm verify:push   # the blocking pre-push contract
+pnpm verify:ci     # lint + Node suite + check-only graph validation
 ```
 
 The skill's own scripts are zero-dependency CommonJS: they run under plain `node` with no `node_modules`, so an installed copy works standalone.

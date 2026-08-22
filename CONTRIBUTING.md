@@ -7,7 +7,7 @@ This repository is the single source of truth for the `project-retrospective` ag
     pnpm install
     git checkout -b feat/my-skill-change
     # edit files under skills/project-retrospective/
-    pnpm test
+    pnpm verify:ci
     git add -A
     pnpm commit
     git push
@@ -31,7 +31,7 @@ And `wiki/` — the context wiki: why the repo is the way it is, as topics, a jo
 
 A change to the skill usually touches four things at once: the `SKILL.md` workflow step, the `references/*.md` it names, the script it invokes, and the test that covers it. `scripts/tests/` is the gate — run `pnpm test` before you push. `validate-report.cjs` is the sanctioned output validator; don't add a second one.
 
-Two of those four are now enforced structurally: the knowledge graph emits an edge from `SKILL.md` to every reference it links and every script it names, and fails the build when one does not resolve. `pnpm test` ends in `pnpm evals:graph`, so a stale committed graph fails the suite.
+Two of those four are now enforced structurally: the knowledge graph emits an edge from `SKILL.md` to every reference it links and every script it names, and fails the build when one does not resolve. `pnpm test` ends in `pnpm graph:check`, so a stale committed graph fails the suite.
 
 **Run `pnpm graph:build` and commit the result** whenever you change anything the graph indexes — which includes the tests themselves. The `pre-commit` hook does this for you and stages `scripts/graph/data/graph.json` and `wiki/connections*`; if you commit with `--no-verify`, rebuild by hand. Never hand-edit those files.
 
@@ -70,7 +70,16 @@ Examples:
     fix(scripts): Correct context-alias ambiguity handling in resolve
     docs(readme): Clarify user-level install flow
 
-The first line is validated by **commitlint** via the `commit-msg` hook and in CI. Use `pnpm commit` (runs `ai-commit run`) for an AI-assisted, pre-validated message; `OPENAI_API_KEY` in `.env` enables AI generation and is optional (safe fallback otherwise). See `.env-example`.
+The first line is validated by **commitlint** via the `commit-msg` hook and in CI. Scope is required and lowercase; the subject is required, cannot end in a period, and is limited to 50 characters. The full header is limited to 120 characters and body/footer lines to 72. Subject casing is intentionally unrestricted. Conventional breaking-change/revert parsing and Commitlint's upstream default ignores are preserved; there is no repository-specific scope allowlist or ignore callback.
+
+The root [`commitlint.config.cjs`](commitlint.config.cjs) consumes the public `@verndale/ai-commit` export. The blocking local hook, the squash-merge PR title, and every commit in the immutable PR base/head range all use that same config. `pnpm lint:commits:last` is only a local one-commit convenience; CI always checks the full PR range. With the pinned pnpm 10, pass flags directly (`pnpm run lint:commit --edit …`): inserting a standalone `--` forwards it to Commitlint and causes following flags to be treated as positional input. Use `pnpm commit` (runs `ai-commit run`) for AI-assisted authoring; `OPENAI_API_KEY` in `.env` is optional. The direct `commitlint` hook remains authoritative.
+
+## Quality gates
+
+- `pnpm lint` checks all first-party `.js`, `.cjs`, and `.mjs` files without modifying them; fixtures, generated graph data, and vendored viewer libraries are explicit exclusions.
+- `pnpm lint:fix` is the opt-in whole-repository fixer. The pre-commit hook fixes only staged JavaScript through lint-staged and blocks if errors remain.
+- `pnpm test:fast` runs the stable Node suite and is the blocking pre-push gate.
+- `pnpm verify:ci` runs full lint, the Node suite, and check-only graph validation. There is no typecheck command because this repository has no first-party TypeScript implementation.
 
 ## How changes reach users
 
@@ -81,7 +90,8 @@ The first line is validated by **commitlint** via the `commit-msg` hook and in C
 
 | Workflow | Trigger | Purpose |
 | --- | --- | --- |
-| [`.github/workflows/commitlint.yml`](.github/workflows/commitlint.yml) | PRs to `main`, pushes to non-`main` | Commitlint on PR title + commit range |
+| [`.github/workflows/commitlint.yml`](.github/workflows/commitlint.yml) | PRs to `main`, including title edits | `Commit message lint / commitlint`: same-config checks for PR title + immutable base/head range |
+| [`.github/workflows/quality.yml`](.github/workflows/quality.yml) | PRs to `main`, `workflow_dispatch` | `Quality / quality`: lint + Node tests + check-only graph validation |
 | [`.github/workflows/pr.yml`](.github/workflows/pr.yml) | Pushes to non-`main`, `workflow_dispatch` | Dogfood: install deps, run **`pnpm run pr:create`** |
 | [`.github/workflows/release.yml`](.github/workflows/release.yml) | Pushes to `main` | `semantic-release`: version bump, `CHANGELOG.md`, Git tag + GitHub Release |
 

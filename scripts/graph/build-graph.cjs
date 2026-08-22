@@ -491,7 +491,7 @@ function renderConnections(graph) {
     "",
     desc,
     "",
-    "Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm evals:graph`.",
+    "Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm graph:check`.",
     "",
   ];
 
@@ -587,7 +587,7 @@ function renderConnections(graph) {
       "# Connections — skill + wiki wiring",
       "",
       "Generated from the knowledge graph ([`scripts/graph/build-graph.cjs`](../scripts/graph/build-graph.cjs)) — **do not edit by hand**.",
-      "Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm evals:graph`. It maps how the skill, the repo",
+      "Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm graph:check`. It maps how the skill, the repo",
       "tooling, and the context wiki wire together (open the graph viewer with `pnpm graph:view` for the full,",
       "interactive picture).",
       "",
