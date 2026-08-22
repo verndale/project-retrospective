@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-08-22 — [Standardize quality and graph lifecycle](journal/2026-08-22-standardize-quality-and-graph-lifecycle.md) — staged linting, blocking push/PR gates, one public Commitlint config, and unstaged-safe curated graph lifecycle behavior.
 - 2026-08-19 — [Require source parity before component capture](journal/2026-08-19-source-parity-capture-contract.md) — pinned source revisions, one-to-one decision artifacts, and schema-v5 preflight prevent normalized code/Figma agreement from hiding lost source behavior.
 - 2026-08-19 — [Automate conditional retrospective tracking and capture lifecycle](journal/2026-08-19-automatic-retrospective-tracking-lifecycle.md) — deterministic targets now gate automatic issues and local branches while schema-v4 evidence resumes safely across code, Figma, and landing.
 - 2026-08-18 — [Harden Figma promotion preflight after adversarial review](journal/2026-08-18-adversarial-review-figma-promotion-preflight.md) — placeholder capabilities, ambiguous write authority, and hidden Code Connect surfaces now block capture.
@@ -69,4 +70,4 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 ## Connections
 
-- [Skill + wiki wiring](connections.md) — a small index that routes to the generated map of how the skill, the repo tooling, and the wiki wire together: [skill contract](connections/contract.md), [coverage](connections/coverage.md), [document links](connections/links.md), [wiki wiring](connections/wiki-wiring.md). Rendered from the knowledge graph; **do not hand-edit** — rebuilt by `pnpm graph:build` and verified by `pnpm evals:graph`.
+- [Skill + wiki wiring](connections.md) — a small index that routes to the generated map of how the skill, the repo tooling, and the wiki wire together: [skill contract](connections/contract.md), [coverage](connections/coverage.md), [document links](connections/links.md), [wiki wiring](connections/wiki-wiring.md). Rendered from the knowledge graph; **do not hand-edit** — rebuilt by `pnpm graph:build` and verified by `pnpm graph:check`.

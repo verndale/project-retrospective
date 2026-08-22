@@ -788,6 +788,7 @@ function sameKeys(value, expected) {
 
 function safeModulePath(modulePath) {
   if (typeof modulePath !== 'string' || !modulePath || modulePath !== modulePath.trim()) return false;
+  // eslint-disable-next-line no-control-regex -- module paths must reject every ASCII control byte
   if (modulePath.includes('\\') || modulePath.includes(':') || /[\u0000-\u001f\u007f]/.test(modulePath)) return false;
   if (path.posix.isAbsolute(modulePath) || /^[A-Za-z]:/.test(modulePath)) return false;
   if (path.posix.normalize(modulePath) !== modulePath) return false;

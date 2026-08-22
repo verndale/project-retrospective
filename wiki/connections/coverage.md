@@ -2,7 +2,7 @@
 
 Which script each suite exercises, how the modules depend on one another, and which surfaces each wiki topic explains. Together these are the "four surfaces move together" rule, made visible.
 
-Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm evals:graph`.
+Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm graph:check`.
 
 ## Test → script
 

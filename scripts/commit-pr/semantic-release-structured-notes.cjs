@@ -1,6 +1,4 @@
 /* scripts/commit-pr/semantic-release-structured-notes.cjs */
-const crypto = require("node:crypto");
-
 function shortHash(h) {
   return (h || "").slice(0, 7);
 }

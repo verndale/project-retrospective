@@ -63,6 +63,6 @@ server.listen(PORT, "127.0.0.1", () => {
   if (!fs.existsSync(path.join(ROOT, "data", "graph.json"))) {
     console.log("Note: data/graph.json not found — run `pnpm graph:build` first.\n");
   }
-  console.log(`Knowledge graph viewer → http://localhost:${PORT}`);
+  console.log(`Knowledge graph viewer → http://127.0.0.1:${PORT}`);
   console.log("Press Ctrl+C to stop.");
 });

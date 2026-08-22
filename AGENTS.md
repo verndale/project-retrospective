@@ -19,7 +19,7 @@ Skill-authoring templates live in `skills/_meta/` (sibling of the skill) — aut
 
 ## Environment
 
-Node 24+ and pnpm 10+ (via Corepack); `pnpm install`. Skill scripts are zero-dependency CommonJS and run on plain `node` — they must keep working when vendored into a repo with no `node_modules`. `pnpm test` is the quality gate: it runs the suites under `scripts/tests/` and then `pnpm evals:graph`. The commit/release tooling is the maintainer's job (see below).
+Node 24+ and pnpm 10+ (via Corepack); `pnpm install`. Skill scripts are zero-dependency CommonJS and run on plain `node` — they must keep working when vendored into a repo with no `node_modules`. `pnpm test` is the quality gate: it runs the suites under `scripts/tests/` and then `pnpm graph:check`. The commit/release tooling is the maintainer's job (see below).
 
 ## Editing this skill
 
@@ -53,7 +53,7 @@ The skill's workflow, its references, its scripts, and its tests are one unit. A
 
 - **The graph is derived, never authoritative.** If the graph and a file disagree, the file is right and the graph is stale. Run `pnpm graph:build`.
 - **The gate is the skill's own contract.** `SKILL.md` → every reference it links and every script it names, emitted whether or not the target exists. Rename a reference without updating `SKILL.md` and the build fails. The same applies to a topic's `covers:`, a page's `topics:`, and a journal entry's `plan:`.
-- **`data/graph.json` and `wiki/connections*` are generated and committed.** Never hand-edit them; `.husky/pre-commit` rebuilds and stages them, and `pnpm evals:graph` fails on drift.
+- **`data/graph.json` and `wiki/connections*` are generated and committed.** Never hand-edit them; `.husky/pre-commit` rebuilds and stages them, and `pnpm graph:check` fails on drift.
 - **The graph's four surfaces move together**: `build-graph.cjs`, the viewer's type tables, `routing-policy.json`, and `scripts/tests/build-graph.test.cjs`. Changing the node or edge model means changing all four and the README table.
 - Slack ingestion is intentionally **not** part of this subsystem.
 
