@@ -2,7 +2,7 @@
 date: 2026-08-22
 topics: [graph-wiki-subsystem]
 plan: plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/80
 issue: https://github.com/verndale/project-retrospective/issues/79
 ---
 # Standardize quality and graph lifecycle

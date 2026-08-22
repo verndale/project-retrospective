@@ -20,6 +20,7 @@ The deterministic graph, its skill-contract integrity gate, the vendored Sigma.j
 
 ## Decisions
 
+- 2026-08-22 — chore(tooling): standardize quality gates ([PR #80](https://github.com/verndale/project-retrospective/pull/80))
 - 2026-08-22 — Kept the curated graph lifecycle advisory at commit time but made it skip unstaged inputs and fail open on generated writes; the stable push gate runs the Node suite and `Quality / quality` adds non-mutating lint plus graph validation ([issue #79](https://github.com/verndale/project-retrospective/issues/79), [plan](../plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md), [journal](../journal/2026-08-22-standardize-quality-and-graph-lifecycle.md)).
 - 2026-07-27 — feat(project-retrospective): Enhance graph builder to include module ([PR #7](https://github.com/verndale/project-retrospective/pull/7))
 - 2026-07-27 — Added the `requires` edge and indexed all of `scripts/` rather than an allow-list of subdirectories. `pnpm graph:navigate` dead-ended on every tooling file, which fails open into exactly the broad context read the instruction to use it is meant to prevent. Also indexed `.md` under `scripts/` so `scripts/graph/README.md`, which defines the integrity gate, is no longer outside the graph it documents.

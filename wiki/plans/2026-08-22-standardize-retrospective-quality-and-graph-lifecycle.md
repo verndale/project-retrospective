@@ -4,6 +4,7 @@ executed: 2026-08-22
 date: 2026-08-22
 evidence:
   - "working tree implementation for issue #79"
+  - "PR #80 https://github.com/verndale/project-retrospective/pull/80 (merged 2026-08-22)"
 source_tool: file
 source: "/private/tmp/retro-issue-79-quality-graph-plan.md"
 topics: [graph-wiki-subsystem]

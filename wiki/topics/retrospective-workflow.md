@@ -22,6 +22,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-08-22 — chore(tooling): standardize quality gates ([PR #80](https://github.com/verndale/project-retrospective/pull/80))
 - 2026-08-20 — feat(project-retrospective): Enforce source-parity capture contract ([PR #76](https://github.com/verndale/project-retrospective/pull/76))
 - 2026-08-19 — Pinned Git source snapshots during inventory and made one validated source-parity artifact mandatory per capture; legacy runs remain readable, but reopened actionable captures must reconstruct or explicitly grade their provenance ([issue #75](https://github.com/verndale/project-retrospective/issues/75), [plan](../plans/2026-08-19-source-parity-capture-contract.md), [journal](../journal/2026-08-19-source-parity-capture-contract.md)).
 
