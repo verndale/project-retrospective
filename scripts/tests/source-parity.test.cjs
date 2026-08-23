@@ -99,6 +99,8 @@ test('accepted decisions require explicit implementation status and completed re
     implementationStatus: 'complete',
     targetSurfaces: ['code'],
   };
+  artifact.reviews.adversarial = { status: 'pending', evidence: [] };
+  artifact.reviews.design = { status: 'pending', evidence: [] };
   writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
   const result = validate(root);
   assert.equal(result.status, 1);
@@ -120,6 +122,7 @@ test('completed remediation requires a post-remediation source-parity pass', () 
   };
   artifact.reviews.adversarial = { status: 'passed', evidence: ['review/adversarial.md'] };
   artifact.reviews.design = { status: 'passed', evidence: ['review/design.md'] };
+  artifact.reviews.sourceParity.phase = 'decision';
   writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
   const decisionPhase = validate(root);
   assert.equal(decisionPhase.status, 1);
@@ -128,6 +131,89 @@ test('completed remediation requires a post-remediation source-parity pass', () 
   artifact.reviews.sourceParity.phase = 'post-remediation';
   writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
   assert.equal(validate(root).status, 0);
+});
+
+test('source-parity v2 requires an explicit interaction-state disposition', () => {
+  const root = tempFixture('fake-output');
+  const artifact = JSON.parse(readFile(root, 'source-parity/modal.json'));
+  delete artifact.interactionStates;
+  writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
+  const result = validate(root);
+  assert.equal(result.status, 1);
+  assert.ok(result.json.issues.some((entry) => entry.code === 'interaction-states'));
+});
+
+test('not-applicable interaction states require a reason and an empty inventory', () => {
+  const valid = tempFixture('fake-output');
+  const artifact = JSON.parse(readFile(valid, 'source-parity/modal.json'));
+  artifact.interactionStates = {
+    status: 'not-applicable',
+    reason: 'The normalized component is static and exposes no interactive behavior or state.',
+    states: [],
+  };
+  writeFile(valid, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
+  assert.equal(validate(valid).status, 0);
+
+  const malformed = tempFixture('fake-output');
+  const badArtifact = JSON.parse(readFile(malformed, 'source-parity/modal.json'));
+  badArtifact.interactionStates = { status: 'not-applicable', reason: '', states: [{}], storyExport: 'InteractionStates' };
+  writeFile(malformed, 'source-parity/modal.json', `${JSON.stringify(badArtifact, null, 2)}\n`);
+  const result = validate(malformed);
+  assert.equal(result.status, 1);
+  assert.ok(result.json.issues.filter((entry) => entry.code === 'interaction-states').length >= 2);
+});
+
+test('runtime-only states require behavior evidence and cannot claim Figma nodes', () => {
+  const root = tempFixture('fake-output');
+  const artifact = JSON.parse(readFile(root, 'source-parity/modal.json'));
+  const runtime = artifact.interactionStates.states.find((state) => state.classification === 'runtime-only');
+  runtime.source.trigger = 'pseudo';
+  runtime.reason = '';
+  runtime.evidence = [];
+  runtime.frameNodeId = '1:2';
+  writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
+  const result = validate(root);
+  assert.equal(result.status, 1);
+  assert.ok(result.json.issues.some((entry) => entry.code === 'interaction-state-runtime'));
+  assert.ok(result.json.issues.some((entry) => entry.code === 'interaction-state-node-ids'));
+});
+
+test('visual states require governed classifications, stable ids, and declared citations', () => {
+  const root = tempFixture('fake-output');
+  const artifact = JSON.parse(readFile(root, 'source-parity/modal.json'));
+  const visual = artifact.interactionStates.states[0];
+  visual.id = 'Open State';
+  visual.classification = 'screenshot';
+  visual.sourceCitationIds = ['src-missing'];
+  writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
+  const result = validate(root);
+  assert.equal(result.status, 1);
+  assert.ok(result.json.issues.some((entry) => entry.code === 'interaction-state-id'));
+  assert.ok(result.json.issues.some((entry) => entry.code === 'interaction-state-classification'));
+  assert.ok(result.json.issues.some((entry) => entry.code === 'interaction-state-citations'));
+});
+
+test('legacy v1 is readable only after the matching capture is landed', () => {
+  const pending = tempFixture('fake-output');
+  const pendingArtifact = JSON.parse(readFile(pending, 'source-parity/modal.json'));
+  pendingArtifact.schemaVersion = 1;
+  delete pendingArtifact.interactionStates;
+  writeFile(pending, 'source-parity/modal.json', `${JSON.stringify(pendingArtifact, null, 2)}\n`);
+  const pendingResult = validate(pending);
+  assert.equal(pendingResult.status, 1);
+  assert.ok(pendingResult.json.issues.some((entry) => entry.code === 'artifact-schema'));
+
+  const landed = tempFixture('fake-output');
+  const landedArtifact = JSON.parse(readFile(landed, 'source-parity/modal.json'));
+  landedArtifact.schemaVersion = 1;
+  delete landedArtifact.interactionStates;
+  writeFile(landed, 'source-parity/modal.json', `${JSON.stringify(landedArtifact, null, 2)}\n`);
+  writeFile(
+    landed,
+    'captures/modal.md',
+    `${readFile(landed, 'captures/modal.md')}\n## Applied\n\n\`\`\`json\n{ "status": "landed" }\n\`\`\`\n`,
+  );
+  assert.equal(validate(landed).status, 0);
 });
 
 test('source citations cannot escape the analyzed repository', () => {

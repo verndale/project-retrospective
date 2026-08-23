@@ -149,6 +149,7 @@ Story plan — one story per meaningful state, since the story file is the libra
 - `Default` — title, body, and one action.
 - `Wide` — the `wide` variant at the breakpoint where the layout changes.
 - `NoActions` — the optional `actions` slot omitted.
+- `InteractionStates` — the source-parity v2 state matrix; force only code-backed pseudo-states and keep focus containment/restoration in its play evidence.
 
 ## Progress
 

@@ -6,6 +6,7 @@ Use this contract before drafting or applying any component capture. It records 
 
 - Source snapshot
 - Audit matrix
+- Interaction-state inventory
 - Difference classifications
 - Artifact contract
 - Decision rules
@@ -32,13 +33,28 @@ Review every surface; do not infer one from another:
 2. Source visual layout — responsive sizing, ordering, overflow, cardinality, peek/containment, and exact values that define recognition.
 3. Source invariants — semantics, accessible names, native structures, IDREFs, motion/reduced-motion, and ownership boundaries.
 4. Normalized code — public TypeScript API, defaults, DOM, styling, and implementation architecture.
-5. Storybook — controlled props, representative compositions, widths, and play-function evidence.
-6. Figma — canonical master, public properties, variants, responsive specimens, and stable identity.
+5. Storybook — controlled props, representative compositions, widths, an `InteractionStates` export (or explicit component-level not-applicable result), forced pseudo-state evidence, and play-function evidence for runtime behavior.
+6. Figma — canonical master, public properties, variants, responsive specimens, stable identity, and state specimens linked to the registered master.
 7. AI registry — canonical/variant resolution, export, rendering, reuse fingerprint, and realization.
 
 Inspect direct importers and composed consumers when they own sizing or composition. A primitive's source directory alone is insufficient when the recognizable behavior is applied by its consumers.
 
 Reject client branding, copy, CMS data mapping, analytics, routing, and project orchestration unless they expose a reusable invariant. Record the rejection; do not silently drop the fact.
+
+## Interaction-state inventory
+
+Every source-parity v2 artifact has an `interactionStates` block. Use `status: covered` when source or normalized code exposes any user-observable interaction state. Use `status: not-applicable` only with an explicit component-level reason and `states: []`; it does not declare a Storybook export.
+
+A covered inventory uses `storyExport: InteractionStates`. Each state declares:
+
+- a stable lowercase dot/kebab `id` and human `label`;
+- `source.trigger`: `pseudo`, `public-prop`, `derived-state`, or `behavior`, plus the exact source `value`;
+- the rendered or behavioral `target` and one or more declared `sourceCitationIds`;
+- Figma `classification`: `rendered`, `already-represented`, or `runtime-only`.
+
+`rendered` means the Figma matrix needs a new connected state specimen. `already-represented` means the matrix reuses an existing public property or master variant. Both receive frame, instance, and component-node IDs later in `figma.library.json`, never in private source-parity evidence. `runtime-only` is reserved for behavior across time—keyboard navigation, focus containment/restoration, inert handling, motion timing, and announcements. It must use the `behavior` trigger and include a reason plus non-empty executable evidence. Never turn it into a misleading static frame.
+
+Do not invent states. If Pressed, Loading, Error, or another state is absent from source and normalized code, it is absent from this inventory.
 
 ## Difference classifications
 
@@ -61,7 +77,7 @@ Write exactly one `source-parity/<component-key>.json` beside each `captures/<co
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "componentKey": "notice-panel",
   "canonical": "Notice panel",
   "capture": "captures/notice-panel.md",
@@ -101,6 +117,30 @@ Write exactly one `source-parity/<component-key>.json` beside each `captures/<co
     "figma": "reviewed",
     "aiRegistry": "reviewed"
   },
+  "interactionStates": {
+    "status": "covered",
+    "storyExport": "InteractionStates",
+    "states": [
+      {
+        "id": "notice.dismiss-hover",
+        "label": "Dismiss hover",
+        "source": { "trigger": "pseudo", "value": ":hover" },
+        "target": "Dismiss button",
+        "sourceCitationIds": ["src-notice-panel"],
+        "classification": "rendered"
+      },
+      {
+        "id": "notice.dismiss-announcement",
+        "label": "Dismiss announcement",
+        "source": { "trigger": "behavior", "value": "dismissal status announcement" },
+        "target": "Assistive-technology announcement",
+        "sourceCitationIds": ["src-notice-panel"],
+        "classification": "runtime-only",
+        "reason": "An announcement requires executable assistive-technology evidence and has no honest static appearance.",
+        "evidence": ["notice.dismiss.announcement"]
+      }
+    ]
+  },
   "observations": [{
     "id": "sp-notice-panel-001",
     "kind": "behavior",
@@ -128,6 +168,8 @@ Write exactly one `source-parity/<component-key>.json` beside each `captures/<co
 ```
 
 Allowed observation kinds are `behavior`, `visual-layout`, and `invariant`. Allowed target surfaces are `code`, `storybook`, `figma`, `ai-registry`, `brain`, and `evidence`.
+
+New analyze runs always emit schema v2. Pending, deferred, ready, or reopened actionable captures require v2. A schema-v1 companion remains readable only when its matching capture is already landed/skipped; reactivation requires upgrading the companion to v2 before work resumes.
 
 Use `remediationStatus: not-required` when no accepted difference exists, `pending` while any accepted decision remains unrepresented, and `complete` only after every accepted decision is represented and fresh review evidence exists. `status` is `actionable` only while remediation is pending; it becomes `cleared` for `not-required` or completed work. Preserved observations use `classification: null`, `decision: document`, `implementationStatus: not-required`, and no remediation targets. Accepted observations use `implementationStatus: pending` or `complete`.
 
@@ -157,8 +199,8 @@ node <skill>/scripts/source-parity.cjs \
   --pretty
 ```
 
-`validate-report.cjs` invokes the same implementation and fails a full run when cardinality, inspected-source coverage, citations and real line ranges, normalized coverage, classifications, decisions, review phases, or pinned hashes do not validate. `capture-preflight.cjs` revalidates structure, returns the decisions in its schema-v5 plan, and blocks any capture without a passed decision-phase source-parity review.
+`validate-report.cjs` invokes the same implementation and fails a full run when cardinality, inspected-source coverage, citations and real line ranges, normalized coverage, interaction-state classification, decisions, review phases, or pinned hashes do not validate. `capture-preflight.cjs` revalidates structure, returns `interactionStates` separately from `componentJson`, `architecture`, and the source-parity decision summary in its schema-v6 plan, and blocks any capture without a passed source-parity review.
 
-Historical landed captures remain unchanged. If a historical capture becomes actionable again, add a new companion artifact before preflight; use `reconstructed` provenance where possible and `legacy-untracked` only when recovery is impossible.
+Historical landed/skipped schema-v1 captures remain readable. If one becomes actionable again, upgrade its companion to v2 before preflight; use `reconstructed` provenance where possible and `legacy-untracked` only when recovery is impossible.
 
 The source-parity artifact records the decision's implementation state at run handback. Capture `## Progress` and `## Applied` continue to record the detailed implementation lifecycle. Do not rewrite a historical artifact merely because later library work supersedes it; write the later audit/lifecycle record in the private evidence repository.

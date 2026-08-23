@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 116,
-    "edges": 301,
+    "nodes": 118,
+    "edges": 308,
     "byType": {
       "root-doc": 4,
       "repo-script": 17,
@@ -13,18 +13,18 @@
       "skill-script": 12,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 28,
-      "wiki-plan": 10,
+      "wiki-journal": 29,
+      "wiki-plan": 11,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 28,
       "covers": 28,
-      "links-to": 128,
-      "plan": 10,
+      "links-to": 132,
+      "plan": 11,
       "requires": 43,
       "tests": 14,
-      "topic": 50
+      "topic": 52
     }
   },
   "nodes": [
@@ -73,7 +73,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 12323,
+      "bytes": 12417,
       "degree": 8
     },
     {
@@ -193,7 +193,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 53116,
+      "bytes": 58888,
       "degree": 2
     },
     {
@@ -277,7 +277,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7667,
+      "bytes": 12088,
       "degree": 2
     },
     {
@@ -289,7 +289,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 11409,
+      "bytes": 12528,
       "degree": 2
     },
     {
@@ -481,7 +481,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 27680,
+      "bytes": 28212,
       "degree": 4
     },
     {
@@ -541,7 +541,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 17744,
+      "bytes": 19452,
       "degree": 3
     },
     {
@@ -565,7 +565,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 13714,
+      "bytes": 14475,
       "degree": 3
     },
     {
@@ -625,7 +625,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10077,
+      "bytes": 13041,
       "degree": 4
     },
     {
@@ -661,7 +661,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 7395,
+      "bytes": 7645,
       "degree": 4
     },
     {
@@ -745,7 +745,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 80185,
+      "bytes": 87434,
       "degree": 5
     },
     {
@@ -817,7 +817,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 22866,
+      "bytes": 29118,
       "degree": 6
     },
     {
@@ -865,7 +865,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 41764,
+      "bytes": 43454,
       "degree": 51
     },
     {
@@ -877,8 +877,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10095,
-      "degree": 38
+      "bytes": 10337,
+      "degree": 39
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1357,6 +1357,22 @@
       "degree": 6
     },
     {
+      "id": "wiki/journal/2026-08-21-govern-figma-state-capture.md",
+      "label": "Govern interaction states through component capture",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "78"
+      ],
+      "bytes": 2157,
+      "degree": 4
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -1537,6 +1553,20 @@
       "degree": 6
     },
     {
+      "id": "wiki/plans/2026-08-21-governed-figma-interaction-states-and-retrospective-capture.md",
+      "label": "Governed Figma Interaction States and Retrospective Capture",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "bytes": 9392,
+      "degree": 4
+    },
+    {
       "id": "wiki/plans/INDEX.md",
       "label": "Plan Audit",
       "type": "wiki-index",
@@ -1559,8 +1589,8 @@
         "57",
         "60"
       ],
-      "bytes": 3795,
-      "degree": 12
+      "bytes": 4069,
+      "degree": 13
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -1631,14 +1661,15 @@
       ],
       "prs": [],
       "issues": [
+        "78",
         "75",
         "69",
         "66",
         "63",
         "60"
       ],
-      "bytes": 12237,
-      "degree": 35
+      "bytes": 13229,
+      "degree": 39
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -2469,6 +2500,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-21-govern-figma-state-capture.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -2608,6 +2646,13 @@
       "anchors": []
     },
     {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-08-21-governed-figma-interaction-states-and-retrospective-capture.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
       "source": "wiki/topics/brain-promotion.md",
       "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
       "type": "links-to",
@@ -2714,6 +2759,13 @@
     },
     {
       "source": "wiki/topics/library-capture.md",
+      "target": "wiki/journal/2026-08-21-govern-figma-state-capture.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
       "target": "wiki/plans/2026-08-12-server-first-component-architecture.md",
       "type": "links-to",
       "count": 1,
@@ -2743,6 +2795,13 @@
     {
       "source": "wiki/topics/library-capture.md",
       "target": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
+      "target": "wiki/plans/2026-08-21-governed-figma-interaction-states-and-retrospective-capture.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -2935,6 +2994,11 @@
     {
       "source": "wiki/journal/2026-08-19-source-parity-capture-contract.md",
       "target": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
+      "type": "plan"
+    },
+    {
+      "source": "wiki/journal/2026-08-21-govern-figma-state-capture.md",
+      "target": "wiki/plans/2026-08-21-governed-figma-interaction-states-and-retrospective-capture.md",
       "type": "plan"
     },
     {
@@ -3403,6 +3467,11 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-08-21-govern-figma-state-capture.md",
+      "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
@@ -3470,6 +3539,11 @@
     {
       "source": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
       "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-08-21-governed-figma-interaction-states-and-retrospective-capture.md",
+      "target": "wiki/topics/library-capture.md",
       "type": "topic"
     }
   ]

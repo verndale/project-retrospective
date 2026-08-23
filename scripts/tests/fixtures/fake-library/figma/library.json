@@ -13,6 +13,13 @@
         "tabletLarge": 1024,
         "tabletSmall": 768,
         "mobile": 390
+      },
+      "interactionStates": {
+        "presentation": "Interaction states",
+        "masterPolicy": "documentation-specimens-only",
+        "instancePolicy": "connected-to-registered-master",
+        "labels": "outside-instance",
+        "visualSource": "semantic-variables"
       }
     }
   },
