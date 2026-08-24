@@ -16,7 +16,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { build, render, renderConnections, OUT_FILE, REPO_ROOT, CONNECTIONS_DIR_ID } = require("../graph/build-graph.cjs");
+const { build, render, renderConnections, danglingEdges, OUT_FILE, REPO_ROOT, CONNECTIONS_DIR_ID } = require("../graph/build-graph.cjs");
 const { loadPolicy, policyProblems } = require("../graph/routing.cjs");
 
 function run() {
@@ -79,8 +79,7 @@ function run() {
     } catch (error) {
       check("routing policy parses", false, [error.message]);
     }
-    const ids = new Set(graph.nodes.map((n) => n.id));
-    const dangling = graph.edges.filter((e) => !ids.has(e.source) || !ids.has(e.target));
+    const dangling = danglingEdges(graph);
     check(
       "no edges with unresolved endpoints",
       dangling.length === 0,

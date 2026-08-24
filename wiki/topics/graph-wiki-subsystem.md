@@ -1,6 +1,6 @@
 ---
-aliases: [knowledge graph, context wiki, skill contract gate, sigma.js viewer, plan capture, connections pages, graph freshness]
-covers: [scripts/graph/build-graph.cjs, scripts/graph/serve.cjs, scripts/graph/README.md, scripts/evals/graph-check.cjs, scripts/wiki/refresh-issue-state.cjs, wiki/MECHANICS.md]
+aliases: [knowledge graph, context wiki, skill contract gate, sigma.js viewer, plan capture, connections pages, graph freshness, GitHub evidence routing, wiki actions, manual PR replay]
+covers: [scripts/graph/build-graph.cjs, scripts/graph/routing.cjs, scripts/graph/pre-commit.cjs, scripts/graph/serve.cjs, scripts/graph/README.md, scripts/evals/graph-check.cjs, scripts/wiki/lib/github.cjs, scripts/wiki/on-merge-sync.cjs, scripts/wiki/refresh-issue-state.cjs, wiki/MECHANICS.md]
 ---
 # Knowledge graph & context wiki — Design History
 
@@ -8,11 +8,14 @@ The deterministic graph, its skill-contract integrity gate, the vendored Sigma.j
 
 ## Current state
 
-- `pnpm graph:build` derives `scripts/graph/data/graph.json` from the skill, the repo tooling, the tests, the root docs, and the wiki. `pnpm graph:view` renders it with a vendored Sigma.js stack on port 4175. `pnpm evals:graph` byte-compares a fresh rebuild against the committed artifacts and gates freshness.
+- `pnpm graph:build` derives `scripts/graph/data/graph.json` from the skill, the repo tooling, the tests, the root docs, and the wiki. `pnpm graph:view` renders it with a vendored Sigma.js stack on loopback port 4175. `pnpm graph:check` byte-compares a fresh rebuild against the committed artifacts and gates freshness without writes.
 - Node types: `skill`, `skill-readme`, `skill-reference`, `skill-script`, `authoring-spec`, `repo-script`, `tooling-doc`, `test`, `root-doc`, and the four `wiki-*` kinds. Edge types: `contracts`, `requires`, `tests`, `links-to`, `topic`, `plan`, `covers`.
 - `contracts` is the integrity gate. The catalog repo validates its manifest against the pattern files it lists; this repo has no catalog, so the equivalent declaration is the skill's own contract — `SKILL.md` to every reference it links and every script it names. Those edges are emitted whether or not the target exists, so a renamed reference fails the build.
-- `tests`, `topic`, `plan`, and `covers` are emitted the same way. A topic that claims to cover a surface which has moved fails the build as a dangling edge.
-- The freshness gate composes into `pnpm test` rather than a separate workflow, so the existing `test.yml` covers it.
+- `topic`, `plan`, and `covers` are emitted even when unresolved. A topic that claims to cover a surface which has moved fails the build as a dangling edge; `tests` remains resolve-only because the skill contract already gates deleted runtime scripts.
+- The freshness gate composes into `pnpm test`, and the stable `Quality / quality` job runs the full non-mutating repository verification.
+- Markdown nodes carry additive repo-qualified `githubRefs`; the router and viewer search those citations without adding live GitHub nodes. Routes report a byte-costed itinerary so an agent can stop reading as soon as it has enough evidence.
+- Merge sync can replay any already-merged PR, reads all file/commit pages into temporary JSON, reconciles every closing issue, and opens `bot/wiki-*` review branches with explicit bot authentication. Issue refresh deduplicates live lookups by repository and number, checks every citation on an Open threads line, and annotates it only when all are confirmed closed. `Wiki integrity / check` is the focused graph/wiki backstop.
+- Fence-aware evidence and Markdown-link extraction track delimiter length, and issue refresh refuses symlinked pages or wiki roots. Reconciliation validates the PR URL, repository, number, paths, and commits before writes; writer branches are fetched for lease-safe updates and closed unmerged review PRs are reopened. CLI and browser routing share byte weighting, URL suffix normalization, explicit authority, and fail-closed policy checks.
 - The wiki captures executed plans, decisions, and change history. Slack ingestion is deliberately excluded.
 - `wiki/connections.md` and the four section files under `wiki/connections/` are generated views, excluded from the graph's own nodes so they never become self-referential mega-nodes.
 
@@ -20,6 +23,11 @@ The deterministic graph, its skill-contract integrity gate, the vendored Sigma.j
 
 ## Decisions
 
+- 2026-08-24 — fix(project-retrospective): Update wiki guidance and graph data ([verndale/project-retrospective PR #84](https://github.com/verndale/project-retrospective/pull/84))
+- 2026-08-24 — Replaced generic hand-authored traversal prose with the canonical headless managed block while retaining this public repository's graph, evidence, authoring, and privacy rules as repository-owned guidance ([plan](../plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md), [journal](../journal/2026-08-24-deterministic-agent-wiki-guidance.md)).
+- 2026-08-23 — Standardized offline GitHub evidence metadata, token-efficient routing, the five workflow identities, replayable paginated merge reconciliation, and contamination-safe hook behavior ([verndale/project-retrospective issue #83](https://github.com/verndale/project-retrospective/issues/83), [plan](../plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md), [journal](../journal/2026-08-23-wiki-actions-evidence-routing.md)).
+- 2026-08-22 — chore(tooling): standardize quality gates ([PR #80](https://github.com/verndale/project-retrospective/pull/80))
+- 2026-08-22 — Kept the curated graph lifecycle advisory at commit time but made it skip unstaged inputs and fail open on generated writes; the stable push gate runs the Node suite and `Quality / quality` adds non-mutating lint plus graph validation ([issue #79](https://github.com/verndale/project-retrospective/issues/79), [plan](../plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md), [journal](../journal/2026-08-22-standardize-quality-and-graph-lifecycle.md)).
 - 2026-07-27 — feat(project-retrospective): Enhance graph builder to include module ([PR #7](https://github.com/verndale/project-retrospective/pull/7))
 - 2026-07-27 — Added the `requires` edge and indexed all of `scripts/` rather than an allow-list of subdirectories. `pnpm graph:navigate` dead-ended on every tooling file, which fails open into exactly the broad context read the instruction to use it is meant to prevent. Also indexed `.md` under `scripts/` so `scripts/graph/README.md`, which defines the integrity gate, is no longer outside the graph it documents.
 - 2026-07-27 — chore(project-retrospective): merge main and rebuild graph ([PR #4](https://github.com/verndale/project-retrospective/pull/4))

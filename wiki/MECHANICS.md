@@ -36,9 +36,9 @@ PR number and commit sha are usually unknown at delivery time (the maintainer co
 
 Capture is backed by automation under `scripts/wiki/` — a safety net, not a replacement for authoring. When an agent does the work it still writes the entry directly (richer than any stub). The automation catches what a manual or out-of-session commit misses:
 
-- **Merge sync** (`.github/workflows/wiki-sync.yml`): on PR merge, fills `pr: pending` or `follow_up_pr: pending` → the PR URL and derives `issue:` from `Closes #N`. For a substantive PR with no such entry, it writes a deterministic stub marked `draft: ai` (with `WIKI_AI=true`, its Why/What are AI-drafted and discarded unless grounded in the real diff); appends a topic Decisions bullet; and — when the PR body or a filled journal entry's `plan:` field names an archived plan — completes its `plans/INDEX.md` row and back-fills the plan file's own `evidence:` frontmatter with the PR. It lands as a one-click `bot/wiki-sync/<pr>` PR — never a direct push to main.
-- **Pre-commit warn** (`.husky/pre-commit`): reminds when a substantive commit stages no journal entry, and when a local plan looks executed but unarchived. Also rebuilds and stages the knowledge graph. Never blocks.
-- **Nightly issue sync** (`.github/workflows/wiki-issue-sync.yml`): marks issues cited under a topic's Open threads with ` — closed` once they close.
+- **Merge sync** (`.github/workflows/wiki-sync.yml`): on PR merge, or a manual replay of an already-merged PR number, fetches title/body/files/commits with fully paginated GitHub calls, then reconciles that input into Markdown. It fills `pr: pending` or `follow_up_pr: pending`, retains the first closing issue in legacy `issue:`, and records every same- or cross-repo closing issue in additive `issues:`. For a substantive PR with no such entry, it writes a deterministic stub marked `draft: ai` (with `WIKI_AI=true`, its Why/What are AI-drafted and discarded unless grounded in the real diff); appends a repo-qualified topic citation; and — when the PR body or a filled journal entry's `plan:` field names an archived plan — completes its `plans/INDEX.md` row and back-fills the plan file's own `evidence:` frontmatter. It stores no durable PR snapshot and lands as a one-click `bot/wiki-sync/<pr>` PR — never a direct push to main.
+- **Pre-commit lifecycle** (`.husky/pre-commit`): reminds when a substantive commit stages no journal entry and when a local plan looks executed but unarchived. The curated graph rebuilds only when no unstaged or untracked graph input could contaminate generated data; lifecycle failures remain advisory and CI is the blocking check-only backstop.
+- **Nightly issue sync** (`.github/workflows/wiki-issue-sync.yml`): caches lookups by repository and number, checks every issue cited on an Open threads line, and adds ` — closed` only after all of them are confirmed closed. A failed lookup leaves the line unchanged; a confirmed open issue removes the tool's clean trailing annotation.
 
 `draft: ai` on an entry means it was auto-drafted and needs a human pass — replace the `TODO: why` line with the real reasoning and drop the marker.
 
@@ -48,14 +48,15 @@ Capture is backed by automation under `scripts/wiki/` — a safety net, not a re
 
 The knowledge graph renders a set of machine-generated connection pages — the exception to the closed set of authored page types:
 
-- [connections.md](connections.md) — a small index that routes to per-section files under `wiki/connections/`: [skill contract](connections/contract.md), [coverage](connections/coverage.md), [document links](connections/links.md), [wiki wiring](connections/wiki-wiring.md) — all rendered from the knowledge graph by [`scripts/graph/build-graph.cjs`](../scripts/graph/build-graph.cjs). **Do not hand-edit them.** They are rebuilt + staged by `.husky/pre-commit`, staged by the wiki bots, and verified byte-fresh by `pnpm evals:graph`; an edit that isn't a rebuild fails CI. To change them, change the skill or wiki and run `pnpm graph:build`.
+- [connections.md](connections.md) — a small index that routes to per-section files under `wiki/connections/`: [skill contract](connections/contract.md), [coverage](connections/coverage.md), [document links](connections/links.md), [wiki wiring](connections/wiki-wiring.md) — all rendered from the knowledge graph by [`scripts/graph/build-graph.cjs`](../scripts/graph/build-graph.cjs). **Do not hand-edit them.** They are rebuilt + staged by `.husky/pre-commit`, staged by the wiki bots, and verified byte-fresh by `pnpm graph:check`; an edit that isn't a rebuild fails CI. To change them, change the skill or wiki and run `pnpm graph:build`.
 
 The pages are deliberately excluded from the graph's own nodes so they never become self-referential mega-nodes.
 
 ## Content rules
 
 - Record the why and what was ruled out — the parts `git log` and CHANGELOG.md cannot tell you. Link to commits/PRs instead of duplicating them.
-- Topic frontmatter is part of navigation: `aliases` lists grounded natural-language lookup terms, and `covers` lists exact repo-relative surfaces the topic explains (a reference, a script, a doc). Covered paths must resolve to a graph node — a stale path fails `pnpm evals:graph` as a dangling edge.
+- GitHub citations use their canonical full URL and repo-qualified label (`owner/repo PR #N` or `owner/repo issue #N`). The graph derives offline `githubRefs` metadata on the citing Markdown node; do not create separate PR/issue graph nodes or depend on a live viewer API.
+- Topic frontmatter is part of navigation: `aliases` lists grounded natural-language lookup terms, and `covers` lists exact repo-relative surfaces the topic explains (a reference, a script, a doc). Covered paths must resolve to a graph node — a stale path fails `pnpm graph:check` as a dangling edge.
 - Plain statements, no emphasis language. H2/H3 headers only.
 
 ## Size and pruning
@@ -77,6 +78,7 @@ plan: plans/YYYY-MM-DD-<slug>.md    # or none
 pr: https://github.com/verndale/project-retrospective/pull/NNN   # or pending
 follow_up_pr: https://github.com/verndale/project-retrospective/pull/NNN   # optional; or pending
 issue: https://github.com/verndale/project-retrospective/issues/NNN   # optional; filled by merge sync from "Closes #N"
+issues: [https://github.com/verndale/project-retrospective/issues/NNN] # optional all closing issues
 ---
 # <Title>
 

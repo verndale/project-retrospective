@@ -638,7 +638,7 @@ function checkProposalFile(file, manifestEntries, result, allowedTypes = PROPOSA
       const stem = path.basename(file, '.md');
       const structuralSection = sections(text, 2).find((s) => s.heading === 'Structural implementation');
       const structuralJson = structuralSection ? fencedBlock(structuralSection.body, 'json') : null;
-      let structural = null;
+      let structural;
       try {
         structural = structuralJson ? JSON.parse(structuralJson) : null;
       } catch {

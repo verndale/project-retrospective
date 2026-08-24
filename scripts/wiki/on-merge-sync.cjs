@@ -18,7 +18,10 @@ const path = require("node:path");
 const fm = require("./lib/frontmatter.cjs");
 const { classify } = require("./lib/substantive.cjs");
 const { slugify, addJournalLine, addTopicDecision } = require("./lib/wiki-io.cjs");
+const { canonicalRef, extractClosingIssues, extractGithubRefs, normalizeRepository, refKey } = require("./lib/github.cjs");
 const ai = require("./lib/ai.cjs");
+
+const DEFAULT_REPOSITORY = "verndale/project-retrospective";
 
 function parseArgs(argv) {
   const a = { repo: path.resolve(__dirname, "..", "..") };
@@ -35,12 +38,94 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function deriveIssue(body) {
-  const m = String(body || "").match(/(?:closes|fixes|resolves)\s+#(\d+)/i);
-  return m ? `https://github.com/verndale/project-retrospective/issues/${m[1]}` : null;
+function pullRequestRef(value) {
+  try {
+    const parsed = new URL(String(value || "").trim());
+    if (!/^https?:$/.test(parsed.protocol) || !/^(?:www\.)?github\.com$/i.test(parsed.hostname) || parsed.username || parsed.password || parsed.port) return null;
+    const match = parsed.pathname.match(/^\/([^/]+\/[^/]+)\/pull\/(\d+)$/i);
+    return match ? canonicalRef({ kind: "pull-request", repository: match[1], number: match[2] }) : null;
+  } catch {
+    return null;
+  }
 }
 
-async function run(ctx, wikiDir) {
+function safeChangedPath(value) {
+  return typeof value === "string" && value.length > 0 && !value.includes("\\") && !path.posix.isAbsolute(value)
+    && path.posix.normalize(value) === value && !value.split("/").includes("..");
+}
+
+function parseableMergedAt(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(value);
+  if (!match || !Number.isFinite(Date.parse(value))) return false;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  return date.getUTCFullYear() === Number(match[1]) && date.getUTCMonth() === Number(match[2]) - 1 && date.getUTCDate() === Number(match[3]);
+}
+
+function normalizeContext(input) {
+  const ctx = input && typeof input === "object" ? input : {};
+  if (ctx.schemaVersion != null && ctx.schemaVersion !== 1) throw new Error(`unsupported context schemaVersion: ${ctx.schemaVersion}`);
+  const prRef = pullRequestRef(ctx.url);
+  const repository = normalizeRepository(ctx.repository) || prRef?.repository || DEFAULT_REPOSITORY;
+  const number = Number(ctx.number);
+  if (!Number.isSafeInteger(number) || number <= 0) throw new Error("context number must be a positive integer");
+  if (!prRef || prRef.repository !== repository || prRef.number !== number) throw new Error("context repository, number, and pull-request URL must agree");
+  const changedPaths = ctx.changedPaths ?? ctx.files ?? [];
+  const mergedAt = ctx.mergedAt ?? ctx.merged_at ?? null;
+  if (!Array.isArray(changedPaths) || changedPaths.some((item) => !safeChangedPath(item))) throw new Error("context changedPaths must contain safe repo-relative paths");
+  if (ctx.title != null && typeof ctx.title !== "string") throw new Error("context title must be a string");
+  if (ctx.body != null && typeof ctx.body !== "string") throw new Error("context body must be a string");
+  if (mergedAt != null && typeof mergedAt !== "string") throw new Error("context mergedAt must be a string");
+  if (typeof mergedAt === "string" && !parseableMergedAt(mergedAt)) throw new Error("context mergedAt must be a parseable ISO date string");
+  const rawCommits = ctx.commits ?? [];
+  if (!Array.isArray(rawCommits)) throw new Error("context commits must contain string hash and subject fields");
+  const commits = rawCommits.map((commit) => {
+    const hash = commit && typeof commit === "object" ? (commit.hash ?? commit.sha) : null;
+    const subject = commit && typeof commit === "object" ? (commit.subject ?? commit.message) : null;
+    if (typeof hash !== "string" || typeof subject !== "string" || !hash.trim() || !subject.split("\n")[0].trim()) {
+      throw new Error("context commits must contain string hash and subject fields");
+    }
+    return { hash: hash.trim(), subject: subject.split("\n")[0].trim() };
+  });
+  return {
+    schemaVersion: 1,
+    repository,
+    number,
+    title: ctx.title || `PR #${number}`,
+    body: ctx.body || "",
+    url: prRef.url,
+    mergedAt,
+    changedPaths: [...new Set(changedPaths)],
+    commits,
+  };
+}
+
+function deriveIssues(body, repository = DEFAULT_REPOSITORY) {
+  return extractClosingIssues(body, repository);
+}
+
+function deriveIssue(body, repository = DEFAULT_REPOSITORY) {
+  return deriveIssues(body, repository)[0]?.url || null;
+}
+
+function mergeIssueFields(text, issueRefs) {
+  if (!issueRefs.length) return text;
+  const existing = extractGithubRefs([fm.readField(text, "issue"), fm.readField(text, "issues")].filter(Boolean).join(" "), { includeFencedCode: true });
+  const refs = [];
+  const seen = new Set();
+  for (const ref of [...existing, ...issueRefs]) {
+    if (ref.kind !== "issue" || seen.has(refKey(ref))) continue;
+    seen.add(refKey(ref));
+    refs.push(ref);
+  }
+  let next = text;
+  const singular = fm.readField(next, "issue");
+  if (!singular || singular === "pending") next = fm.setField(next, "issue", refs[0].url);
+  next = fm.setField(next, "issues", JSON.stringify(refs.map((ref) => ref.url)));
+  return next;
+}
+
+async function run(inputContext, wikiDir) {
+  const ctx = normalizeContext(inputContext);
   const changes = [];
   const warnings = [];
   const journalDir = path.join(wikiDir, "journal");
@@ -48,7 +133,8 @@ async function run(ctx, wikiDir) {
   const indexPath = path.join(wikiDir, "INDEX.md");
   const plansIndex = path.join(wikiDir, "plans", "INDEX.md");
   const { substantive, substantivePaths, topics } = classify(ctx.changedPaths || []);
-  const issueUrl = deriveIssue(ctx.body);
+  const issueRefs = deriveIssues(ctx.body, ctx.repository);
+  const issueUrl = issueRefs[0]?.url || null;
 
   // 1. Fill pass — journal entries THIS PR added/modified whose pr is pending
   //    get this PR's URL. An already-evidenced journal edited as an explicit
@@ -70,17 +156,25 @@ async function run(ctx, wikiDir) {
       if (pr === ctx.url || followUpPr === ctx.url) entryReferencesPr = true;
       if (pr === "pending") {
         text = fm.setField(text, "pr", ctx.url);
-        if (issueUrl && !fm.readField(text, "issue")) text = fm.setField(text, "issue", issueUrl);
+        text = mergeIssueFields(text, issueRefs);
         fs.writeFileSync(p, text);
         changes.push(`filled pr in journal/${name}`);
         entryReferencesPr = true;
       }
       if (followUpPr === "pending") {
         text = fm.setField(text, "follow_up_pr", ctx.url);
-        if (issueUrl && !fm.readField(text, "issue")) text = fm.setField(text, "issue", issueUrl);
+        text = mergeIssueFields(text, issueRefs);
         fs.writeFileSync(p, text);
         changes.push(`filled follow-up pr in journal/${name}`);
         entryReferencesPr = true;
+      }
+      if (fm.readField(text, "pr") === ctx.url || fm.readField(text, "follow_up_pr") === ctx.url) {
+        const reconciled = mergeIssueFields(text, issueRefs);
+        if (reconciled !== text) {
+          text = reconciled;
+          fs.writeFileSync(p, text);
+          changes.push(`reconciled closing issues in journal/${name}`);
+        }
       }
       if (prJournal.has(`wiki/journal/${name}`) && pr !== "pending" && followUpPr !== "pending") {
         entryReferencesPr = true;
@@ -124,6 +218,7 @@ async function run(ctx, wikiDir) {
       "plan: none",
       `pr: ${ctx.url}`,
       ...(issueUrl ? [`issue: ${issueUrl}`] : []),
+      ...(issueRefs.length ? [`issues: ${JSON.stringify(issueRefs.map((ref) => ref.url))}`] : []),
       "draft: ai",
       "---",
     ].join("\n");
@@ -155,7 +250,8 @@ async function run(ctx, wikiDir) {
     const date = (ctx.mergedAt || today()).slice(0, 10);
     for (const slug of topics) {
       const p = path.join(topicsDir, `${slug}.md`);
-      const bullet = `- ${date} — ${ctx.title} ([PR #${ctx.number}](${ctx.url}))`;
+      const citation = `${ctx.repository} PR #${ctx.number}`;
+      const bullet = `- ${date} — ${ctx.title} ([${citation}](${ctx.url}))`;
       const { added, overBudget } = addTopicDecision(p, bullet, ctx.url);
       if (added) changes.push(`decision → topics/${slug}.md`);
       if (overBudget) warnings.push(`topics/${slug}.md is over its ~150-line budget — prune older decisions`);
@@ -185,7 +281,7 @@ async function run(ctx, wikiDir) {
           const cells = lines[i].split("|");
           if (cells.length >= 5) {
             const ev = cells[4].trim();
-            cells[4] = ` ${ev === "—" || ev === "" ? "" : ev + ", "}[PR #${ctx.number}](${ctx.url}) `;
+            cells[4] = ` ${ev === "—" || ev === "" ? "" : ev + ", "}[${ctx.repository} PR #${ctx.number}](${ctx.url}) `;
             lines[i] = cells.join("|");
             touched = true;
           }
@@ -205,7 +301,7 @@ async function run(ctx, wikiDir) {
       const ptext = fs.readFileSync(planFile, "utf8");
       if (!prRecorded(fm.split(ptext).fmLines.join("\n"))) {
         const date = (ctx.mergedAt || today()).slice(0, 10);
-        const patched = fm.appendListItem(ptext, "evidence", `PR #${ctx.number} ${ctx.url} (merged ${date})`);
+        const patched = fm.appendListItem(ptext, "evidence", `${ctx.repository} PR #${ctx.number} ${ctx.url} (merged ${date})`);
         if (patched !== ptext) {
           fs.writeFileSync(planFile, patched);
           changes.push(`filled evidence in plans/${planRef}.md`);
@@ -241,4 +337,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { run, deriveIssue };
+module.exports = { run, deriveIssue, deriveIssues, mergeIssueFields, normalizeContext };

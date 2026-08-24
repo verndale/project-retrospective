@@ -19,7 +19,7 @@ Skill-authoring templates live in `skills/_meta/` (sibling of the skill) — aut
 
 ## Environment
 
-Node 24+ and pnpm 10+ (via Corepack); `pnpm install`. Skill scripts are zero-dependency CommonJS and run on plain `node` — they must keep working when vendored into a repo with no `node_modules`. `pnpm test` is the quality gate: it runs the suites under `scripts/tests/` and then `pnpm evals:graph`. The commit/release tooling is the maintainer's job (see below).
+Node 24+ and pnpm 10+ (via Corepack); `pnpm install`. Skill scripts are zero-dependency CommonJS and run on plain `node` — they must keep working when vendored into a repo with no `node_modules`. `pnpm test` is the quality gate: it runs the suites under `scripts/tests/` and then `pnpm graph:check`. The commit/release tooling is the maintainer's job (see below).
 
 ## Editing this skill
 
@@ -45,15 +45,20 @@ The skill's workflow, its references, its scripts, and its tests are one unit. A
 
 `skills/project-retrospective/scripts/validate-report.cjs` is the sanctioned validator for skill output — it is both the skill's own feedback loop and what the tests assert against. Don't add a second bespoke validator unless the maintainer asks.
 
-## Knowledge graph & context wiki
+## Knowledge graph and repository wiki operations
 
-`wiki/` records **why** this repo is the way it is — executed plans, decisions, and change history. Read [`wiki/INDEX.md`](wiki/INDEX.md) first and open only what it routes to; never load the whole wiki. The write-side protocol, including when to capture and the page templates, is [`wiki/MECHANICS.md`](wiki/MECHANICS.md). Before a broad context read, prefer `pnpm graph:navigate --intent why|wiring|impact --query <term>`, which returns a minimal deterministic itinerary.
+`wiki/` records **why** this repo is the way it is — executed plans, decisions, and change history. The write-side protocol, including when to capture and the page templates, is [`wiki/MECHANICS.md`](wiki/MECHANICS.md).
+
+- **Query GitHub evidence unambiguously:** use a full URL, `owner/repo PR #123`, `owner/repo issue #123`, or `owner/repo#123`. Never query a bare `#123`; PR and issue numbers collide across repositories. Evidence resolves to the existing wiki page that cites it, not a live GitHub node.
+- **Generated wiring map:** [`wiki/connections.md`](wiki/connections.md) is a routed index for skill contracts, tests, module dependencies, topic coverage, and wiki relations. Open only the section named by the itinerary. Do not hand-edit it; `pnpm graph:build` rebuilds it and `pnpm run wiki:check` verifies it.
+- **Write in the same delivery:** when a substantive change lands, add the journal entry, archive the executed plan, update the affected topic and indexes, and rebuild the graph per [`wiki/MECHANICS.md`](wiki/MECHANICS.md).
+- **Automation is a safety net:** merge and issue workflows reconcile repo-qualified citations into Markdown and graph nodes derive offline `githubRefs` from them. Agents still author the richer wiki record directly when they do the work.
 
 `scripts/graph/` derives a typed node/edge graph from the repo and renders it (`pnpm graph:view`, port 4175). Details in [`scripts/graph/README.md`](scripts/graph/README.md).
 
 - **The graph is derived, never authoritative.** If the graph and a file disagree, the file is right and the graph is stale. Run `pnpm graph:build`.
 - **The gate is the skill's own contract.** `SKILL.md` → every reference it links and every script it names, emitted whether or not the target exists. Rename a reference without updating `SKILL.md` and the build fails. The same applies to a topic's `covers:`, a page's `topics:`, and a journal entry's `plan:`.
-- **`data/graph.json` and `wiki/connections*` are generated and committed.** Never hand-edit them; `.husky/pre-commit` rebuilds and stages them, and `pnpm evals:graph` fails on drift.
+- **`data/graph.json` and `wiki/connections*` are generated and committed.** Never hand-edit them; `.husky/pre-commit` rebuilds and stages them, and `pnpm graph:check` fails on drift.
 - **The graph's four surfaces move together**: `build-graph.cjs`, the viewer's type tables, `routing-policy.json`, and `scripts/tests/build-graph.test.cjs`. Changing the node or edge model means changing all four and the README table.
 - Slack ingestion is intentionally **not** part of this subsystem.
 
@@ -97,3 +102,23 @@ Automatic issue/label/link/local-branch authority does not authorize commits, pu
 **Permission boundary:** edit files under `skills/`, `scripts/`, and `wiki/` freely without asking — that's the autonomous zone, and capturing a substantive change in `wiki/` is expected rather than optional. An agent may commit and push an issue branch only when the maintainer explicitly authorizes those actions.
 
 Without explicit maintainer authorization, make the requested edits and stop at handback. When commit and push are authorized, use `pnpm commit` (Conventional Commits, required scope) and push only the issue branch so repository automation can create the draft PR. **Do not merge, tag, release, or publish** — in this repo or in any repo the skill touches. `semantic-release` runs only on `main`.
+
+<!-- wiki-skill:start -->
+## Context wiki navigation
+
+Use `wiki/` as this repository's existing context source. Never bulk-load that directory.
+
+- For an exact current-code, file, symbol, or command question, inspect the named source or use targeted source `rg`; do not load history.
+- For a direct single-topic history or rationale question, start at `wiki/INDEX.md` when it exists and open only the page it routes to.
+- Only for a cross-page why, wiring, ownership, or impact question, run `node scripts/wiki/navigate.cjs --wiki-root "wiki" --intent why --query "<terms>"` before opening wiki pages. Use `wiring` for ownership/dependencies and `impact` for change scope.
+- Query with exact slugs, identifiers, symbols, or repository-qualified GitHub references. Never use a bare issue or PR number such as `#123`.
+- When both endpoints are known, use exact `--from` and `--to` node IDs.
+- Trust the router's deterministic weighted shortest route, which accounts for relationship cost, hubs, and page bytes. Open only its itinerary; never add candidates, neighbors, or adjacent pages.
+- Read itinerary pages sequentially, never speculatively in parallel, and stop as soon as the answer is grounded.
+- If resolution is ambiguous, rerun with one returned exact ID; never open every candidate.
+- Never use `grep`, `find`, or recursive `rg` as initial wiki discovery. After a router miss, run at most one root-scoped exact search: `rg -n --fixed-strings "<exact term>" wiki/`. If it fails, inspect one known source path or ask one focused question; never widen the search.
+- Never read generated graph JSON directly.
+- This installation owns navigation only. Preserve this repository's existing wiki authoring, validation, hooks, workflows, and generated-data conventions.
+
+This managed block is shared by Codex, Cursor, and Claude (via `@AGENTS.md` in `CLAUDE.md`).
+<!-- wiki-skill:end -->

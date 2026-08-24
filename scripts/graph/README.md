@@ -16,13 +16,13 @@ A deterministic, zero-dependency map of this repo: the skill and everything it d
 
 ```bash
 pnpm graph:build      # rebuild scripts/graph/data/graph.json + wiki/connections*
-pnpm graph:view       # serve the viewer at http://localhost:4175
-pnpm evals:graph      # freshness, determinism, and integrity (also runs inside pnpm test)
+pnpm graph:view       # serve the viewer at http://127.0.0.1:4175
+pnpm graph:check      # freshness, determinism, and integrity (also runs inside pnpm test)
 ```
 
 The viewer serves on **4175**. `ui-design-brain` owns 4173 and `ui-design-evidence` owns 4174, so all three can run at once; override with `GRAPH_PORT`.
 
-`data/graph.json` and the `wiki/connections*` pages are **committed artifacts**. `.husky/pre-commit` rebuilds and stages them on every commit; `pnpm evals:graph` byte-compares them against a fresh rebuild and fails on drift.
+`data/graph.json` and the `wiki/connections*` pages are **committed artifacts**. `.husky/pre-commit` rebuilds and stages them when graph inputs have no unstaged changes; `pnpm graph:check` byte-compares them against a fresh rebuild and fails on drift.
 
 ## Node types
 
@@ -42,7 +42,7 @@ The viewer serves on **4175**. `ui-design-brain` owns 4173 and `ui-design-eviden
 
 `CHANGELOG.md` is excluded — semantic-release rewrites it every release, which would churn the graph for no signal. `skills/_meta/` is not walked (authoring-only), so `_sections.md` is added explicitly. `scripts/tests/fixtures/` is excluded: synthetic inputs are data, not knowledge, and that exclusion is what makes it safe to test the graph builder against a fixture repo.
 
-All of `scripts/` is walked rather than an allow-list of subdirectories, so a new `scripts/<dir>/` is indexed instead of being silently invisible.
+All of `scripts/` is walked rather than an allow-list of subdirectories, so a new `scripts/<dir>/` is indexed instead of being silently invisible. Markdown nodes retain legacy number-only `prs` / `issues` arrays and add canonical offline `githubRefs` records (`kind`, lower-cased `repository`, `number`, canonical `url`). GitHub evidence remains metadata on the citing node; no PR/issue nodes or live API are part of the graph.
 
 ## Edge types
 
@@ -87,7 +87,9 @@ pnpm graph:navigate --intent why --query "brain promotion"
 
 Returns a deterministic, minimal itinerary — a Dijkstra route over [`routing-policy.json`](routing-policy.json), which assigns a cost per edge type and a preferred source/target type set per intent (`why`, `wiring`, `impact`). Agents use it before broad context reads. Developers do not need to run or remember it.
 
-Every edge type in the graph must have a cost, and every node type named in the policy must exist, or `pnpm evals:graph` fails.
+Evidence queries accept full GitHub URLs, `owner/repo PR #N`, `owner/repo issue #N`, and `owner/repo#N`. Bare issue numbers are rejected. The itinerary reports each file's bytes and the total read budget so agents can stop as soon as the question is answered. The viewer uses the same repo-qualified evidence for search and safe clickable links.
+
+Every edge type in the graph must have a cost, and every node type named in the policy must exist, or `pnpm graph:check` fails.
 
 ## Adding a source
 

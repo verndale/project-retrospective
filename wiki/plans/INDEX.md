@@ -16,12 +16,13 @@ Every agent plan executed for this repo, gathered from Claude plan stores and Co
 - **out-of-scope** — targets another repo/product.
 - **not-verified** — recovered by `pnpm wiki:find-plans --archive`; nobody has checked yet whether it shipped.
 
-Totals: 10 implemented · 1 partial (11 plans).
+Totals: 13 implemented · 1 partial (14 plans).
 
 ## Plans
 
 | Date | Plan | Status | Evidence | Topics |
 | --- | --- | --- | --- | --- |
+| 2026-08-23 | [Standardize wiki actions and offline GitHub evidence routing](2026-08-23-standardize-wiki-actions-and-evidence-routing.md) | implemented | [verndale/project-retrospective issue #83](https://github.com/verndale/project-retrospective/issues/83), working tree verification, [verndale/project-retrospective PR #84](https://github.com/verndale/project-retrospective/pull/84) | graph-wiki-subsystem |
 | 2026-08-19 | [Source-parity capture contract](2026-08-19-source-parity-capture-contract.md) | implemented | issue #75, local validation, [PR #76](https://github.com/verndale/project-retrospective/pull/76) | library-capture, retrospective-workflow |
 | 2026-08-19 | [Automate retrospective GitHub tracking, branches, lifecycle, and Figma delivery](2026-08-19-automate-retrospective-github-tracking.md) | implemented | working tree, deterministic resolver and lifecycle tests, [PR #72](https://github.com/verndale/project-retrospective/pull/72) | retrospective-workflow, library-capture |
 | 2026-08-18 | [Governed Figma completion for Action capture](2026-08-18-governed-figma-capture-completion.md) | implemented | [issue #69](https://github.com/verndale/project-retrospective/issues/69), preflight/conformance tests, [PR #70](https://github.com/verndale/project-retrospective/pull/70) | library-capture |
@@ -33,3 +34,5 @@ Totals: 10 implemented · 1 partial (11 plans).
 | 2026-08-12 | [Server-first component architecture and full library migration](2026-08-12-server-first-component-architecture.md) | implemented | issue #60 https://github.com/verndale/project-retrospective/issues/60, working tree, [PR #61](https://github.com/verndale/project-retrospective/pull/61) | library-capture |
 | 2026-08-13 | [Capture preflight schema v3 for accessible realizations](2026-08-13-capture-preflight-schema-v3-for-accessible-realizations.md) | implemented | [PR #64](https://github.com/verndale/project-retrospective/pull/64) | library-capture |
 | 2026-08-21 | [Governed Figma Interaction States and Retrospective Capture](2026-08-21-governed-figma-interaction-states-and-retrospective-capture.md) | implemented | issue #78, working tree tests, authenticated live Figma audit of 28 registered nodes | library-capture |
+| 2026-08-22 | [Standardize Retrospective quality and graph lifecycle](2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md) | implemented | working tree implementation for issue #79, [PR #80](https://github.com/verndale/project-retrospective/pull/80) | graph-wiki-subsystem |
+| 2026-08-24 | [Deterministic, Route-First Wiki Guidance and PR 127 Recovery](2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md) | implemented | canonical headless AGENTS.md block installed with zero-drift dry run, [verndale/project-retrospective PR #84](https://github.com/verndale/project-retrospective/pull/84) | graph-wiki-subsystem |

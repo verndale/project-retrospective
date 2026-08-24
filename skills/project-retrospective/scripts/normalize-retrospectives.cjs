@@ -351,7 +351,7 @@ function main() {
     schemaVersion: SCHEMA,
     projectSlug,
     source: rawRead.value.source || { spaces: [] },
-    pages: pages.map(({ bodyMarkdown, ...page }) => page),
+    pages: pages.map((page) => Object.fromEntries(Object.entries(page).filter(([key]) => key !== 'bodyMarkdown'))),
     themes: Array.isArray(findingsRead.value.themes) ? findingsRead.value.themes : [],
     contradictions: Array.isArray(findingsRead.value.contradictions) ? findingsRead.value.contradictions : [],
     excluded,

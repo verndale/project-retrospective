@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+for git_environment_variable in $(git rev-parse --local-env-vars); do
+  unset "$git_environment_variable"
+done
+unset git_environment_variable
+
+pnpm run verify:push

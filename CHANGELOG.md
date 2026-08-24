@@ -1,3 +1,60 @@
+# v1.22.1 — 2026-08-24
+
+## Summary (AI, bounded)
+- Fixed CI process to fetch full history for verification (4fbe3fd).
+- Updated wiki guidance and graph data in project retrospective (f645433).
+- Hardened post-rollout graph contracts in the wiki (a02be17).
+- Standardized automation and evidence routing within the wiki (6946398).
+- Synchronized journal, topics, and plans documentation for multiple updates (3547d59, baf927f).
+- Standardized quality gates tooling (a12b1ff).
+- Included merge of pull request #84 from verndale/codex/83-wiki-parity (751159b).
+
+## Highlights
+- commit: Merge pull request #84 from verndale/codex/83-wiki-parity (751159b)
+- fix(project-retrospective): Update wiki guidance and graph data (f645433)
+- fix(wiki): harden post-rollout graph contracts (a02be17)
+- fix(ci): fetch full history for verification (4fbe3fd)
+- fix(wiki): standardize automation and evidence routing (6946398)
+- commit: Merge pull request #81 from verndale/bot/wiki-sync/80 (153514e)
+- docs(wiki): sync journal, topics, and plans for #80 (baf927f)
+- commit: Merge pull request #80 from verndale/codex/79-standardize-quality-and-graph-workflows (902ee2a)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Fixes
+- fix(ci): fetch full history for verification (4fbe3fd)
+- fix(project-retrospective): Update wiki guidance and graph data (f645433)
+- fix(wiki): harden post-rollout graph contracts (a02be17)
+- fix(wiki): standardize automation and evidence routing (6946398)
+
+### Docs
+- docs(wiki): sync journal, topics, and plans for #76 (3547d59)
+- docs(wiki): sync journal, topics, and plans for #80 (baf927f)
+
+### Chore
+- chore(tooling): standardize quality gates (a12b1ff)
+
+### Other (unknown)
+- commit: Merge pull request #77 from verndale/bot/wiki-sync/76 (a1ecba8)
+- commit: Merge pull request #80 from verndale/codex/79-standardize-quality-and-graph-workflows (902ee2a)
+- commit: Merge pull request #81 from verndale/bot/wiki-sync/80 (153514e)
+- commit: Merge pull request #84 from verndale/codex/83-wiki-parity (751159b)
+
+## Full commit list
+- 751159b commit: Merge pull request #84 from verndale/codex/83-wiki-parity
+- f645433 fix(project-retrospective): Update wiki guidance and graph data
+- a02be17 fix(wiki): harden post-rollout graph contracts
+- 4fbe3fd fix(ci): fetch full history for verification
+- 6946398 fix(wiki): standardize automation and evidence routing
+- 153514e commit: Merge pull request #81 from verndale/bot/wiki-sync/80
+- baf927f docs(wiki): sync journal, topics, and plans for #80
+- 902ee2a commit: Merge pull request #80 from verndale/codex/79-standardize-quality-and-graph-workflows
+- a12b1ff chore(tooling): standardize quality gates
+- a1ecba8 commit: Merge pull request #77 from verndale/bot/wiki-sync/76
+- 3547d59 docs(wiki): sync journal, topics, and plans for #76
+
 # v1.22.0 — 2026-08-20
 
 ## Summary (AI, bounded)
