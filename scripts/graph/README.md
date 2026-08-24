@@ -42,7 +42,7 @@ The viewer serves on **4175**. `ui-design-brain` owns 4173 and `ui-design-eviden
 
 `CHANGELOG.md` is excluded — semantic-release rewrites it every release, which would churn the graph for no signal. `skills/_meta/` is not walked (authoring-only), so `_sections.md` is added explicitly. `scripts/tests/fixtures/` is excluded: synthetic inputs are data, not knowledge, and that exclusion is what makes it safe to test the graph builder against a fixture repo.
 
-All of `scripts/` is walked rather than an allow-list of subdirectories, so a new `scripts/<dir>/` is indexed instead of being silently invisible.
+All of `scripts/` is walked rather than an allow-list of subdirectories, so a new `scripts/<dir>/` is indexed instead of being silently invisible. Markdown nodes retain legacy number-only `prs` / `issues` arrays and add canonical offline `githubRefs` records (`kind`, lower-cased `repository`, `number`, canonical `url`). GitHub evidence remains metadata on the citing node; no PR/issue nodes or live API are part of the graph.
 
 ## Edge types
 
@@ -86,6 +86,8 @@ pnpm graph:navigate --intent why --query "brain promotion"
 ```
 
 Returns a deterministic, minimal itinerary — a Dijkstra route over [`routing-policy.json`](routing-policy.json), which assigns a cost per edge type and a preferred source/target type set per intent (`why`, `wiring`, `impact`). Agents use it before broad context reads. Developers do not need to run or remember it.
+
+Evidence queries accept full GitHub URLs, `owner/repo PR #N`, `owner/repo issue #N`, and `owner/repo#N`. Bare issue numbers are rejected. The itinerary reports each file's bytes and the total read budget so agents can stop as soon as the question is answered. The viewer uses the same repo-qualified evidence for search and safe clickable links.
 
 Every edge type in the graph must have a cost, and every node type named in the policy must exist, or `pnpm graph:check` fails.
 

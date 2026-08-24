@@ -32,6 +32,7 @@
 const fs = require("fs");
 const path = require("path");
 const frontmatter = require("../wiki/lib/frontmatter.cjs");
+const { extractGithubRefs, withoutFencedCode } = require("../wiki/lib/github.cjs");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const OUT_FILE = path.join(__dirname, "data", "graph.json");
@@ -69,10 +70,7 @@ const isConnectionsView = (id) => id === CONNECTIONS_INDEX_ID || id.startsWith(`
 const ROOT_DOCS = new Set(["AGENTS.md", "README.md", "CONTRIBUTING.md", "CLAUDE.md"]);
 
 const LINK_RE = /\[[^\]]*\]\(([^)]+)\)/g;
-const FENCE_RE = /^```/;
 const H1_RE = /^#\s+(.+?)\s*$/;
-const PR_RE = /github\.com\/[^/]+\/[^/]+\/pull\/(\d+)/g;
-const ISSUE_RE = /github\.com\/[^/]+\/[^/]+\/issues\/(\d+)/g;
 
 // The two extractors below deliberately mirror scripts/tests/skill-conformance.test.cjs
 // character for character. That test already asserts these same two sets exist on disk;
@@ -209,14 +207,7 @@ function extractLabel(id, type, text) {
 // fenced code blocks and non-local targets.
 function extractLinks(absFile, text, repoRoot = REPO_ROOT) {
   const targets = [];
-  const lines = text.split(/\r?\n/);
-  let fenced = false;
-  for (const line of lines) {
-    if (FENCE_RE.test(line)) {
-      fenced = !fenced;
-      continue;
-    }
-    if (fenced) continue;
+  for (const line of withoutFencedCode(text).split(/\r?\n/)) {
     LINK_RE.lastIndex = 0;
     let m;
     while ((m = LINK_RE.exec(line)) !== null) {
@@ -281,14 +272,6 @@ function extractRequires(id, text) {
   return out;
 }
 
-function uniqueMatches(text, re) {
-  const out = [];
-  let m;
-  re.lastIndex = 0;
-  while ((m = re.exec(text)) !== null) if (!out.includes(m[1])) out.push(m[1]);
-  return out;
-}
-
 function build({ repoRoot = REPO_ROOT } = {}) {
   const roots = [
     path.join(repoRoot, "skills"),
@@ -315,6 +298,7 @@ function build({ repoRoot = REPO_ROOT } = {}) {
     }
     fileText.set(id, text);
     const isMd = id.endsWith(".md");
+    const githubRefs = isMd ? extractGithubRefs(text) : [];
     nodes.set(id, {
       id,
       label: extractLabel(id, type, text),
@@ -322,8 +306,9 @@ function build({ repoRoot = REPO_ROOT } = {}) {
       dir: toPosix(path.dirname(id)),
       topics: isMd ? frontmatter.readList(text, "topics") : [],
       aliases: isMd ? frontmatter.readList(text, "aliases") : [],
-      prs: uniqueMatches(text, PR_RE),
-      issues: uniqueMatches(text, ISSUE_RE),
+      prs: githubRefs.filter((ref) => ref.kind === "pull-request").map((ref) => String(ref.number)),
+      issues: githubRefs.filter((ref) => ref.kind === "issue").map((ref) => String(ref.number)),
+      githubRefs,
       bytes: Buffer.byteLength(text, "utf8"),
       degree: 0,
     });
