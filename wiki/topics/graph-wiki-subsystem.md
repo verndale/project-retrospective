@@ -23,6 +23,7 @@ The deterministic graph, its skill-contract integrity gate, the vendored Sigma.j
 
 ## Decisions
 
+- 2026-08-24 — fix(project-retrospective): Update wiki guidance and graph data ([verndale/project-retrospective PR #84](https://github.com/verndale/project-retrospective/pull/84))
 - 2026-08-24 — Replaced generic hand-authored traversal prose with the canonical headless managed block while retaining this public repository's graph, evidence, authoring, and privacy rules as repository-owned guidance ([plan](../plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md), [journal](../journal/2026-08-24-deterministic-agent-wiki-guidance.md)).
 - 2026-08-23 — Standardized offline GitHub evidence metadata, token-efficient routing, the five workflow identities, replayable paginated merge reconciliation, and contamination-safe hook behavior ([verndale/project-retrospective issue #83](https://github.com/verndale/project-retrospective/issues/83), [plan](../plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md), [journal](../journal/2026-08-23-wiki-actions-evidence-routing.md)).
 - 2026-08-22 — chore(tooling): standardize quality gates ([PR #80](https://github.com/verndale/project-retrospective/pull/80))
