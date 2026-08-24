@@ -24,7 +24,7 @@ a run in the `ui-design-evidence` repo:
 report.md · inventory.json · resolution.json · memory-archive.json · retrospective artifacts · proposals/ · captures/ · orchestration-drafts.md
         │  human review
         ├── proposals/  → Action: promote → ui-design-brain working tree → verify → stop
-        ├── captures/   → Action: capture → code + unpublished reviewed Figma master → verify → stop
+        ├── captures/   → Action: capture → code + Storybook/Figma state coverage → verify → stop
         └── orchestration-drafts.md → ai-orchestration, via its own contribution flow
                             │
                             ▼
@@ -44,7 +44,7 @@ The skill plugs into the **front** of the existing delivery chain and replaces n
 
 The library and the evidence store are **separate repos on purpose.** The library is pulled into client projects; the evidence store aggregates across clients. Keeping them apart means one client's build can never contain another client's retrospective data.
 
-The library is keyed by the catalog's canonical slug, which is what makes it deterministically usable: `ui-design-brain` resolves a design label to `card`, and the library answers `components/card/`. Each capture also carries a validated server-first runtime plan, so application produces a public facade over a private tree/branch/leaf module graph instead of a single client-heavy TSX file. The catalog defines the concept; the library implements it.
+The library is keyed by the catalog's canonical slug, which is what makes it deterministically usable: `ui-design-brain` resolves a design label to `card`, and the library answers `components/card/`. Each new capture also carries a validated server-first runtime plan and source-parity v2 interaction-state inventory, so application produces a public facade over a private tree/branch/leaf module graph plus aligned Storybook/Figma state evidence instead of a single client-heavy TSX file. The catalog defines the concept; the library implements it.
 
 ---
 

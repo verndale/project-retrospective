@@ -25,7 +25,7 @@ Run `tracking-targets.cjs` before a write and again after issue/repository check
 
 - Analyze never creates brain or library branches.
 - A proposal creates brain tracking, never library tracking.
-- A draft capture does not itself create library tracking. `ready` or `figma-pending` work from schema-v5 capture preflight does; `deferred`, `blocked`, `skipped`, `landed`, and evidence-only reconciliation do not.
+- A draft capture does not itself create library tracking. `ready` or `figma-pending` work from schema-v6 capture preflight does; `deferred`, `blocked`, `skipped`, `landed`, and evidence-only reconciliation do not.
 - `source-parity-audit` uses one foundation issue per repository with a non-empty contract/audit/governance write set, then one library issue per `actionable` component remediation. Cleared components and absent brain canonicals create no downstream issue or branch.
 - A missing Figma writer keeps actionable work `issue-pending` and creates no empty library branch.
 - Home fallback creates no evidence issue or branch.
@@ -56,7 +56,7 @@ Use the github-issue-creator `[Feature] <summary>` title and its fixed five body
 Put `Tracking key: <issueMatchKey>` on its own line in Additional Notes. This opaque repository-plus-artifact-set key, not a mutable title, defines an exact match.
 
 - Brain Details: one checkbox per pending proposal, named by client-agnostic canonical/alias and proposal type.
-- Library Details: one checkbox per actionable exact `(canonical, variant)` capture identity.
+- Library Details: one checkbox per actionable exact `(canonical, variant)` capture identity, explicitly covering both the `InteractionStates` Storybook evidence (or validated not-applicable result) and its unpublished Figma `stateCoverage` matrix/IDs (or matching not-applicable registration). Do not create a second issue for state coverage.
 - Reuse an exact matching open issue instead of creating a duplicate.
 
 Brain and library content is client-agnostic. Describe the pattern, alias, component, structural import, and recurrence; never include client names, run slugs, private URLs, owners, source copy, or client paths.

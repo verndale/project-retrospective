@@ -18,7 +18,7 @@ What the skill does, how to run it, and what it produces. The skill's own instru
 
 ## What it does
 
-Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what didn't resolve into reviewable proposals. Reusable component captures include an explicit server-first module graph and finish with an unpublished, reviewed Figma master, so applying one creates aligned code, Storybook, and design-library contracts instead of reproducing a monolithic client TSX file. The skill can also ingest seeded team retrospectives and post-mortems, preserve their original structure privately, and turn every action into an owned, auditable lifecycle record.
+Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what didn't resolve into reviewable proposals. Reusable component captures include an explicit server-first module graph and source-parity v2 interaction-state inventory, then finish with source-backed Storybook evidence and an unpublished, reviewed Figma master/state presentation. Applying one creates aligned code, Storybook, and design-library contracts instead of reproducing a monolithic client TSX file. The skill can also ingest seeded team retrospectives and post-mortems, preserve their original structure privately, and turn every action into an owned, auditable lifecycle record.
 
 The division of labour matters: **scripts decide structure, the model exercises judgment.** Discovery, label resolution, and output validation are deterministic and zero-LLM. Deciding whether an unresolved label is real platform vocabulary is the part that needs a model — and it is advisory. Nothing reaches the catalog without a human commit.
 
@@ -98,7 +98,7 @@ Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
-Preflight checks every capture at once and returns a schema-v5 plan keyed by exact `(canonical, variant)` identity, with source-parity decisions, runtime architecture, realization v1, lifecycle state, companion default migrations, and the required Figma promotion interface. `ready` starts code, `figma-pending` resumes at Figma, `evidence-pending` resumes in private evidence, and `skipped` is fully reconciled. Without a source-parity companion or write-capable Figma session, work remains blocked/pending and creates no empty library branch. Code Connect is not used; imports remain `components/<slug>` and `components/<slug>--<variant>`.
+Preflight checks every capture at once and returns a schema-v6 plan keyed by exact `(canonical, variant)` identity, with source-parity decisions, a separate validated interaction-state model, runtime architecture, realization v1, lifecycle state, companion default migrations, and the required Figma promotion interface. New actionable work requires source-parity v2; legacy v1 remains readable only for landed/skipped captures. `ready` starts code, `figma-pending` resumes at Figma, `evidence-pending` resumes in private evidence, and `skipped` is fully reconciled. Without a source-parity companion or write-capable Figma session, work remains blocked/pending and creates no empty library branch. Code Connect is not used; imports remain `components/<slug>` and `components/<slug>--<variant>`.
 
 Then you commit, one per component:
 
@@ -106,7 +106,7 @@ Then you commit, one per component:
 cd /Users/you/Projects/ui-design-library && pnpm commit
 ```
 
-**Done when:** `pnpm test` and `pnpm build` pass in the library; each new `components/<slug>/` has `index.ts`, a types module, at least two implementation TSX modules, stories, and `component.json`; the export map is synced; the unpublished Figma master is registered with passed source-parity/adversarial/design evidence; `pnpm figma:coverage` and `pnpm figma:validate` pass; and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
+**Done when:** `pnpm test` and `pnpm build` pass in the library; each new `components/<slug>/` has `index.ts`, a types module, at least two implementation TSX modules, stories (including `InteractionStates` when covered), and `component.json`; the export map is synced; the unpublished Figma master and state coverage (or explicit not-applicable result) are registered with passed post-remediation source-parity/adversarial/design evidence; `pnpm figma:coverage` and `pnpm figma:validate` pass; and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
 
 ### Step 5 — Carry the orchestration drafts over
 
@@ -188,7 +188,7 @@ Written to `Output`, never into this skill's repository:
 | `resolution.json` | Resolved labels with how they resolved; unresolved labels with occurrences and locations. |
 | `proposals/<slug>.md` | One per Promote candidate — a ready-to-apply catalog change with its evidence. |
 | `captures/<slug>.md`, `captures/<slug>--<variant>.md` | Default and qualified structural implementations mature enough to seed `ui-design-library`, with exact identity, lifecycle, de-clienting, and validated architecture. |
-| `source-parity/<component-key>.json` | Pinned, hashed source facts; explicit inspected entry/test/style/build-pack/importer/consumer coverage; classifications, target surfaces, review phase, and implementation state across code, Storybook, Figma, and AI representation; exactly one per capture. |
+| `source-parity/<component-key>.json` | Schema-v2 pinned, hashed source facts; explicit inspected entry/test/style/build-pack/importer/consumer coverage; visual/runtime interaction-state inventory; classifications, target surfaces, review phase, and implementation state across code, Storybook, Figma, and AI representation; exactly one per new capture. |
 | `orchestration-drafts.md` | Pipeline-shaped findings as paste-ready drafts for ai-orchestration. |
 | `specs-raw.json` / `specs.json` | Only when a `Specs` input was given: the model's raw Confluence capture, and the structured, approved-only spec pack (`normalize-specs.cjs`) that feeds `resolve.cjs --specs`. |
 | `retrospectives-raw.json` | Audited page/space capture: explicit and discovered candidates, source versions, converted Markdown, and every exclusion reason. |
@@ -224,7 +224,7 @@ node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <l
 | `normalize-retrospectives.cjs` | 0 success (including recorded warnings) · 1 unexpected · 2 bad invocation · 3 named input missing/unreadable |
 | `update-retrospective-register.cjs` | 0 success · 1 unexpected · 2 bad invocation · 3 action pack missing/unreadable |
 | `validate-report.cjs` | 0 pass · 1 failures · 2 bad invocation · 3 `--output` is not a directory |
-| `capture-preflight.cjs` | Schema-v4 exact-identity/lifecycle plan; 0 ready, resumable, or reconciled · 1 blocked/unexpected · 2 bad invocation · 3 captures path invalid · 4 library invalid · 5 manifest invalid · 6 deferred pending canonical promotion |
+| `capture-preflight.cjs` | Schema-v6 exact-identity/lifecycle/state-coverage plan; 0 ready, resumable, or reconciled · 1 blocked/unexpected · 2 bad invocation · 3 captures path invalid · 4 library invalid · 5 manifest invalid · 6 deferred pending canonical promotion |
 | `tracking-targets.cjs` | Deterministic `skip` / `issue-pending` / `write-ready` routing from an artifact/repository snapshot; 0 resolved · 1 unexpected · 2 bad invocation · 3 input invalid |
 | `source-parity.cjs` | Validates companion cardinality, snapshot/citation hashes, surface coverage, classifications, decisions, and review state; 0 valid · 1 invalid · 2 bad invocation · 3 input invalid |
 
@@ -257,7 +257,7 @@ Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
-**Batch input, serial execution.** `capture-preflight.cjs` checks every capture in one pass — exact structural key, source parity, catalog identity, runtime architecture, realization, code/Figma/evidence state, and governed promotion surfaces. Its schema-v5 envelope writes nothing. Components resume at the first incomplete boundary and execute one at a time.
+**Batch input, serial execution.** `capture-preflight.cjs` checks every capture in one pass — exact structural key, source-parity v2 interaction states, catalog identity, runtime architecture, realization, Storybook/Figma/evidence state, and governed promotion surfaces. Its schema-v6 envelope writes nothing. Components resume at the first incomplete boundary and execute one at a time.
 
 **Tracking is automatic and conditional.** `tracking-targets.cjs` routes exact work sets. Analyze creates the evidence hub and a brain issue only when proposals exist; it never creates shared branches. Capture creates/reuses a client-agnostic library issue only for actionable preflight work, then creates `feat/<issue-number>-library-capture` only after exact issue, labels, clean aligned main, non-empty writes, and capabilities pass. Label reconciliation, issue creation/linking, and local branch creation do not pause for approval; commits, pushes, PRs, closure, publication, merge, and release still require separate authority.
 
@@ -267,7 +267,7 @@ Brain: /Users/you/Projects/ui-design-brain
 
 **Read `orphanedByRun` first.** Preflight reports any library component whose `provenance.run` names a run this capture set covers but which has no capture file behind it — a component that reached the library with no evidence. It is a detector, not a fix: decide what to do about each one before applying anything.
 
-**Each written component also gains review evidence.** Following the library's `wiki/MECHANICS.md`, its client-agnostic journal records the source-parity decision IDs, de-clienting, stable Figma node, adversarial/design findings, fixes, and final pass; `figma.review.evidence` points to that file. The graph is rebuilt with `pnpm graph:build`. A deferred, blocked, or skipped capture gets no entry.
+**Each written component also gains review evidence.** Following the library's `wiki/MECHANICS.md`, its client-agnostic journal records the source-parity decision/state IDs, de-clienting, stable Figma master/state nodes, post-remediation source-parity plus adversarial/design findings, fixes, and final pass; `figma.review.evidence` points to that file. The graph is rebuilt with `pnpm graph:build`. A deferred, blocked, or skipped capture gets no entry.
 
 Then you commit in the library repo (`pnpm commit`), one per component, and PR.
 

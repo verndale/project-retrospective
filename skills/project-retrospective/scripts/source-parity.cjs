@@ -24,8 +24,11 @@ const {
   parseArgs,
   checkArgs,
   readJsonSafe,
+  readTextSafe,
   isDir,
   listEntries,
+  sections,
+  fencedBlock,
   writeOut,
   usage,
 } = require('./lib/util.cjs');
@@ -71,6 +74,9 @@ const KINDS = new Set(['behavior', 'visual-layout', 'invariant']);
 const TARGET_SURFACES = new Set(['code', 'storybook', 'figma', 'ai-registry', 'brain', 'evidence']);
 const REVISION_STRATEGIES = new Set(['recorded', 'reconstructed', 'legacy-untracked']);
 const IMPLEMENTATION_STATUSES = new Set(['not-required', 'pending', 'complete']);
+const INTERACTION_STATE_STATUSES = new Set(['covered', 'not-applicable']);
+const INTERACTION_STATE_TRIGGERS = new Set(['pseudo', 'public-prop', 'derived-state', 'behavior']);
+const FIGMA_STATE_CLASSIFICATIONS = new Set(['rendered', 'already-represented', 'runtime-only']);
 
 function issue(componentKey, code, message) {
   return { componentKey: componentKey || null, code, message };
@@ -85,6 +91,114 @@ function expectedCapture(componentKey) {
   return `captures/${componentKey}.md`;
 }
 
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+/** Validate the source-backed state inventory shared by Storybook and Figma. */
+function validateInteractionStates(value, componentKey, citationIds, fail) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || !INTERACTION_STATE_STATUSES.has(value.status)) {
+    fail('interaction-states', 'interactionStates must be an object with status covered or not-applicable.');
+    return null;
+  }
+
+  const states = Array.isArray(value.states) ? value.states : null;
+  if (value.status === 'not-applicable') {
+    if (!isNonEmptyString(value.reason)) {
+      fail('interaction-states', 'not-applicable interactionStates requires a component-level reason.');
+    }
+    if (!states || states.length !== 0) {
+      fail('interaction-states', 'not-applicable interactionStates requires states: [].');
+    }
+    if (value.storyExport != null) {
+      fail('interaction-states', 'not-applicable interactionStates cannot declare a Storybook export.');
+    }
+    return {
+      status: 'not-applicable',
+      reason: isNonEmptyString(value.reason) ? value.reason : '',
+      states: [],
+    };
+  }
+
+  if (value.storyExport !== 'InteractionStates') {
+    fail('interaction-states', 'covered interactionStates.storyExport must equal InteractionStates.');
+  }
+  if (!states || states.length === 0) {
+    fail('interaction-states', 'covered interactionStates requires at least one state.');
+    return null;
+  }
+
+  const ids = new Set();
+  for (const state of states) {
+    if (!state || typeof state !== 'object' || Array.isArray(state)) {
+      fail('interaction-state', 'each interaction state must be an object.');
+      continue;
+    }
+    const id = String(state.id || '');
+    if (!/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/.test(id)) {
+      fail('interaction-state-id', 'interaction state ids must be stable lowercase dot/kebab identifiers.');
+    } else if (ids.has(id)) {
+      fail('interaction-state-id', `interaction state id ${id} is duplicated.`);
+    }
+    ids.add(id);
+    if (!isNonEmptyString(state.label)) fail('interaction-state', `${id || 'interaction state'} requires a label.`);
+    if (!isNonEmptyString(state.target)) fail('interaction-state', `${id || 'interaction state'} requires a target.`);
+    if (!state.source || typeof state.source !== 'object' || Array.isArray(state.source) ||
+      !INTERACTION_STATE_TRIGGERS.has(state.source.trigger) || !isNonEmptyString(state.source.value)) {
+      fail('interaction-state-source', `${id || 'interaction state'} source requires a governed trigger and non-empty value.`);
+    }
+    if (!Array.isArray(state.sourceCitationIds) || state.sourceCitationIds.length === 0 ||
+      new Set(state.sourceCitationIds).size !== state.sourceCitationIds.length ||
+      state.sourceCitationIds.some((citationId) => !citationIds.has(citationId))) {
+      fail('interaction-state-citations', `${id || 'interaction state'} must reference unique declared source citations.`);
+    }
+    if (!FIGMA_STATE_CLASSIFICATIONS.has(state.classification)) {
+      fail('interaction-state-classification', `${id || 'interaction state'} requires a governed Figma classification.`);
+      continue;
+    }
+    const visualIds = ['frameNodeId', 'instanceNodeId', 'componentNodeId'];
+    if (visualIds.some((key) => state[key] != null)) {
+      fail('interaction-state-node-ids', `${id || 'interaction state'} cannot claim Figma node IDs in source-parity evidence.`);
+    }
+    if (state.classification === 'runtime-only') {
+      if (state.source?.trigger !== 'behavior') {
+        fail('interaction-state-runtime', `${id || 'runtime-only state'} must use the behavior source trigger.`);
+      }
+      if (!isNonEmptyString(state.reason)) {
+        fail('interaction-state-runtime', `${id || 'runtime-only state'} requires a reason.`);
+      }
+      if (!Array.isArray(state.evidence) || state.evidence.length === 0 ||
+        state.evidence.some((entry) => !isNonEmptyString(entry))) {
+        fail('interaction-state-runtime', `${id || 'runtime-only state'} requires executable evidence.`);
+      }
+    }
+  }
+
+  return {
+    status: 'covered',
+    storyExport: 'InteractionStates',
+    states: states.map((state) => ({ ...state })),
+  };
+}
+
+/** A legacy v1 artifact is readable only after its capture records a landed result. */
+function landedCaptureKeys(capturesDir) {
+  const keys = new Set();
+  if (!isDir(capturesDir)) return keys;
+  for (const file of listEntries(capturesDir).filter((entry) => !entry.dir && entry.name.endsWith('.md'))) {
+    const source = readTextSafe(file.path);
+    const applied = source === null ? null : sections(source, 2).find((section) => section.heading === 'Applied');
+    const json = applied ? fencedBlock(applied.body, 'json') : null;
+    if (!json) continue;
+    try {
+      if (JSON.parse(json)?.status === 'landed') keys.add(path.basename(file.name, '.md'));
+    } catch {
+      // The capture validator owns malformed Applied metadata; it is not a legacy exemption.
+    }
+  }
+  return keys;
+}
+
 function validateArtifact(value, options = {}) {
   const issues = [];
   const warnings = [];
@@ -96,7 +210,9 @@ function validateArtifact(value, options = {}) {
     fail('artifact-shape', 'source-parity artifact must be a JSON object.');
     return { componentKey, artifact: null, issues, warnings };
   }
-  if (value.schemaVersion !== 1) fail('artifact-schema', `schemaVersion must equal 1, got ${value.schemaVersion}.`);
+  if (value.schemaVersion !== 2 && !(value.schemaVersion === 1 && options.allowLegacyV1 === true)) {
+    fail('artifact-schema', `schemaVersion must equal 2; legacy v1 is readable only for landed/skipped captures, got ${value.schemaVersion}.`);
+  }
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*(?:--[a-z0-9]+(?:-[a-z0-9]+)*)?$/.test(componentKey || '')) {
     fail('component-key', 'componentKey must be a canonical kebab key with an optional --variant suffix.');
   }
@@ -153,6 +269,10 @@ function validateArtifact(value, options = {}) {
       fail('source-citations', `${citation.id} sha256 must be a lowercase whole-file SHA-256 digest.`);
     }
   }
+
+  const interactionStates = value.schemaVersion === 2
+    ? validateInteractionStates(value.interactionStates, componentKey, citationIds, fail)
+    : null;
 
   const inspection = value.sourceInspection;
   if (!inspection || typeof inspection !== 'object' || Array.isArray(inspection)) {
@@ -296,9 +416,13 @@ function validateArtifact(value, options = {}) {
     if (sourceParityReview.evidence.some((entry) => selfReferences.has(entry))) {
       fail('source-parity-review', 'reviews.sourceParity evidence cannot cite the decision artifact itself.');
     }
-    const expectedPhase = value.remediationStatus === 'complete' ? 'post-remediation' : 'decision';
-    if (sourceParityReview.phase !== expectedPhase) {
-      fail('source-parity-review', `reviews.sourceParity.phase must equal ${expectedPhase} for remediationStatus ${value.remediationStatus}.`);
+    const allowedPhases = value.remediationStatus === 'complete'
+      ? ['post-remediation']
+      : value.remediationStatus === 'pending'
+        ? ['decision']
+        : ['decision', 'post-remediation'];
+    if (!allowedPhases.includes(sourceParityReview.phase)) {
+      fail('source-parity-review', `reviews.sourceParity.phase must be ${allowedPhases.join(' or ')} for remediationStatus ${value.remediationStatus}.`);
     }
   }
   for (const pass of ['adversarial', 'design']) {
@@ -356,7 +480,14 @@ function validateArtifact(value, options = {}) {
     warnings.push(issue(componentKey, 'source-hash-unverified', 'legacy-untracked provenance cannot be re-hashed from a pinned revision.'));
   }
 
-  return { componentKey, artifact: value, issues, warnings };
+  return {
+    componentKey,
+    artifact: value.schemaVersion === 2 && interactionStates
+      ? { ...value, interactionStates }
+      : value,
+    issues,
+    warnings,
+  };
 }
 
 function validateSourceParityDirectory(options) {
@@ -364,6 +495,9 @@ function validateSourceParityDirectory(options) {
   const issues = [];
   const warnings = [];
   const records = [];
+  const legacyV1Keys = options.legacyV1ComponentKeys instanceof Set
+    ? options.legacyV1ComponentKeys
+    : landedCaptureKeys(options.capturesDir);
   if (!isDir(sourceParityDir)) {
     issues.push(issue(null, 'source-parity-directory', `source-parity directory is missing: ${sourceParityDir}.`));
     return { sourceParityDir, records, issues, warnings, counts: { artifacts: 0, actionable: 0, cleared: 0 } };
@@ -382,6 +516,7 @@ function validateSourceParityDirectory(options) {
       fileKey,
       projectDir: options.projectDir,
       verifySource: options.verifySource === true,
+      allowLegacyV1: legacyV1Keys.has(fileKey),
     });
     records.push({ file: file.name, componentKey: checked.componentKey, artifact: checked.artifact });
     issues.push(...checked.issues);
@@ -454,6 +589,11 @@ module.exports = {
   COVERAGE_KEYS,
   IMPLEMENTATION_STATUSES,
   INSPECTION_KEYS,
+  FIGMA_STATE_CLASSIFICATIONS,
+  INTERACTION_STATE_STATUSES,
+  INTERACTION_STATE_TRIGGERS,
+  landedCaptureKeys,
   validateArtifact,
+  validateInteractionStates,
   validateSourceParityDirectory,
 };

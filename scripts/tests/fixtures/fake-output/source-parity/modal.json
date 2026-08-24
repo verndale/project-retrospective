@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "componentKey": "modal",
   "canonical": "Modal",
   "capture": "captures/modal.md",
@@ -59,6 +59,36 @@
     "figma": "reviewed",
     "aiRegistry": "reviewed"
   },
+  "interactionStates": {
+    "status": "covered",
+    "storyExport": "InteractionStates",
+    "states": [
+      {
+        "id": "dialog.open",
+        "label": "Open",
+        "source": {
+          "trigger": "derived-state",
+          "value": "open=true"
+        },
+        "target": "Dialog surface",
+        "sourceCitationIds": ["src-modal"],
+        "classification": "rendered"
+      },
+      {
+        "id": "dialog.focus-containment",
+        "label": "Focus containment and restoration",
+        "source": {
+          "trigger": "behavior",
+          "value": "Tab containment while open and focus restoration on close"
+        },
+        "target": "Dialog focus lifecycle",
+        "sourceCitationIds": ["src-modal"],
+        "classification": "runtime-only",
+        "reason": "Focus movement across time cannot be represented honestly in a static Figma frame.",
+        "evidence": ["component.dialog.focus"]
+      }
+    ]
+  },
   "observations": [
     {
       "id": "sp-modal-001",
@@ -82,16 +112,16 @@
   "reviews": {
     "sourceParity": {
       "status": "passed",
-      "phase": "decision",
+      "phase": "post-remediation",
       "evidence": ["synthetic source-parity review"]
     },
     "adversarial": {
-      "status": "not-required",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["synthetic adversarial review"]
     },
     "design": {
-      "status": "not-required",
-      "evidence": []
+      "status": "passed",
+      "evidence": ["synthetic design review"]
     }
   }
 }

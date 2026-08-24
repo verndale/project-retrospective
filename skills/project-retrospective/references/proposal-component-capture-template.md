@@ -13,7 +13,7 @@ The catalog defines the **Card** canonical. A capture records a project implemen
 
 Captures target the private `ui-design-library` repo, not `ui-design-brain`, and they are **drafts executed by `Action: capture`**, or by a human following the same procedure. A component lifted from a client project carries CMS types, client token names, and client copy; turning it into a library component is a rewrite. The capture identifies the candidate, cites its selection evidence, and enumerates the de-client work.
 
-Write one file per exact implementation identity: default `captures/<kebab-canonical>.md`; structural alternate `captures/<kebab-canonical>--<variant>.md`. Write its mandatory one-to-one `source-parity/<component-key>.json` companion from the source-parity contract loaded directly from `SKILL.md`. Captures remain separate from `proposals/` because a capture is a library change, not a catalog change.
+Write one file per exact implementation identity: default `captures/<kebab-canonical>.md`; structural alternate `captures/<kebab-canonical>--<variant>.md`. Write its mandatory one-to-one source-parity v2 `source-parity/<component-key>.json` companion from the source-parity contract loaded directly from `SKILL.md`, including the required `interactionStates` disposition. Captures remain separate from `proposals/` because a capture is a library change, not a catalog change.
 
 ## Choosing what to capture
 
@@ -54,7 +54,7 @@ component-capture
 }
 ```
 
-For an alternate, set `variant` to its kebab identity, `variantLabel` to its human label, and `default` to `false`. When the existing bare default has no structural fields yet, add `"companionDefault": { "variant": "<default-variant>", "variantLabel": "<Default label>" }`; schema-v5 preflight emits the companion manifest/Figma-registry write rather than leaving the family half-migrated.
+For an alternate, set `variant` to its kebab identity, `variantLabel` to its human label, and `default` to `false`. When the existing bare default has no structural fields yet, add `"companionDefault": { "variant": "<default-variant>", "variantLabel": "<Default label>" }`; schema-v6 preflight emits the companion manifest/Figma-registry write rather than leaving the family half-migrated.
 
 ## Source
 
@@ -171,15 +171,16 @@ This entry describes the intended **de-cliented** result, not the source compone
 
 Omit `variant` and `default` for a single-implementation canonical. A named bare default carries both `variant` and `default: true`; a compound alternate carries `variant` and omits `default`.
 
-`Runtime architecture` and source parity are execution inputs, not package metadata. `capture-preflight.cjs` validates and returns both separately in its schema-v5 plan; do not add either private artifact to `component.json`. `rendering` must equal the architecture mode.
+`Runtime architecture`, source parity, and `interactionStates` are execution inputs, not package metadata. `capture-preflight.cjs` validates and returns them separately in its schema-v6 plan; do not add private capture artifacts to `component.json`. `rendering` must equal the architecture mode.
 
 Story plan — one story per meaningful state, since the story file is the library's API contract:
 
 - `Default` — <the baseline args>
 - `<Variant>` — <what it demonstrates>
 - `<Edge state>` — <empty, long content, missing optional slot>
+- `InteractionStates` — when source parity says `covered`, render every visual state from that inventory, force pseudo-states with targeted selectors, and assert meaningful target/style differences plus runtime-only behavior in `play`.
 
-The default story meta carries `title: '<Canonical Name>'`; an alternate carries `title: '<Canonical Name> / <Variant label>'`. Both use `tags: ['maturity:candidate']`.
+When source parity says `not-applicable`, do not add an empty state story; preserve its explicit reason. The default story meta carries `title: '<Canonical Name>'`; an alternate carries `title: '<Canonical Name> / <Variant label>'`. Both use `tags: ['maturity:candidate']`.
 
 ## Progress
 
@@ -219,6 +220,7 @@ The scope is the component slug, not `library` — `ui-design-library` owns that
 - **The de-client list is required.** Name each coupling so the rewrite can be estimated and client-specific dependencies do not enter shared code.
 - **The runtime graph is also a deliverable.** Missing or inconsistent runtime architecture blocks capture. Do not use `client` merely because the source starts with `'use client'`; list the hydration reason and place the directive on the smallest leaves that need it.
 - **The realization is the intended de-cliented result.** Missing or inconsistent public props, DOM ownership, keyboard/focus/state/announcement behavior, WCAG 2.2 AA metadata, APG pattern, evidence IDs, protected style slots, or consumer responsibilities block capture. If Action changes the public API, DOM, keyboard model, or accessibility ownership, revise the capture and re-run preflight before writing the manifest.
+- **Interaction states are source-backed.** Source-parity v2 classifies every state as `rendered`, `already-represented`, or `runtime-only`, or records an explicit component-level not-applicable reason. Do not invent design states, represent temporal behavior as a static frame, or claim Figma node IDs before promotion.
 - **No client names, copy, or asset URLs in the capture body** beyond the provenance paths needed to find the source. The capture travels to a repo other projects read.
 - **One capture file per `(canonical, variant)` identity — never silently drop a second module.** When two components resolve to the same canonical, decide which case you have:
   - **Prop or visual variants of one component** (a wide Modal, a compact Card, a tone) fold into that single capture's `component.json.variants` array — one file, multiple entries. The golden `captures/modal.md` shows the shape (`"variants": ["default", "wide"]`).

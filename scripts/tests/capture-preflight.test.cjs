@@ -92,7 +92,32 @@ function registerReviewedFigma(library, canonical, componentPath, variant = null
     figma: {
       nodeId: '100:200',
       nodeKey: 'stable-node-key',
+      publicationStatus: 'unpublished',
       review: { status: 'passed', passes: ['source-parity', 'adversarial', 'design'] },
+      stateCoverage: {
+        status: 'covered',
+        storyExport: 'InteractionStates',
+        states: [
+          {
+            id: 'dialog.open',
+            label: 'Open',
+            source: { trigger: 'derived-state', value: 'open=true' },
+            target: 'Dialog surface',
+            classification: 'rendered',
+            frameNodeId: '200:1',
+            instanceNodeId: '200:2',
+            componentNodeId: '100:200',
+          },
+          {
+            id: 'dialog.focus-containment',
+            label: 'Focus containment and restoration',
+            source: { trigger: 'behavior', value: 'Tab containment while open and focus restoration on close' },
+            target: 'Dialog focus lifecycle',
+            classification: 'runtime-only',
+            reason: 'Focus movement across time requires executable browser evidence.',
+          },
+        ],
+      },
     },
   });
   writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
@@ -122,6 +147,8 @@ test('the golden captures pass preflight', () => {
   assert.equal(record.slug, 'modal');
   assert.equal(record.architecture.mode, 'hybrid');
   assert.equal(record.architecture.serverOutput, 'shell');
+  assert.equal(record.interactionStates.status, 'covered');
+  assert.equal(record.interactionStates.storyExport, 'InteractionStates');
   assert.deepEqual(record.blockers, []);
 });
 
@@ -146,7 +173,7 @@ test('the envelope carries the documented key order', () => {
     'counts',
     'warnings',
   ]);
-  assert.equal(result.json.schemaVersion, 5);
+  assert.equal(result.json.schemaVersion, 6);
   assert.deepEqual(result.json.figmaPromotion, {
     required: true,
     ready: true,
@@ -909,6 +936,72 @@ test('existing code without reviewed Figma resumes as figma-pending', () => {
   assert.deepEqual(record.library.missingModules, []);
 });
 
+test('covered state capture requires an InteractionStates story before Figma promotion', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  const library = tempFixture('fake-library');
+  writeFile(
+    library,
+    'components/badge/Badge.stories.tsx',
+    readFile(library, 'components/badge/Badge.stories.tsx').replace('\nexport const InteractionStates = {};\n', '\n'),
+  );
+  assertBlocked(preflight(captures, library), 'interaction-states-story');
+});
+
+test('incomplete registry state node IDs keep an otherwise reviewed capture figma-pending', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  const library = tempFixture('fake-library');
+  registerReviewedFigma(library, 'Badge', 'components/badge');
+  const registry = JSON.parse(readFile(library, 'figma/library.json'));
+  delete registry.components[0].figma.stateCoverage.states[0].frameNodeId;
+  writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
+
+  const result = preflight(captures, library);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const record = only(result);
+  assert.equal(record.status, 'figma-pending');
+  assert.equal(record.figma.interactionStateCoverageComplete, false);
+  assert.ok(record.figma.interactionStateCoverageIssues.some((entry) => entry.includes('frame, instance, and component node IDs')));
+});
+
+test('an explicit not-applicable state result needs no InteractionStates story or Figma matrix', () => {
+  const captures = tempCaptures();
+  const root = path.resolve(captures, '..');
+  const artifact = JSON.parse(readFile(root, 'source-parity/modal.json'));
+  artifact.interactionStates = {
+    status: 'not-applicable',
+    reason: 'The normalized component is static and exposes no interactive state.',
+    states: [],
+  };
+  writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  const library = tempFixture('fake-library');
+  writeFile(
+    library,
+    'components/badge/Badge.stories.tsx',
+    readFile(library, 'components/badge/Badge.stories.tsx').replace('\nexport const InteractionStates = {};\n', '\n'),
+  );
+  registerReviewedFigma(library, 'Badge', 'components/badge');
+  const registry = JSON.parse(readFile(library, 'figma/library.json'));
+  registry.components[0].figma.stateCoverage = {
+    status: 'not-applicable',
+    reason: 'The normalized component is static and exposes no interactive state.',
+    states: [],
+  };
+  writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
+
+  const result = preflight(captures, library);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(only(result).status, 'evidence-pending');
+});
+
 test('reviewed Figma without an Applied marker resumes as evidence-pending', () => {
   const captures = tempCaptures();
   const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
@@ -933,6 +1026,32 @@ test('code, reviewed Figma, and an Applied marker reconcile as skipped', () => {
   const result = preflight(captures, library);
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(only(result).status, 'skipped');
+});
+
+test('legacy v1 source parity remains readable only for an already-landed capture', () => {
+  const captures = tempCaptures();
+  const root = path.resolve(captures, '..');
+  const artifact = JSON.parse(readFile(root, 'source-parity/modal.json'));
+  artifact.schemaVersion = 1;
+  delete artifact.interactionStates;
+  writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
+  const pending = preflight(captures, fixture('fake-library'));
+  assertBlocked(pending, 'source-parity');
+
+  const landedCaptures = tempCaptures();
+  const landedRoot = path.resolve(landedCaptures, '..');
+  const landedArtifact = JSON.parse(readFile(landedRoot, 'source-parity/modal.json'));
+  landedArtifact.schemaVersion = 1;
+  delete landedArtifact.interactionStates;
+  writeFile(landedRoot, 'source-parity/modal.json', `${JSON.stringify(landedArtifact, null, 2)}\n`);
+  const landedText = `${retarget(readFile(landedCaptures, 'modal.md'), 'Badge', 'badge')}\n## Applied\n\n\`\`\`json\n{\n  "status": "landed",\n  "componentPath": "components/badge",\n  "figma": { "nodeId": "100:200", "nodeKey": "stable-node-key" }\n}\n\`\`\`\n`;
+  fs.rmSync(path.join(landedCaptures, 'modal.md'));
+  writeFile(landedCaptures, 'badge.md', landedText);
+  const library = tempFixture('fake-library');
+  registerReviewedFigma(library, 'Badge', 'components/badge');
+  const landedResult = preflight(landedCaptures, library);
+  assert.equal(landedResult.status, 0, landedResult.stderr || landedResult.stdout);
+  assert.equal(only(landedResult).status, 'skipped');
 });
 
 test('code-complete Progress cannot get ahead of the library implementation', () => {

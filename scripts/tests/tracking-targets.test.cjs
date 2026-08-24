@@ -160,6 +160,33 @@ test('capture creates a library branch only for actionable work with an issue an
   assert.equal(result.json.targets.library.requiredWriteBranch, 'feat/30-library-capture');
 });
 
+test('state-aware captures preserve the existing issue-first clean-main branch lifecycle', () => {
+  const interactionStates = {
+    status: 'covered',
+    storyExport: 'InteractionStates',
+    states: [{ id: 'dialog.open', classification: 'rendered' }],
+  };
+  const ready = resolve({
+    ...base('capture'),
+    captures: [{ id: 'modal', status: 'ready', interactionStates }],
+    libraryWriteSetNonEmpty: true,
+    figmaWriteAvailable: true,
+  });
+  assert.equal(ready.json.targets.library.requiredWriteBranch, 'feat/30-library-capture');
+  assert.equal(ready.json.targets.library.issueRequired, true);
+
+  const missingIssue = resolve({
+    ...base('capture'),
+    captures: [{ id: 'modal', status: 'ready', interactionStates }],
+    libraryWriteSetNonEmpty: true,
+    figmaWriteAvailable: true,
+    existingIssues: { ...base('capture').existingIssues, library: null },
+  });
+  assert.equal(missingIssue.json.targets.library.state, 'issue-pending');
+  assert.equal(missingIssue.json.targets.library.requiredWriteBranch, null);
+  assert.ok(missingIssue.json.targets.library.blockers.includes('tracking-issue'));
+});
+
 test('deferred, blocked, skipped, and landed captures create no issue or branch', () => {
   for (const status of ['deferred', 'blocked', 'skipped', 'landed']) {
     const result = resolve({ ...base('capture'), captures: [{ id: `modal-${status}`, status }] });

@@ -5,11 +5,13 @@
  * Reads a run's whole `captures/` directory, checks every capture against the
  * ui-design-brain manifest and the state of a local ui-design-library checkout,
  * and emits one plan covering all of them: which are ready to execute, which are
- * blocked and why, and which resume at code, Figma, or evidence. Its schema-v5 component record
- * emits the validated server-first architecture beside the exact `component.json`
- * object to write. Schema v4 also carries the structural identity, lifecycle,
- * intended de-cliented realization, and accessibility ownership. Architecture governs the rewrite and is never copied into the
- * library manifest.
+ * blocked and why, and which resume at code, Figma, or evidence. Its schema-v6 component record
+ * emits structural identity, lifecycle, intended de-cliented realization,
+ * accessibility ownership, and validated server-first architecture beside the
+ * exact `component.json` object to write. Architecture governs the rewrite and
+ * is never copied into the library manifest. Schema v6 adds the validated
+ * interaction-state model as a separate component field beside componentJson,
+ * architecture, and sourceParity.
  *
  * What it deliberately does NOT do:
  *   - Write into the library. Not one byte. Executing a capture is a rewrite, not
@@ -786,6 +788,131 @@ function sameKeys(value, expected) {
   return actual.length === expected.length && actual.every((key, index) => key === expected[index]);
 }
 
+function hasStoryExport(source, exportName) {
+  const escaped = exportName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`export\\s+(?:const|let|var|function|class)\\s+${escaped}\\b`).test(source);
+}
+
+function stateCoverageIssues(interactionStates, coverage) {
+  const issues = [];
+  if (!coverage || typeof coverage !== 'object' || Array.isArray(coverage)) {
+    return ['figma.stateCoverage is missing'];
+  }
+  if (coverage.status !== interactionStates.status) {
+    issues.push(`figma.stateCoverage.status must equal ${interactionStates.status}`);
+    return issues;
+  }
+  if (interactionStates.status === 'not-applicable') {
+    if (typeof coverage.reason !== 'string' || !coverage.reason.trim()) {
+      issues.push('not-applicable figma.stateCoverage requires a reason');
+    }
+    if (!Array.isArray(coverage.states) || coverage.states.length !== 0) {
+      issues.push('not-applicable figma.stateCoverage requires states: []');
+    }
+    return issues;
+  }
+  if (coverage.storyExport !== interactionStates.storyExport) {
+    issues.push(`figma.stateCoverage.storyExport must equal ${interactionStates.storyExport}`);
+  }
+  const registryStates = Array.isArray(coverage.states) ? coverage.states : [];
+  const byId = new Map(registryStates.map((state) => [state?.id, state]));
+  if (registryStates.length !== interactionStates.states.length || byId.size !== registryStates.length) {
+    issues.push('figma.stateCoverage states must exactly match the source-parity inventory');
+  }
+  for (const state of interactionStates.states) {
+    const registered = byId.get(state.id);
+    if (!registered) {
+      issues.push(`figma.stateCoverage is missing ${state.id}`);
+      continue;
+    }
+    for (const key of ['label', 'target', 'classification']) {
+      if (registered[key] !== state[key]) issues.push(`${state.id} ${key} disagrees with source parity`);
+    }
+    if (registered.source?.trigger !== state.source.trigger || registered.source?.value !== state.source.value) {
+      issues.push(`${state.id} source disagrees with source parity`);
+    }
+    if (state.classification === 'runtime-only') {
+      if (typeof registered.reason !== 'string' || !registered.reason.trim()) {
+        issues.push(`${state.id} runtime-only registry state requires a reason`);
+      }
+      if (['frameNodeId', 'instanceNodeId', 'componentNodeId'].some((key) => registered[key] != null)) {
+        issues.push(`${state.id} runtime-only registry state cannot claim visual node IDs`);
+      }
+    } else if (['frameNodeId', 'instanceNodeId', 'componentNodeId'].some(
+      (key) => typeof registered[key] !== 'string' || !registered[key].trim(),
+    )) {
+      issues.push(`${state.id} visual registry state requires frame, instance, and component node IDs`);
+    }
+  }
+  return issues;
+}
+
+/** Apply the Storybook/Figma/evidence lifecycle after source-parity v2 is validated. */
+function applyInteractionStateGate(component, artifact, libraryDir) {
+  component.interactionStates = artifact?.schemaVersion === 2 ? artifact.interactionStates : null;
+  if (!component.interactionStates || !component.library?.complete || component.blockers.length > 0) return;
+
+  const interactionStates = component.interactionStates;
+  const componentDir = path.join(libraryDir, component.componentPath);
+  const story = component.library.files.find((file) => !file.includes('/') && file.endsWith('.stories.tsx'));
+  if (interactionStates.status === 'covered') {
+    const storySource = story ? fs.readFileSync(path.join(componentDir, story), 'utf8') : '';
+    if (!story || !hasStoryExport(storySource, interactionStates.storyExport)) {
+      component.blockers.push({
+        code: 'interaction-states-story',
+        message: `${component.componentPath} must export ${interactionStates.storyExport} before Figma promotion.`,
+      });
+      component.status = 'blocked';
+      return;
+    }
+  }
+
+  const registryRead = readJsonSafe(path.join(libraryDir, 'figma/library.json'));
+  const registration = registryRead.ok && Array.isArray(registryRead.value?.components)
+    ? registryRead.value.components.find((candidate) =>
+      candidate?.componentPath === component.componentPath &&
+      candidate?.canonical === component.canonical &&
+      (candidate?.variant ?? null) === component.variant)
+    : null;
+  const coverageProblems = stateCoverageIssues(interactionStates, registration?.figma?.stateCoverage);
+  const reviewPasses = registration?.figma?.review?.passes ?? [];
+  const figmaComplete = Boolean(
+    registration?.figma?.nodeId &&
+    registration?.figma?.nodeKey &&
+    registration?.figma?.publicationStatus === 'unpublished' &&
+    registration?.figma?.review?.status === 'passed' &&
+    ['source-parity', 'adversarial', 'design'].every((pass) => reviewPasses.includes(pass)) &&
+    coverageProblems.length === 0,
+  );
+  component.figma = {
+    ...(component.figma ?? {}),
+    interactionStateCoverageComplete: coverageProblems.length === 0,
+    interactionStateCoverageIssues: coverageProblems,
+    publicationStatus: registration?.figma?.publicationStatus ?? null,
+  };
+  const sourceReviews = artifact.reviews ?? {};
+  const evidenceComplete = sourceReviews.sourceParity?.status === 'passed' &&
+    sourceReviews.sourceParity?.phase === 'post-remediation' &&
+    ['adversarial', 'design'].every((pass) =>
+      sourceReviews[pass]?.status === 'passed' &&
+      Array.isArray(sourceReviews[pass]?.evidence) &&
+      sourceReviews[pass].evidence.length > 0);
+
+  if (!figmaComplete) {
+    if (component.applied) {
+      component.blockers.push({
+        code: 'applied-state-coverage-drift',
+        message: `Applied claims landed before unpublished governed interaction-state coverage is complete: ${coverageProblems.join('; ') || 'Figma registration/review is incomplete'}.`,
+      });
+      component.status = 'blocked';
+    } else {
+      component.status = 'figma-pending';
+    }
+    return;
+  }
+  component.status = component.applied && evidenceComplete ? 'skipped' : 'evidence-pending';
+}
+
 function safeModulePath(modulePath) {
   if (typeof modulePath !== 'string' || !modulePath || modulePath !== modulePath.trim()) return false;
   // eslint-disable-next-line no-control-regex -- module paths must reject every ASCII control byte
@@ -1013,6 +1140,7 @@ function readCapture(file, ctx) {
     library: null,
     architecture: null,
     componentJson: null,
+    interactionStates: null,
     stories: null,
     structuralImplementation: null,
     progress: { status: 'pending' },
@@ -1532,6 +1660,14 @@ function inspectFigmaPromotion(libraryDir) {
       if (widths.desktop !== 1440 || widths.tabletLarge !== 1024 || widths.tabletSmall !== 768 || widths.mobile !== 390) {
         issues.push(`${registry} does not expose the governed 1440/1024/768/390 breakpoints`);
       }
+      const interactionStates = pattern.interactionStates ?? {};
+      if (interactionStates.presentation !== 'Interaction states' ||
+        interactionStates.masterPolicy !== 'documentation-specimens-only' ||
+        interactionStates.instancePolicy !== 'connected-to-registered-master' ||
+        interactionStates.labels !== 'outside-instance' ||
+        interactionStates.visualSource !== 'semantic-variables') {
+        issues.push(`${registry} does not expose the governed Interaction states presentation contract`);
+      }
       const surfaces = findCodeConnectSurfaces(value);
       if (surfaces.length > 0) issues.push(`${registry} exposes Code Connect at ${surfaces.join(', ')}`);
       if ((value?.components ?? []).some((component) => component?.figma?.template !== undefined)) {
@@ -1547,6 +1683,7 @@ function inspectFigmaPromotion(libraryDir) {
       ['Button, Section header, and Alert as reference standards', /Button[\s,/]+Section header[\s,/]+(?:and\s+)?Alert/i],
       ['the 1440/1024/768/390 responsive widths', /1440[\s\S]{0,80}1024[\s\S]{0,80}768[\s\S]{0,80}390/],
       ['unpublished candidate status', /unpublished/i],
+      ['Interaction states with connected instances and governed node IDs', /Interaction states[\s\S]{0,240}connected instances[\s\S]{0,240}(?:node IDs|node ids)/i],
       ['source-parity, adversarial, and design review passes', /source[- ]parity[\s\S]{0,160}adversarial[\s\S]{0,160}design review/i],
     ];
     for (const [label, pattern] of requirements) {
@@ -1655,8 +1792,12 @@ function main() {
     sourceParityDir: path.resolve(capturesDir, '..', 'source-parity'),
     capturesDir,
     verifySource: false,
+    legacyV1ComponentKeys: new Set(
+      components.filter((component) => component.status === 'skipped').map((component) => component.componentKey),
+    ),
   });
   const parityByKey = new Map(sourceParity.records.map((record) => [record.componentKey, record.artifact]));
+  const parityInvalid = new Set(sourceParity.issues.map((entry) => entry.componentKey ?? '*'));
   for (const component of components) {
     const artifact = parityByKey.get(component.componentKey) || null;
     component.sourceParity = artifact
@@ -1674,6 +1815,9 @@ function main() {
           })),
         }
       : null;
+    if (!parityInvalid.has('*') && !parityInvalid.has(component.componentKey)) {
+      applyInteractionStateGate(component, artifact, libraryDir);
+    }
   }
   for (const failure of sourceParity.issues) {
     const affected = failure.componentKey
@@ -1710,7 +1854,7 @@ function main() {
 
   writeOut(
     {
-      schemaVersion: 5,
+      schemaVersion: 6,
       captures: capturesDir,
       sourceParity: {
         directory: sourceParity.sourceParityDir,
