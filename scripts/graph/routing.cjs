@@ -90,8 +90,13 @@ function policyProblems(policy, graph = null, { checkNodeTypes = true } = {}) {
   if (!Number.isFinite(policy.hubPenalty) || policy.hubPenalty < 0) {
     problems.push("hubPenalty must be a finite non-negative number");
   }
+  if (!Number.isFinite(policy.bytePenaltyPerKiB) || policy.bytePenaltyPerKiB < 0) {
+    problems.push("bytePenaltyPerKiB must be a finite non-negative number");
+  }
   if (!Array.isArray(policy.excludedIntermediateTypes)) {
     problems.push("excludedIntermediateTypes must be an array");
+  } else if (policy.excludedIntermediateTypes.some((type) => typeof type !== "string" || !type)) {
+    problems.push("excludedIntermediateTypes must be a string array");
   }
   if (!policy.intents || typeof policy.intents !== "object" || Array.isArray(policy.intents)) {
     problems.push("intents must be an object");
@@ -170,7 +175,9 @@ function edgeCost(edge, destination, byId, policy) {
   const base = policy.edgeCosts[edge.type];
   if (typeof base !== "number") throw new Error(`Routing policy has no cost for edge type ${edge.type}`);
   const node = byId.get(destination);
-  return base + (policy.hubPenalty || 0) * Math.log2((node?.degree || 0) + 1);
+  return base
+    + policy.hubPenalty * Math.log2((node?.degree || 0) + 1)
+    + policy.bytePenaltyPerKiB * ((node?.bytes || 0) / 1024);
 }
 
 function shortestPaths(graph, sourceId, policy, targetId = null) {

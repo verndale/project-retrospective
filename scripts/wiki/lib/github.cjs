@@ -6,7 +6,7 @@
 
 const REPOSITORY_RE = "[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+";
 const URL_RE = new RegExp(
-  `https?:\\/\\/(?:www\\.)?github\\.com\\/(${REPOSITORY_RE})\\/(pull|issues)\\/(\\d+)\\b`,
+  `(?<![A-Za-z0-9_./:=?&%+-])https?:\\/\\/(?:www\\.)?github\\.com\\/(${REPOSITORY_RE})\\/(pull|issues)\\/(\\d+)\\b`,
   "gi",
 );
 
@@ -38,10 +38,12 @@ function withoutFencedCode(text) {
   let fence = null;
   for (const line of String(text || "").split(/\r?\n/)) {
     const marker = line.match(/^\s*(`{3,}|~{3,})/);
-    if (marker) {
-      const kind = marker[1][0];
-      if (!fence) fence = kind;
-      else if (fence === kind) fence = null;
+    if (!fence && marker) {
+      fence = { kind: marker[1][0], length: marker[1].length };
+      continue;
+    }
+    if (fence) {
+      if (marker && marker[1][0] === fence.kind && marker[1].length >= fence.length && /^\s*$/.test(line.slice(marker[0].length))) fence = null;
       continue;
     }
     if (!fence) kept.push(line);
@@ -98,28 +100,29 @@ function extractClosingIssues(body, defaultRepository) {
   const source = withoutFencedCode(body);
   const refs = [];
   const seen = new Set();
-  const issueToken = `(?:https?:\\/\\/(?:www\\.)?github\\.com\\/(?:${REPOSITORY_RE})\\/issues\\/\\d+|(?:${REPOSITORY_RE})#\\d+|#\\d+)`;
-  const keyword = new RegExp(
-    `\\b(?:close[sd]?|fix(?:es|ed)?|resolve[sd]?)\\s*:?\\s+(${issueToken}(?:\\s*(?:,|and)\\s*${issueToken})*)`,
-    "gi",
-  );
-  let clause;
-  while ((clause = keyword.exec(source)) !== null) {
-    const tokenRe = new RegExp(
-      `(?:https?:\\/\\/(?:www\\.)?github\\.com\\/(${REPOSITORY_RE})\\/issues\\/(\\d+)|(${REPOSITORY_RE})#(\\d+)|#(\\d+))`,
-      "gi",
-    );
-    let token;
-    while ((token = tokenRe.exec(clause[1])) !== null) {
-      const ref = canonicalRef({
-        kind: "issue",
-        repository: token[1] || token[3] || repository,
-        number: token[2] || token[4] || token[5],
-      });
-      if (!ref || seen.has(refKey(ref))) continue;
-      seen.add(refKey(ref));
-      refs.push(ref);
+  const keyword = /\b(?:close[sd]?|fix(?:es|ed)?|resolve[sd]?)\s*:?\s+/gi;
+  const token = new RegExp(`^(?:https?:\\/\\/(?:www\\.)?github\\.com\\/(${REPOSITORY_RE})\\/issues\\/(\\d+)|(${REPOSITORY_RE})#(\\d+)|#(\\d+))\\b`, "i");
+  while (keyword.exec(source) !== null) {
+    let cursor = keyword.lastIndex;
+    let first = true;
+    while (cursor < source.length) {
+      if (!first) {
+        const separator = source.slice(cursor).match(/^(?:\s*,\s*(?:and\s+)?|\s+(?:and|&)\s+|\s+)/i);
+        if (!separator) break;
+        cursor += separator[0].length;
+      }
+      const match = source.slice(cursor).match(token);
+      if (!match) break;
+      const ref = canonicalRef({ kind: "issue", repository: match[1] || match[3] || repository, number: match[2] || match[4] || match[5] });
+      if (ref && !seen.has(refKey(ref))) {
+        seen.add(refKey(ref));
+        refs.push(ref);
+      }
+      cursor += match[0].length;
+      first = false;
+      if (/^[.!?;]/.test(source.slice(cursor))) break;
     }
+    keyword.lastIndex = Math.max(keyword.lastIndex, cursor);
   }
   return refs;
 }

@@ -55,38 +55,53 @@ jobs:
 
       - name: Require bot token
         run: |
-          test -n "$GH_TOKEN" || { echo 'PR_BOT_TOKEN is required'; exit 1; }
+          test -n "$GH_TOKEN" || { echo '::error::PR_BOT_TOKEN is required'; exit 1; }
           gh auth setup-git
 
       - name: Refresh issue state
         id: refresh
         run: |
           base="$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')"
-          git checkout -B bot/wiki-issue-sync "origin/${base}"
+          branch="bot/wiki-issue-sync"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$base"
+          git fetch origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" || true
+          git checkout -B "$branch" "origin/$base"
           node scripts/wiki/refresh-issue-state.cjs
           pnpm run graph:build
           pnpm run wiki:check
-          git add wiki scripts/graph/data/graph.json
+          pnpm run graph:check
+          git add -- wiki scripts/graph/data/graph.json
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No issue-state changes."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "docs(wiki): refresh cited issue state"
-            git push --force-with-lease origin bot/wiki-issue-sync
-            echo "base_branch=${base}" >> "$GITHUB_OUTPUT"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          git commit -m "docs(wiki): refresh cited issue state"
+          git push --force-with-lease origin "$branch"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "base=${base}" >> "$GITHUB_OUTPUT"
+          echo "branch=${branch}" >> "$GITHUB_OUTPUT"
 
-      - name: Open or update PR
+      - name: Open, update, or reopen review PR
         if: steps.refresh.outputs.changed == 'true'
         env:
-          PR_BASE_BRANCH: ${{ steps.refresh.outputs.base_branch }}
-          PR_HEAD_BRANCH: bot/wiki-issue-sync
-          PR_DRAFT: "false"
-          PR_AI: ${{ vars.PR_AI }}
-          PR_AI_ENDPOINT: ${{ vars.PR_AI_ENDPOINT }}
-          PR_AI_MODEL: ${{ vars.PR_AI_MODEL }}
-          PR_AI_API_KEY: ${{ secrets.PR_AI_API_KEY }}
-        run: pnpm run pr:create
+          BASE_BRANCH: ${{ steps.refresh.outputs.base }}
+          BOT_BRANCH: ${{ steps.refresh.outputs.branch }}
+        run: |
+          title="docs(wiki): refresh cited issue state"
+          body="Automated, reviewable refresh of cited GitHub issue state."
+          open="$(gh pr list --base "$BASE_BRANCH" --head "$BOT_BRANCH" --state open --limit 100 --json number --jq 'sort_by(.number) | last | .number // empty')"
+          closed="$(gh pr list --base "$BASE_BRANCH" --head "$BOT_BRANCH" --state closed --limit 100 --json number,mergedAt --jq 'map(select(.mergedAt == null)) | sort_by(.number) | last | .number // empty')"
+          if [ -n "$open" ]; then
+            review="$open"
+          elif [ -n "$closed" ]; then
+            gh pr reopen "$closed"
+            review="$closed"
+          else
+            gh pr create --base "$BASE_BRANCH" --head "$BOT_BRANCH" --title "$title" --body "$body"
+            exit 0
+          fi
+          gh pr edit "$review" --title "$title" --body "$body"
+          if [ "$(gh pr view "$review" --json isDraft --jq '.isDraft')" = "true" ]; then gh pr ready "$review"; fi

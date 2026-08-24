@@ -18,7 +18,7 @@ const path = require("node:path");
 const fm = require("./lib/frontmatter.cjs");
 const { classify } = require("./lib/substantive.cjs");
 const { slugify, addJournalLine, addTopicDecision } = require("./lib/wiki-io.cjs");
-const { extractClosingIssues, extractGithubRefs, normalizeRepository, refKey } = require("./lib/github.cjs");
+const { canonicalRef, extractClosingIssues, extractGithubRefs, normalizeRepository, refKey } = require("./lib/github.cjs");
 const ai = require("./lib/ai.cjs");
 
 const DEFAULT_REPOSITORY = "verndale/project-retrospective";
@@ -38,32 +38,63 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function repositoryFromUrl(url) {
-  const match = String(url || "").match(/github\.com\/([^/]+\/[^/]+)\/(?:pull|issues)\/\d+/i);
-  return normalizeRepository(match && match[1]);
+function pullRequestRef(value) {
+  try {
+    const parsed = new URL(String(value || "").trim());
+    if (!/^https?:$/.test(parsed.protocol) || !/^(?:www\.)?github\.com$/i.test(parsed.hostname) || parsed.username || parsed.password || parsed.port) return null;
+    const match = parsed.pathname.match(/^\/([^/]+\/[^/]+)\/pull\/(\d+)$/i);
+    return match ? canonicalRef({ kind: "pull-request", repository: match[1], number: match[2] }) : null;
+  } catch {
+    return null;
+  }
+}
+
+function safeChangedPath(value) {
+  return typeof value === "string" && value.length > 0 && !value.includes("\\") && !path.posix.isAbsolute(value)
+    && path.posix.normalize(value) === value && !value.split("/").includes("..");
+}
+
+function parseableMergedAt(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(value);
+  if (!match || !Number.isFinite(Date.parse(value))) return false;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  return date.getUTCFullYear() === Number(match[1]) && date.getUTCMonth() === Number(match[2]) - 1 && date.getUTCDate() === Number(match[3]);
 }
 
 function normalizeContext(input) {
   const ctx = input && typeof input === "object" ? input : {};
   if (ctx.schemaVersion != null && ctx.schemaVersion !== 1) throw new Error(`unsupported context schemaVersion: ${ctx.schemaVersion}`);
-  const repository = normalizeRepository(ctx.repository) || repositoryFromUrl(ctx.url) || DEFAULT_REPOSITORY;
+  const prRef = pullRequestRef(ctx.url);
+  const repository = normalizeRepository(ctx.repository) || prRef?.repository || DEFAULT_REPOSITORY;
   const number = Number(ctx.number);
   if (!Number.isSafeInteger(number) || number <= 0) throw new Error("context number must be a positive integer");
-  if (!String(ctx.url || "").trim()) throw new Error("context url is required");
-  const changedPaths = Array.isArray(ctx.changedPaths) ? ctx.changedPaths : Array.isArray(ctx.files) ? ctx.files : [];
-  const commits = Array.isArray(ctx.commits) ? ctx.commits.map((commit) => ({
-    hash: String(commit.hash || commit.sha || ""),
-    subject: String(commit.subject || commit.message || "").split("\n")[0],
-  })) : [];
+  if (!prRef || prRef.repository !== repository || prRef.number !== number) throw new Error("context repository, number, and pull-request URL must agree");
+  const changedPaths = ctx.changedPaths ?? ctx.files ?? [];
+  const mergedAt = ctx.mergedAt ?? ctx.merged_at ?? null;
+  if (!Array.isArray(changedPaths) || changedPaths.some((item) => !safeChangedPath(item))) throw new Error("context changedPaths must contain safe repo-relative paths");
+  if (ctx.title != null && typeof ctx.title !== "string") throw new Error("context title must be a string");
+  if (ctx.body != null && typeof ctx.body !== "string") throw new Error("context body must be a string");
+  if (mergedAt != null && typeof mergedAt !== "string") throw new Error("context mergedAt must be a string");
+  if (typeof mergedAt === "string" && !parseableMergedAt(mergedAt)) throw new Error("context mergedAt must be a parseable ISO date string");
+  const rawCommits = ctx.commits ?? [];
+  if (!Array.isArray(rawCommits)) throw new Error("context commits must contain string hash and subject fields");
+  const commits = rawCommits.map((commit) => {
+    const hash = commit && typeof commit === "object" ? (commit.hash ?? commit.sha) : null;
+    const subject = commit && typeof commit === "object" ? (commit.subject ?? commit.message) : null;
+    if (typeof hash !== "string" || typeof subject !== "string" || !hash.trim() || !subject.split("\n")[0].trim()) {
+      throw new Error("context commits must contain string hash and subject fields");
+    }
+    return { hash: hash.trim(), subject: subject.split("\n")[0].trim() };
+  });
   return {
     schemaVersion: 1,
     repository,
     number,
-    title: String(ctx.title || `PR #${number}`),
-    body: String(ctx.body || ""),
-    url: String(ctx.url),
-    mergedAt: ctx.mergedAt || ctx.merged_at || null,
-    changedPaths: changedPaths.map(String),
+    title: ctx.title || `PR #${number}`,
+    body: ctx.body || "",
+    url: prRef.url,
+    mergedAt,
+    changedPaths: [...new Set(changedPaths)],
     commits,
   };
 }

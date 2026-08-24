@@ -68,7 +68,7 @@ jobs:
 
       - name: Require bot token
         run: |
-          test -n "$GH_TOKEN" || { echo 'PR_BOT_TOKEN is required'; exit 1; }
+          test -n "$GH_TOKEN" || { echo '::error::PR_BOT_TOKEN is required'; exit 1; }
           gh auth setup-git
 
       - name: Build merged PR context
@@ -80,9 +80,9 @@ jobs:
           jq -e '(.head.ref | startswith("bot/wiki-") | not)' "$RUNNER_TEMP/wiki-pr.json" > /dev/null \
             || { echo "Refusing to replay bot wiki PR #${PR_NUMBER}"; exit 1; }
 
-          gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" --paginate --slurp \
+          gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files?per_page=100" --paginate --slurp \
             | jq -c 'map(.[] | .filename)' > "$RUNNER_TEMP/wiki-files.json"
-          gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/commits" --paginate --slurp \
+          gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/commits?per_page=100" --paginate --slurp \
             | jq -c 'map(.[] | {hash: .sha, subject: (.commit.message | split("\n")[0])})' > "$RUNNER_TEMP/wiki-commits.json"
 
           jq -n \
@@ -106,30 +106,45 @@ jobs:
           RELEASE_NOTES_AI_MODEL: ${{ vars.RELEASE_NOTES_AI_MODEL }}
           RELEASE_NOTES_AI_API_KEY: ${{ secrets.RELEASE_NOTES_AI_API_KEY }}
         run: |
+          branch="bot/wiki-sync/${PR_NUMBER}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -B "bot/wiki-sync/${PR_NUMBER}" "origin/${BASE_BRANCH}"
+          git fetch origin "$BASE_BRANCH"
+          git fetch origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" || true
+          git checkout -B "$branch" "origin/${BASE_BRANCH}"
           node scripts/wiki/on-merge-sync.cjs --context "$RUNNER_TEMP/wiki-merge.json"
           pnpm run graph:build
           pnpm run wiki:check
-          git add wiki scripts/graph/data/graph.json
+          pnpm run graph:check
+          git add -- wiki scripts/graph/data/graph.json
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No wiki changes for ${GITHUB_REPOSITORY}#${PR_NUMBER}."
-          else
-            git commit -m "docs(wiki): reconcile merged PR #${PR_NUMBER}"
-            git push --force-with-lease origin "bot/wiki-sync/${PR_NUMBER}"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          git commit -m "docs(wiki): reconcile merged PR #${PR_NUMBER}"
+          git push --force-with-lease origin "$branch"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "branch=${branch}" >> "$GITHUB_OUTPUT"
 
-      - name: Open or update PR
+      - name: Open, update, or reopen review PR
         if: steps.sync.outputs.changed == 'true'
         env:
-          PR_BASE_BRANCH: ${{ steps.context.outputs.base_branch }}
-          PR_HEAD_BRANCH: bot/wiki-sync/${{ inputs.pr_number || github.event.pull_request.number }}
-          PR_DRAFT: "false"
-          PR_AI: ${{ vars.PR_AI }}
-          PR_AI_ENDPOINT: ${{ vars.PR_AI_ENDPOINT }}
-          PR_AI_MODEL: ${{ vars.PR_AI_MODEL }}
-          PR_AI_API_KEY: ${{ secrets.PR_AI_API_KEY }}
-        run: pnpm run pr:create
+          BASE_BRANCH: ${{ steps.context.outputs.base_branch }}
+          BOT_BRANCH: ${{ steps.sync.outputs.branch }}
+        run: |
+          title="docs(wiki): reconcile merged PR #${PR_NUMBER}"
+          body="Automated, reviewable wiki reconciliation for merged PR #${PR_NUMBER}."
+          open="$(gh pr list --base "$BASE_BRANCH" --head "$BOT_BRANCH" --state open --limit 100 --json number --jq 'sort_by(.number) | last | .number // empty')"
+          closed="$(gh pr list --base "$BASE_BRANCH" --head "$BOT_BRANCH" --state closed --limit 100 --json number,mergedAt --jq 'map(select(.mergedAt == null)) | sort_by(.number) | last | .number // empty')"
+          if [ -n "$open" ]; then
+            review="$open"
+          elif [ -n "$closed" ]; then
+            gh pr reopen "$closed"
+            review="$closed"
+          else
+            gh pr create --base "$BASE_BRANCH" --head "$BOT_BRANCH" --title "$title" --body "$body"
+            exit 0
+          fi
+          gh pr edit "$review" --title "$title" --body "$body"
+          if [ "$(gh pr view "$review" --json isDraft --jq '.isDraft')" = "true" ]; then gh pr ready "$review"; fi

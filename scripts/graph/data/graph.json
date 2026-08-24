@@ -116,7 +116,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 30789,
+      "bytes": 30493,
       "degree": 10
     },
     {
@@ -155,7 +155,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 14520,
+      "bytes": 14913,
       "degree": 5
     },
     {
@@ -207,7 +207,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 14732,
+      "bytes": 15648,
       "degree": 2
     },
     {
@@ -360,28 +360,10 @@
       "dir": "scripts/tests",
       "topics": [],
       "aliases": [],
-      "prs": [
-        "83",
-        "99",
-        "5",
-        "7"
-      ],
-      "issues": [
-        "12",
-        "13",
-        "98",
-        "9",
-        "10",
-        "11",
-        "7",
-        "83",
-        "90",
-        "91",
-        "92",
-        "93"
-      ],
+      "prs": [],
+      "issues": [],
       "githubRefs": [],
-      "bytes": 17788,
+      "bytes": 25766,
       "degree": 6
     },
     {
@@ -472,7 +454,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 4491,
+      "bytes": 4848,
       "degree": 6
     },
     {
@@ -524,7 +506,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 13263,
+      "bytes": 15361,
       "degree": 7
     },
     {
@@ -550,7 +532,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 4795,
+      "bytes": 5112,
       "degree": 3
     },
     {
@@ -1821,7 +1803,7 @@
           "url": "https://github.com/verndale/project-retrospective/issues/83"
         }
       ],
-      "bytes": 2227,
+      "bytes": 2636,
       "degree": 4
     },
     {
@@ -2368,7 +2350,7 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 6509,
+      "bytes": 6952,
       "degree": 26
     },
     {

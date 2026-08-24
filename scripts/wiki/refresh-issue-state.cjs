@@ -42,9 +42,14 @@ function ghState(n, repository = DEFAULT_REPOSITORY) {
 function refresh(topicsDir, lookup) {
   const changes = [];
   const stateCache = new Map();
-  if (!fs.existsSync(topicsDir)) return changes;
-  for (const name of fs.readdirSync(topicsDir)) {
-    if (!name.endsWith(".md")) continue;
+  try {
+    if (!fs.lstatSync(topicsDir).isDirectory() || !fs.lstatSync(path.dirname(topicsDir)).isDirectory()) return changes;
+  } catch {
+    return changes;
+  }
+  for (const entry of fs.readdirSync(topicsDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
+    const name = entry.name;
     const p = path.join(topicsDir, name);
     const lines = fs.readFileSync(p, "utf8").split("\n");
     let inOpen = false;
@@ -53,13 +58,14 @@ function refresh(topicsDir, lookup) {
     for (let i = 0; i < lines.length; i++) {
       const l = lines[i];
       const marker = l.match(/^\s*(`{3,}|~{3,})/);
-      if (marker) {
-        const kind = marker[1][0];
-        if (!fence) fence = kind;
-        else if (fence === kind) fence = null;
+      if (!fence && marker) {
+        fence = { kind: marker[1][0], length: marker[1].length };
         continue;
       }
-      if (fence) continue;
+      if (fence) {
+        if (marker && marker[1][0] === fence.kind && marker[1].length >= fence.length && /^\s*$/.test(l.slice(marker[0].length))) fence = null;
+        continue;
+      }
       if (/^##\s/.test(l)) inOpen = /^##\s+Open threads\b/.test(l);
       if (!inOpen) continue;
       const cited = extractGithubRefs(l).filter((item) => item.kind === "issue");

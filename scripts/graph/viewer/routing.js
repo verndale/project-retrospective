@@ -4,19 +4,39 @@
 
 window.KGRouting = (() => {
   const key = (edge) => `${edge.source}\u0000${edge.target}\u0000${edge.type}`;
+  const requiredIntents = ["why", "wiring", "impact"];
+  const evidenceUrl = /^https?:\/\/(?:www\.)?github\.com\/([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)\/(pull|issues)\/(\d+)(?:[?#].*)?$/i;
 
-  function hasSafeNumericPolicy(policy) {
-    return Boolean(
+  function normalizeEvidenceQuery(value) {
+    const query = String(value || "").trim().toLowerCase();
+    const match = query.match(evidenceUrl);
+    const number = match ? Number(match[3]) : null;
+    return match && Number.isSafeInteger(number) && number > 0 ? `https://github.com/${match[1]}/${match[2]}/${number}` : query;
+  }
+
+  function hasSafeNumericPolicy(policy, graph = null) {
+    const valid = Boolean(
       policy &&
       policy.edgeCosts &&
       Object.values(policy.edgeCosts).every((cost) => Number.isFinite(cost) && cost > 0) &&
       Number.isFinite(policy.hubPenalty) &&
-      policy.hubPenalty >= 0
+      policy.hubPenalty >= 0 &&
+      Number.isFinite(policy.bytePenaltyPerKiB) &&
+      policy.bytePenaltyPerKiB >= 0 &&
+      Array.isArray(policy.excludedIntermediateTypes) &&
+      policy.excludedIntermediateTypes.every((type) => typeof type === "string" && type.length > 0) &&
+      policy.intents &&
+      requiredIntents.every((intent) => {
+        const definition = policy.intents[intent];
+        return definition && ["preferredSourceTypes", "preferredTargetTypes"].every((field) =>
+          Array.isArray(definition[field]) && definition[field].length > 0 && definition[field].every((type) => typeof type === "string" && type.length > 0));
+      })
     );
+    return valid && (!graph || (Array.isArray(graph.edges) && graph.edges.every((edge) => Number.isFinite(policy.edgeCosts[edge.type]) && policy.edgeCosts[edge.type] > 0)));
   }
 
   function shortestPath(graph, source, target, policy) {
-    if (!hasSafeNumericPolicy(policy)) return null;
+    if (!hasSafeNumericPolicy(policy, graph)) return null;
     const byId = new Map(graph.nodes.map((node) => [node.id, node]));
     const adjacency = new Map(graph.nodes.map((node) => [node.id, []]));
     for (const edge of graph.edges) {
@@ -37,7 +57,10 @@ window.KGRouting = (() => {
         if (step.to !== target && step.to !== source && excluded.has(byId.get(step.to)?.type)) continue;
         const base = policy.edgeCosts[step.edge.type];
         if (typeof base !== "number") continue;
-        const cost = base + (policy.hubPenalty || 0) * Math.log2((byId.get(step.to)?.degree || 0) + 1);
+        const destination = byId.get(step.to);
+        const cost = base
+          + policy.hubPenalty * Math.log2((destination?.degree || 0) + 1)
+          + policy.bytePenaltyPerKiB * ((destination?.bytes || 0) / 1024);
         const next = distances.get(current) + cost;
         const known = distances.get(step.to);
         const previousKey = previous.get(step.to) ? key(previous.get(step.to).edge) : "";
@@ -59,8 +82,9 @@ window.KGRouting = (() => {
       current = step.from;
       nodes.unshift(current);
     }
-    return { nodes, steps, cost: Number(distances.get(target).toFixed(3)) };
+    const totalBytes = nodes.reduce((sum, id) => sum + (byId.get(id)?.bytes || 0), 0);
+    return { nodes, steps, cost: Number(distances.get(target).toFixed(3)), totalBytes };
   }
 
-  return { shortestPath, edgeKey: key, hasSafeNumericPolicy };
+  return { shortestPath, edgeKey: key, hasSafeNumericPolicy, normalizeEvidenceQuery };
 })();

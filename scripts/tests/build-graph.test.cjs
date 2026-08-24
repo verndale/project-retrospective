@@ -63,6 +63,22 @@ test('node ids are repo-relative when a repoRoot override is passed', () => {
   assert.deepEqual(bad, [], 'no node id should escape the supplied repo root');
 });
 
+test('legacy evidence arrays and Markdown edges use canonical fence-safe extraction', () => {
+  const graph = brokenCopy((dir) => {
+    fs.appendFileSync(path.join(dir, 'wiki/topics/demo.md'), [
+      '', '````md', '```js', '[phantom](../plans/2026-01-01-plan.md)',
+      'https://github.com/verndale/project-retrospective/pull/999', '```',
+      'https://evil.example/https://github.com/verndale/project-retrospective/issues/998', '````',
+      'https://github.com/verndale/project-retrospective/issues/7', '',
+    ].join('\n'));
+  });
+  const node = graph.nodes.find((item) => item.id === 'wiki/topics/demo.md');
+  assert.deepEqual(node.prs, []);
+  assert.deepEqual(node.issues, ['7']);
+  assert.deepEqual(node.githubRefs.map((ref) => ref.number), [7]);
+  assert.equal(graph.edges.some((edge) => edge.source === node.id && edge.target === 'wiki/plans/2026-01-01-plan.md' && edge.type === 'links-to'), false);
+});
+
 test('scripts and tests are labelled by filename, path-qualified for repo scripts', () => {
   const graph = build({ repoRoot: FIXTURE });
   const label = (id) => graph.nodes.find((n) => n.id === id).label;

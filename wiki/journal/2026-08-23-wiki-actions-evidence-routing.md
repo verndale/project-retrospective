@@ -19,6 +19,8 @@ issues: [https://github.com/verndale/project-retrospective/issues/83]
 
 Markdown citations now derive canonical offline `githubRefs` on existing curated graph nodes while legacy fields remain readable. The router understands repo-qualified PR and issue queries, prefers the strongest evidence page, and reports bytes for its compact itinerary; the viewer searches those same forms and renders safe external links. Merge reconciliation accepts a versioned, repo-qualified context with every closing issue, and writer workflows use manual replay, fully paginated file-backed JSON, bot recursion/race guards, explicit bot auth, and lease-safe review branches. Nightly issue refresh caches each repository-and-number lookup, checks every citation on a line, and annotates it only after all are confirmed closed; an individual lookup failure remains fail-soft. Stable Quality, Commit message lint, and Wiki integrity checks share the pinned runtime. The pre-commit graph lifecycle remains fail-open but refuses contaminated input, and `AGENTS.md` now directs agents to the cheapest grounded lookup.
 
+Post-rollout review added bounded Oxford-comma and `&` closing-clause parsing, length-aware nested fences, symlink-safe issue refresh, strict merged-PR URL/path/commit validation, canonical legacy evidence derivation, query/fragment normalization in CLI and browser search, byte-weighted browser routes with authority and totals, fail-closed browser policy validation, and deterministic writer-PR reopening.
+
 ## Files
 
 - `.github/workflows/`, `.husky/pre-commit`, `package.json`, `pnpm-workspace.yaml`, `commitlint.config.cjs`
