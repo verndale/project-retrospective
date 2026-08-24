@@ -5,6 +5,7 @@ date: 2026-08-23
 evidence:
   - "verndale/project-retrospective issue #83 https://github.com/verndale/project-retrospective/issues/83"
   - "working tree implementation and full repository verification"
+  - "verndale/project-retrospective PR #84 https://github.com/verndale/project-retrospective/pull/84 (merged 2026-08-24)"
 source_tool: codex
 source: "codex task /root/schema_design"
 topics: [graph-wiki-subsystem]

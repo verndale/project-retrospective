@@ -4,6 +4,7 @@ executed: 2026-08-24
 date: 2026-08-24
 evidence:
   - "canonical headless AGENTS.md block installed with zero-drift dry run"
+  - "verndale/project-retrospective PR #84 https://github.com/verndale/project-retrospective/pull/84 (merged 2026-08-24)"
 source_tool: file
 source: "user-approved cross-repository plan"
 topics: [graph-wiki-subsystem]

@@ -2,7 +2,7 @@
 date: 2026-08-23
 topics: [graph-wiki-subsystem]
 plan: plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/84
 issue: https://github.com/verndale/project-retrospective/issues/83
 issues: [https://github.com/verndale/project-retrospective/issues/83]
 ---

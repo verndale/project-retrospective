@@ -2,7 +2,7 @@
 date: 2026-08-24
 topics: [graph-wiki-subsystem]
 plan: plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/84
 ---
 # Make agent wiki guidance deterministic
 
