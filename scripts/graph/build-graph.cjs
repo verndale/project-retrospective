@@ -32,6 +32,7 @@
 const fs = require("fs");
 const path = require("path");
 const frontmatter = require("../wiki/lib/frontmatter.cjs");
+const { extractGithubRefs } = require("../wiki/lib/github.cjs");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const OUT_FILE = path.join(__dirname, "data", "graph.json");
@@ -324,6 +325,7 @@ function build({ repoRoot = REPO_ROOT } = {}) {
       aliases: isMd ? frontmatter.readList(text, "aliases") : [],
       prs: uniqueMatches(text, PR_RE),
       issues: uniqueMatches(text, ISSUE_RE),
+      githubRefs: isMd ? extractGithubRefs(text) : [],
       bytes: Buffer.byteLength(text, "utf8"),
       degree: 0,
     });

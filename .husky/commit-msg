@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-pnpm run lint:commit --edit "$1"
+pnpm exec ai-commit lint --edit "$1"

@@ -18,7 +18,10 @@ const path = require("node:path");
 const fm = require("./lib/frontmatter.cjs");
 const { classify } = require("./lib/substantive.cjs");
 const { slugify, addJournalLine, addTopicDecision } = require("./lib/wiki-io.cjs");
+const { extractClosingIssues, extractGithubRefs, normalizeRepository, refKey } = require("./lib/github.cjs");
 const ai = require("./lib/ai.cjs");
+
+const DEFAULT_REPOSITORY = "verndale/project-retrospective";
 
 function parseArgs(argv) {
   const a = { repo: path.resolve(__dirname, "..", "..") };
@@ -35,12 +38,63 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function deriveIssue(body) {
-  const m = String(body || "").match(/(?:closes|fixes|resolves)\s+#(\d+)/i);
-  return m ? `https://github.com/verndale/project-retrospective/issues/${m[1]}` : null;
+function repositoryFromUrl(url) {
+  const match = String(url || "").match(/github\.com\/([^/]+\/[^/]+)\/(?:pull|issues)\/\d+/i);
+  return normalizeRepository(match && match[1]);
 }
 
-async function run(ctx, wikiDir) {
+function normalizeContext(input) {
+  const ctx = input && typeof input === "object" ? input : {};
+  if (ctx.schemaVersion != null && ctx.schemaVersion !== 1) throw new Error(`unsupported context schemaVersion: ${ctx.schemaVersion}`);
+  const repository = normalizeRepository(ctx.repository) || repositoryFromUrl(ctx.url) || DEFAULT_REPOSITORY;
+  const number = Number(ctx.number);
+  if (!Number.isSafeInteger(number) || number <= 0) throw new Error("context number must be a positive integer");
+  if (!String(ctx.url || "").trim()) throw new Error("context url is required");
+  const changedPaths = Array.isArray(ctx.changedPaths) ? ctx.changedPaths : Array.isArray(ctx.files) ? ctx.files : [];
+  const commits = Array.isArray(ctx.commits) ? ctx.commits.map((commit) => ({
+    hash: String(commit.hash || commit.sha || ""),
+    subject: String(commit.subject || commit.message || "").split("\n")[0],
+  })) : [];
+  return {
+    schemaVersion: 1,
+    repository,
+    number,
+    title: String(ctx.title || `PR #${number}`),
+    body: String(ctx.body || ""),
+    url: String(ctx.url),
+    mergedAt: ctx.mergedAt || ctx.merged_at || null,
+    changedPaths: changedPaths.map(String),
+    commits,
+  };
+}
+
+function deriveIssues(body, repository = DEFAULT_REPOSITORY) {
+  return extractClosingIssues(body, repository);
+}
+
+function deriveIssue(body, repository = DEFAULT_REPOSITORY) {
+  return deriveIssues(body, repository)[0]?.url || null;
+}
+
+function mergeIssueFields(text, issueRefs) {
+  if (!issueRefs.length) return text;
+  const existing = extractGithubRefs([fm.readField(text, "issue"), fm.readField(text, "issues")].filter(Boolean).join(" "), { includeFencedCode: true });
+  const refs = [];
+  const seen = new Set();
+  for (const ref of [...existing, ...issueRefs]) {
+    if (ref.kind !== "issue" || seen.has(refKey(ref))) continue;
+    seen.add(refKey(ref));
+    refs.push(ref);
+  }
+  let next = text;
+  const singular = fm.readField(next, "issue");
+  if (!singular || singular === "pending") next = fm.setField(next, "issue", refs[0].url);
+  next = fm.setField(next, "issues", JSON.stringify(refs.map((ref) => ref.url)));
+  return next;
+}
+
+async function run(inputContext, wikiDir) {
+  const ctx = normalizeContext(inputContext);
   const changes = [];
   const warnings = [];
   const journalDir = path.join(wikiDir, "journal");
@@ -48,7 +102,8 @@ async function run(ctx, wikiDir) {
   const indexPath = path.join(wikiDir, "INDEX.md");
   const plansIndex = path.join(wikiDir, "plans", "INDEX.md");
   const { substantive, substantivePaths, topics } = classify(ctx.changedPaths || []);
-  const issueUrl = deriveIssue(ctx.body);
+  const issueRefs = deriveIssues(ctx.body, ctx.repository);
+  const issueUrl = issueRefs[0]?.url || null;
 
   // 1. Fill pass — journal entries THIS PR added/modified whose pr is pending
   //    get this PR's URL. An already-evidenced journal edited as an explicit
@@ -70,17 +125,25 @@ async function run(ctx, wikiDir) {
       if (pr === ctx.url || followUpPr === ctx.url) entryReferencesPr = true;
       if (pr === "pending") {
         text = fm.setField(text, "pr", ctx.url);
-        if (issueUrl && !fm.readField(text, "issue")) text = fm.setField(text, "issue", issueUrl);
+        text = mergeIssueFields(text, issueRefs);
         fs.writeFileSync(p, text);
         changes.push(`filled pr in journal/${name}`);
         entryReferencesPr = true;
       }
       if (followUpPr === "pending") {
         text = fm.setField(text, "follow_up_pr", ctx.url);
-        if (issueUrl && !fm.readField(text, "issue")) text = fm.setField(text, "issue", issueUrl);
+        text = mergeIssueFields(text, issueRefs);
         fs.writeFileSync(p, text);
         changes.push(`filled follow-up pr in journal/${name}`);
         entryReferencesPr = true;
+      }
+      if (fm.readField(text, "pr") === ctx.url || fm.readField(text, "follow_up_pr") === ctx.url) {
+        const reconciled = mergeIssueFields(text, issueRefs);
+        if (reconciled !== text) {
+          text = reconciled;
+          fs.writeFileSync(p, text);
+          changes.push(`reconciled closing issues in journal/${name}`);
+        }
       }
       if (prJournal.has(`wiki/journal/${name}`) && pr !== "pending" && followUpPr !== "pending") {
         entryReferencesPr = true;
@@ -124,6 +187,7 @@ async function run(ctx, wikiDir) {
       "plan: none",
       `pr: ${ctx.url}`,
       ...(issueUrl ? [`issue: ${issueUrl}`] : []),
+      ...(issueRefs.length ? [`issues: ${JSON.stringify(issueRefs.map((ref) => ref.url))}`] : []),
       "draft: ai",
       "---",
     ].join("\n");
@@ -155,7 +219,8 @@ async function run(ctx, wikiDir) {
     const date = (ctx.mergedAt || today()).slice(0, 10);
     for (const slug of topics) {
       const p = path.join(topicsDir, `${slug}.md`);
-      const bullet = `- ${date} — ${ctx.title} ([PR #${ctx.number}](${ctx.url}))`;
+      const citation = `${ctx.repository} PR #${ctx.number}`;
+      const bullet = `- ${date} — ${ctx.title} ([${citation}](${ctx.url}))`;
       const { added, overBudget } = addTopicDecision(p, bullet, ctx.url);
       if (added) changes.push(`decision → topics/${slug}.md`);
       if (overBudget) warnings.push(`topics/${slug}.md is over its ~150-line budget — prune older decisions`);
@@ -185,7 +250,7 @@ async function run(ctx, wikiDir) {
           const cells = lines[i].split("|");
           if (cells.length >= 5) {
             const ev = cells[4].trim();
-            cells[4] = ` ${ev === "—" || ev === "" ? "" : ev + ", "}[PR #${ctx.number}](${ctx.url}) `;
+            cells[4] = ` ${ev === "—" || ev === "" ? "" : ev + ", "}[${ctx.repository} PR #${ctx.number}](${ctx.url}) `;
             lines[i] = cells.join("|");
             touched = true;
           }
@@ -205,7 +270,7 @@ async function run(ctx, wikiDir) {
       const ptext = fs.readFileSync(planFile, "utf8");
       if (!prRecorded(fm.split(ptext).fmLines.join("\n"))) {
         const date = (ctx.mergedAt || today()).slice(0, 10);
-        const patched = fm.appendListItem(ptext, "evidence", `PR #${ctx.number} ${ctx.url} (merged ${date})`);
+        const patched = fm.appendListItem(ptext, "evidence", `${ctx.repository} PR #${ctx.number} ${ctx.url} (merged ${date})`);
         if (patched !== ptext) {
           fs.writeFileSync(planFile, patched);
           changes.push(`filled evidence in plans/${planRef}.md`);
@@ -241,4 +306,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { run, deriveIssue };
+module.exports = { run, deriveIssue, deriveIssues, mergeIssueFields, normalizeContext };

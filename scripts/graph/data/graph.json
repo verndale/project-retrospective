@@ -1,30 +1,30 @@
 {
   "counts": {
-    "nodes": 118,
-    "edges": 308,
+    "nodes": 123,
+    "edges": 329,
     "byType": {
       "root-doc": 4,
-      "repo-script": 17,
+      "repo-script": 19,
       "tooling-doc": 1,
-      "test": 14,
+      "test": 15,
       "authoring-spec": 1,
       "skill-readme": 1,
       "skill-reference": 19,
       "skill-script": 12,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 29,
-      "wiki-plan": 11,
+      "wiki-journal": 30,
+      "wiki-plan": 12,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 28,
-      "covers": 28,
-      "links-to": 132,
-      "plan": 11,
-      "requires": 43,
+      "covers": 32,
+      "links-to": 136,
+      "plan": 12,
+      "requires": 53,
       "tests": 14,
-      "topic": 52
+      "topic": 54
     }
   },
   "nodes": [
@@ -37,7 +37,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10929,
+      "githubRefs": [],
+      "bytes": 12789,
       "degree": 7
     },
     {
@@ -49,6 +50,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 310,
       "degree": 0
     },
@@ -61,6 +63,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 8713,
       "degree": 6
     },
@@ -73,6 +76,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 12756,
       "degree": 8
     },
@@ -85,6 +89,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 7394,
       "degree": 2
     },
@@ -97,6 +102,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 4876,
       "degree": 3
     },
@@ -109,8 +115,22 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 30669,
-      "degree": 8
+      "githubRefs": [],
+      "bytes": 30789,
+      "degree": 10
+    },
+    {
+      "id": "scripts/graph/pre-commit.cjs",
+      "label": "graph/pre-commit.cjs",
+      "type": "repo-script",
+      "dir": "scripts/graph",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "githubRefs": [],
+      "bytes": 2757,
+      "degree": 2
     },
     {
       "id": "scripts/graph/README.md",
@@ -121,7 +141,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 6732,
+      "githubRefs": [],
+      "bytes": 7360,
       "degree": 5
     },
     {
@@ -133,8 +154,9 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 11971,
-      "degree": 2
+      "githubRefs": [],
+      "bytes": 14520,
+      "degree": 5
     },
     {
       "id": "scripts/graph/serve.cjs",
@@ -145,6 +167,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 2443,
       "degree": 1
     },
@@ -157,6 +180,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 7571,
       "degree": 3
     },
@@ -169,6 +193,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 5929,
       "degree": 2
     },
@@ -181,6 +206,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 14732,
       "degree": 2
     },
@@ -193,6 +219,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 53116,
       "degree": 2
     },
@@ -205,6 +232,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 1900,
       "degree": 12
     },
@@ -217,6 +245,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 22540,
       "degree": 2
     },
@@ -229,6 +258,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 9094,
       "degree": 2
     },
@@ -241,6 +271,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 13355,
       "degree": 2
     },
@@ -253,6 +284,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 9888,
       "degree": 4
     },
@@ -265,6 +297,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 7743,
       "degree": 3
     },
@@ -277,6 +310,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 7667,
       "degree": 2
     },
@@ -289,6 +323,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 11409,
       "degree": 2
     },
@@ -301,6 +336,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 3743,
       "degree": 2
     },
@@ -313,8 +349,40 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 42410,
       "degree": 2
+    },
+    {
+      "id": "scripts/tests/wiki-standard.test.cjs",
+      "label": "wiki-standard.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [
+        "83",
+        "99",
+        "5",
+        "7"
+      ],
+      "issues": [
+        "12",
+        "13",
+        "98",
+        "9",
+        "10",
+        "11",
+        "7",
+        "83",
+        "90",
+        "91",
+        "92",
+        "93"
+      ],
+      "githubRefs": [],
+      "bytes": 17788,
+      "degree": 6
     },
     {
       "id": "scripts/wiki/archive-plan.cjs",
@@ -325,6 +393,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 7293,
       "degree": 3
     },
@@ -337,6 +406,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 1588,
       "degree": 1
     },
@@ -349,6 +419,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 5417,
       "degree": 2
     },
@@ -361,6 +432,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 5227,
       "degree": 1
     },
@@ -373,6 +445,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 5117,
       "degree": 2
     },
@@ -385,8 +458,22 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 3801,
       "degree": 2
+    },
+    {
+      "id": "scripts/wiki/lib/github.cjs",
+      "label": "wiki/lib/github.cjs",
+      "type": "repo-script",
+      "dir": "scripts/wiki/lib",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "githubRefs": [],
+      "bytes": 4491,
+      "degree": 6
     },
     {
       "id": "scripts/wiki/lib/substantive.cjs",
@@ -397,6 +484,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 3030,
       "degree": 3
     },
@@ -409,6 +497,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 4952,
       "degree": 2
     },
@@ -421,6 +510,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 1292,
       "degree": 2
     },
@@ -433,8 +523,9 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10348,
-      "degree": 4
+      "githubRefs": [],
+      "bytes": 13263,
+      "degree": 7
     },
     {
       "id": "scripts/wiki/pre-commit-journal.cjs",
@@ -445,6 +536,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 3639,
       "degree": 1
     },
@@ -457,8 +549,9 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 3510,
-      "degree": 1
+      "githubRefs": [],
+      "bytes": 4795,
+      "degree": 3
     },
     {
       "id": "skills/_meta/_sections.md",
@@ -469,6 +562,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 7436,
       "degree": 3
     },
@@ -481,6 +575,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 27680,
       "degree": 4
     },
@@ -493,6 +588,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 10022,
       "degree": 3
     },
@@ -505,6 +601,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 6144,
       "degree": 2
     },
@@ -517,6 +614,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 9195,
       "degree": 2
     },
@@ -529,6 +627,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 10179,
       "degree": 2
     },
@@ -541,6 +640,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 17744,
       "degree": 3
     },
@@ -553,6 +653,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 3610,
       "degree": 2
     },
@@ -565,6 +666,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 13714,
       "degree": 3
     },
@@ -577,6 +679,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 2885,
       "degree": 2
     },
@@ -589,6 +692,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 3151,
       "degree": 2
     },
@@ -601,6 +705,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 3969,
       "degree": 2
     },
@@ -613,6 +718,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 7056,
       "degree": 2
     },
@@ -625,6 +731,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 10077,
       "degree": 4
     },
@@ -637,6 +744,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 9720,
       "degree": 3
     },
@@ -649,6 +757,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 5738,
       "degree": 3
     },
@@ -661,6 +770,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 7395,
       "degree": 4
     },
@@ -673,6 +783,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 4660,
       "degree": 2
     },
@@ -685,6 +796,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 2562,
       "degree": 2
     },
@@ -697,6 +809,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 11059,
       "degree": 3
     },
@@ -709,6 +822,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 2467,
       "degree": 2
     },
@@ -721,6 +835,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 12028,
       "degree": 5
     },
@@ -733,6 +848,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 8899,
       "degree": 3
     },
@@ -745,6 +861,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 80285,
       "degree": 5
     },
@@ -757,6 +874,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 39986,
       "degree": 5
     },
@@ -769,6 +887,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 12697,
       "degree": 11
     },
@@ -781,6 +900,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 16130,
       "degree": 4
     },
@@ -793,6 +913,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 20383,
       "degree": 5
     },
@@ -805,6 +926,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 17636,
       "degree": 4
     },
@@ -817,6 +939,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 22835,
       "degree": 6
     },
@@ -829,6 +952,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 14293,
       "degree": 3
     },
@@ -841,6 +965,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 6805,
       "degree": 4
     },
@@ -853,6 +978,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 50232,
       "degree": 5
     },
@@ -865,6 +991,7 @@
       "aliases": [],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 41764,
       "degree": 51
     },
@@ -877,8 +1004,9 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 10343,
-      "degree": 39
+      "githubRefs": [],
+      "bytes": 10783,
+      "degree": 40
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -895,6 +1023,14 @@
         "1"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 1,
+          "url": "https://github.com/verndale/project-retrospective/pull/1"
+        }
+      ],
       "bytes": 3187,
       "degree": 9
     },
@@ -912,6 +1048,14 @@
         "1"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 1,
+          "url": "https://github.com/verndale/project-retrospective/pull/1"
+        }
+      ],
       "bytes": 3611,
       "degree": 6
     },
@@ -931,6 +1075,20 @@
       "issues": [
         "9"
       ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 10,
+          "url": "https://github.com/verndale/project-retrospective/pull/10"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 9,
+          "url": "https://github.com/verndale/project-retrospective/issues/9"
+        }
+      ],
       "bytes": 4121,
       "degree": 5
     },
@@ -947,6 +1105,14 @@
         "4"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 4,
+          "url": "https://github.com/verndale/project-retrospective/pull/4"
+        }
+      ],
       "bytes": 1219,
       "degree": 2
     },
@@ -963,6 +1129,14 @@
         "7"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 7,
+          "url": "https://github.com/verndale/project-retrospective/pull/7"
+        }
+      ],
       "bytes": 2820,
       "degree": 2
     },
@@ -979,6 +1153,14 @@
         "16"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 16,
+          "url": "https://github.com/verndale/project-retrospective/pull/16"
+        }
+      ],
       "bytes": 1961,
       "degree": 3
     },
@@ -995,6 +1177,14 @@
         "13"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 13,
+          "url": "https://github.com/verndale/project-retrospective/pull/13"
+        }
+      ],
       "bytes": 3584,
       "degree": 3
     },
@@ -1014,6 +1204,20 @@
       "issues": [
         "18"
       ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 19,
+          "url": "https://github.com/verndale/project-retrospective/pull/19"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 18,
+          "url": "https://github.com/verndale/project-retrospective/issues/18"
+        }
+      ],
       "bytes": 2839,
       "degree": 5
     },
@@ -1031,6 +1235,14 @@
         "21"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 21,
+          "url": "https://github.com/verndale/project-retrospective/pull/21"
+        }
+      ],
       "bytes": 1260,
       "degree": 3
     },
@@ -1048,6 +1260,20 @@
       ],
       "issues": [
         "26"
+      ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 27,
+          "url": "https://github.com/verndale/project-retrospective/pull/27"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 26,
+          "url": "https://github.com/verndale/project-retrospective/issues/26"
+        }
       ],
       "bytes": 3908,
       "degree": 4
@@ -1067,6 +1293,20 @@
       "issues": [
         "23"
       ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 24,
+          "url": "https://github.com/verndale/project-retrospective/pull/24"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 23,
+          "url": "https://github.com/verndale/project-retrospective/issues/23"
+        }
+      ],
       "bytes": 3609,
       "degree": 4
     },
@@ -1083,6 +1323,14 @@
         "30"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 30,
+          "url": "https://github.com/verndale/project-retrospective/pull/30"
+        }
+      ],
       "bytes": 2443,
       "degree": 2
     },
@@ -1099,6 +1347,14 @@
         "33"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 33,
+          "url": "https://github.com/verndale/project-retrospective/pull/33"
+        }
+      ],
       "bytes": 1685,
       "degree": 2
     },
@@ -1115,6 +1371,14 @@
         "43"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 43,
+          "url": "https://github.com/verndale/project-retrospective/pull/43"
+        }
+      ],
       "bytes": 2731,
       "degree": 3
     },
@@ -1131,6 +1395,14 @@
         "45"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 45,
+          "url": "https://github.com/verndale/project-retrospective/pull/45"
+        }
+      ],
       "bytes": 875,
       "degree": 2
     },
@@ -1147,6 +1419,14 @@
         "38"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 38,
+          "url": "https://github.com/verndale/project-retrospective/pull/38"
+        }
+      ],
       "bytes": 1935,
       "degree": 2
     },
@@ -1163,6 +1443,14 @@
         "36"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 36,
+          "url": "https://github.com/verndale/project-retrospective/pull/36"
+        }
+      ],
       "bytes": 1142,
       "degree": 2
     },
@@ -1179,6 +1467,14 @@
         "40"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 40,
+          "url": "https://github.com/verndale/project-retrospective/pull/40"
+        }
+      ],
       "bytes": 2459,
       "degree": 3
     },
@@ -1195,6 +1491,14 @@
         "55"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 55,
+          "url": "https://github.com/verndale/project-retrospective/pull/55"
+        }
+      ],
       "bytes": 1224,
       "degree": 2
     },
@@ -1211,6 +1515,14 @@
         "52"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 52,
+          "url": "https://github.com/verndale/project-retrospective/pull/52"
+        }
+      ],
       "bytes": 1257,
       "degree": 2
     },
@@ -1227,6 +1539,14 @@
         "49"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 49,
+          "url": "https://github.com/verndale/project-retrospective/pull/49"
+        }
+      ],
       "bytes": 778,
       "degree": 2
     },
@@ -1244,6 +1564,20 @@
       ],
       "issues": [
         "57"
+      ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 58,
+          "url": "https://github.com/verndale/project-retrospective/pull/58"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 57,
+          "url": "https://github.com/verndale/project-retrospective/issues/57"
+        }
       ],
       "bytes": 2328,
       "degree": 4
@@ -1263,6 +1597,20 @@
       "issues": [
         "60"
       ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 61,
+          "url": "https://github.com/verndale/project-retrospective/pull/61"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 60,
+          "url": "https://github.com/verndale/project-retrospective/issues/60"
+        }
+      ],
       "bytes": 2718,
       "degree": 4
     },
@@ -1280,6 +1628,20 @@
       ],
       "issues": [
         "63"
+      ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 64,
+          "url": "https://github.com/verndale/project-retrospective/pull/64"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 63,
+          "url": "https://github.com/verndale/project-retrospective/issues/63"
+        }
       ],
       "bytes": 2676,
       "degree": 4
@@ -1299,6 +1661,20 @@
       "issues": [
         "69"
       ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 70,
+          "url": "https://github.com/verndale/project-retrospective/pull/70"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 69,
+          "url": "https://github.com/verndale/project-retrospective/issues/69"
+        }
+      ],
       "bytes": 2206,
       "degree": 3
     },
@@ -1317,6 +1693,20 @@
       "issues": [
         "69"
       ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 70,
+          "url": "https://github.com/verndale/project-retrospective/pull/70"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 69,
+          "url": "https://github.com/verndale/project-retrospective/issues/69"
+        }
+      ],
       "bytes": 1879,
       "degree": 4
     },
@@ -1334,6 +1724,14 @@
         "72"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 72,
+          "url": "https://github.com/verndale/project-retrospective/pull/72"
+        }
+      ],
       "bytes": 2149,
       "degree": 6
     },
@@ -1353,6 +1751,20 @@
       "issues": [
         "75"
       ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 76,
+          "url": "https://github.com/verndale/project-retrospective/pull/76"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 75,
+          "url": "https://github.com/verndale/project-retrospective/issues/75"
+        }
+      ],
       "bytes": 2210,
       "degree": 6
     },
@@ -1371,7 +1783,45 @@
       "issues": [
         "79"
       ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 80,
+          "url": "https://github.com/verndale/project-retrospective/pull/80"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 79,
+          "url": "https://github.com/verndale/project-retrospective/issues/79"
+        }
+      ],
       "bytes": 1675,
+      "degree": 4
+    },
+    {
+      "id": "wiki/journal/2026-08-23-wiki-actions-evidence-routing.md",
+      "label": "Standardize wiki actions and evidence routing",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "83"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 83,
+          "url": "https://github.com/verndale/project-retrospective/issues/83"
+        }
+      ],
+      "bytes": 2227,
       "degree": 4
     },
     {
@@ -1383,7 +1833,8 @@
       "aliases": [],
       "prs": [],
       "issues": [],
-      "bytes": 8398,
+      "githubRefs": [],
+      "bytes": 9357,
       "degree": 7
     },
     {
@@ -1399,6 +1850,14 @@
         "1"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 1,
+          "url": "https://github.com/verndale/project-retrospective/pull/1"
+        }
+      ],
       "bytes": 25043,
       "degree": 5
     },
@@ -1417,6 +1876,14 @@
         "1"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 1,
+          "url": "https://github.com/verndale/project-retrospective/pull/1"
+        }
+      ],
       "bytes": 24422,
       "degree": 8
     },
@@ -1433,6 +1900,14 @@
         "27"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 27,
+          "url": "https://github.com/verndale/project-retrospective/pull/27"
+        }
+      ],
       "bytes": 8697,
       "degree": 4
     },
@@ -1449,6 +1924,14 @@
         "24"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 24,
+          "url": "https://github.com/verndale/project-retrospective/pull/24"
+        }
+      ],
       "bytes": 6322,
       "degree": 4
     },
@@ -1466,6 +1949,20 @@
       ],
       "issues": [
         "57"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 57,
+          "url": "https://github.com/verndale/project-retrospective/issues/57"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 58,
+          "url": "https://github.com/verndale/project-retrospective/pull/58"
+        }
       ],
       "bytes": 3362,
       "degree": 3
@@ -1485,6 +1982,20 @@
       "issues": [
         "60"
       ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 60,
+          "url": "https://github.com/verndale/project-retrospective/issues/60"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 61,
+          "url": "https://github.com/verndale/project-retrospective/pull/61"
+        }
+      ],
       "bytes": 9757,
       "degree": 4
     },
@@ -1501,6 +2012,14 @@
         "64"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 64,
+          "url": "https://github.com/verndale/project-retrospective/pull/64"
+        }
+      ],
       "bytes": 1762,
       "degree": 4
     },
@@ -1517,6 +2036,14 @@
         "70"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 70,
+          "url": "https://github.com/verndale/project-retrospective/pull/70"
+        }
+      ],
       "bytes": 2058,
       "degree": 4
     },
@@ -1534,6 +2061,14 @@
         "72"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 72,
+          "url": "https://github.com/verndale/project-retrospective/pull/72"
+        }
+      ],
       "bytes": 5935,
       "degree": 6
     },
@@ -1551,6 +2086,14 @@
         "76"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 76,
+          "url": "https://github.com/verndale/project-retrospective/pull/76"
+        }
+      ],
       "bytes": 1708,
       "degree": 6
     },
@@ -1567,7 +2110,39 @@
         "80"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 80,
+          "url": "https://github.com/verndale/project-retrospective/pull/80"
+        }
+      ],
       "bytes": 2109,
+      "degree": 4
+    },
+    {
+      "id": "wiki/plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md",
+      "label": "Standardize wiki actions and offline GitHub evidence routing",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "83"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 83,
+          "url": "https://github.com/verndale/project-retrospective/issues/83"
+        }
+      ],
+      "bytes": 2340,
       "degree": 4
     },
     {
@@ -1590,12 +2165,99 @@
         "80"
       ],
       "issues": [
+        "83",
         "69",
         "57",
         "60"
       ],
-      "bytes": 4088,
-      "degree": 13
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 83,
+          "url": "https://github.com/verndale/project-retrospective/issues/83"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 76,
+          "url": "https://github.com/verndale/project-retrospective/pull/76"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 72,
+          "url": "https://github.com/verndale/project-retrospective/pull/72"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 69,
+          "url": "https://github.com/verndale/project-retrospective/issues/69"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 70,
+          "url": "https://github.com/verndale/project-retrospective/pull/70"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 1,
+          "url": "https://github.com/verndale/project-retrospective/pull/1"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 24,
+          "url": "https://github.com/verndale/project-retrospective/pull/24"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 27,
+          "url": "https://github.com/verndale/project-retrospective/pull/27"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 57,
+          "url": "https://github.com/verndale/project-retrospective/issues/57"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 58,
+          "url": "https://github.com/verndale/project-retrospective/pull/58"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 60,
+          "url": "https://github.com/verndale/project-retrospective/issues/60"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 61,
+          "url": "https://github.com/verndale/project-retrospective/pull/61"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 64,
+          "url": "https://github.com/verndale/project-retrospective/pull/64"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 80,
+          "url": "https://github.com/verndale/project-retrospective/pull/80"
+        }
+      ],
+      "bytes": 4399,
+      "degree": 14
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -1617,6 +2279,26 @@
         "1"
       ],
       "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 21,
+          "url": "https://github.com/verndale/project-retrospective/pull/21"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 19,
+          "url": "https://github.com/verndale/project-retrospective/pull/19"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 1,
+          "url": "https://github.com/verndale/project-retrospective/pull/1"
+        }
+      ],
       "bytes": 3420,
       "degree": 9
     },
@@ -1633,7 +2315,10 @@
         "sigma.js viewer",
         "plan capture",
         "connections pages",
-        "graph freshness"
+        "graph freshness",
+        "GitHub evidence routing",
+        "wiki actions",
+        "manual PR replay"
       ],
       "prs": [
         "80",
@@ -1642,10 +2327,49 @@
         "1"
       ],
       "issues": [
+        "83",
         "79"
       ],
-      "bytes": 5213,
-      "degree": 18
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 83,
+          "url": "https://github.com/verndale/project-retrospective/issues/83"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 80,
+          "url": "https://github.com/verndale/project-retrospective/pull/80"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 79,
+          "url": "https://github.com/verndale/project-retrospective/issues/79"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 7,
+          "url": "https://github.com/verndale/project-retrospective/pull/7"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 4,
+          "url": "https://github.com/verndale/project-retrospective/pull/4"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 1,
+          "url": "https://github.com/verndale/project-retrospective/pull/1"
+        }
+      ],
+      "bytes": 6509,
+      "degree": 26
     },
     {
       "id": "wiki/topics/library-capture.md",
@@ -1674,6 +2398,38 @@
         "66",
         "63",
         "60"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 75,
+          "url": "https://github.com/verndale/project-retrospective/issues/75"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 69,
+          "url": "https://github.com/verndale/project-retrospective/issues/69"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 66,
+          "url": "https://github.com/verndale/project-retrospective/issues/66"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 63,
+          "url": "https://github.com/verndale/project-retrospective/issues/63"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 60,
+          "url": "https://github.com/verndale/project-retrospective/issues/60"
+        }
       ],
       "bytes": 12237,
       "degree": 35
@@ -1726,6 +2482,182 @@
         "75",
         "57"
       ],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 80,
+          "url": "https://github.com/verndale/project-retrospective/pull/80"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 76,
+          "url": "https://github.com/verndale/project-retrospective/pull/76"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 75,
+          "url": "https://github.com/verndale/project-retrospective/issues/75"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 72,
+          "url": "https://github.com/verndale/project-retrospective/pull/72"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 70,
+          "url": "https://github.com/verndale/project-retrospective/pull/70"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 67,
+          "url": "https://github.com/verndale/project-retrospective/pull/67"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 64,
+          "url": "https://github.com/verndale/project-retrospective/pull/64"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 61,
+          "url": "https://github.com/verndale/project-retrospective/pull/61"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 58,
+          "url": "https://github.com/verndale/project-retrospective/pull/58"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 57,
+          "url": "https://github.com/verndale/project-retrospective/issues/57"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 55,
+          "url": "https://github.com/verndale/project-retrospective/pull/55"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 52,
+          "url": "https://github.com/verndale/project-retrospective/pull/52"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 49,
+          "url": "https://github.com/verndale/project-retrospective/pull/49"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 45,
+          "url": "https://github.com/verndale/project-retrospective/pull/45"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 43,
+          "url": "https://github.com/verndale/project-retrospective/pull/43"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 40,
+          "url": "https://github.com/verndale/project-retrospective/pull/40"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 38,
+          "url": "https://github.com/verndale/project-retrospective/pull/38"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 36,
+          "url": "https://github.com/verndale/project-retrospective/pull/36"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 33,
+          "url": "https://github.com/verndale/project-retrospective/pull/33"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 30,
+          "url": "https://github.com/verndale/project-retrospective/pull/30"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 27,
+          "url": "https://github.com/verndale/project-retrospective/pull/27"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 24,
+          "url": "https://github.com/verndale/project-retrospective/pull/24"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 21,
+          "url": "https://github.com/verndale/project-retrospective/pull/21"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 19,
+          "url": "https://github.com/verndale/project-retrospective/pull/19"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 16,
+          "url": "https://github.com/verndale/project-retrospective/pull/16"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 13,
+          "url": "https://github.com/verndale/project-retrospective/pull/13"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 10,
+          "url": "https://github.com/verndale/project-retrospective/pull/10"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 7,
+          "url": "https://github.com/verndale/project-retrospective/pull/7"
+        },
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 1,
+          "url": "https://github.com/verndale/project-retrospective/pull/1"
+        }
+      ],
       "bytes": 13719,
       "degree": 56
     },
@@ -1745,6 +2677,7 @@
       ],
       "prs": [],
       "issues": [],
+      "githubRefs": [],
       "bytes": 2467,
       "degree": 10
     }
@@ -1907,12 +2840,32 @@
     },
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "scripts/graph/pre-commit.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "scripts/graph/README.md",
       "type": "covers"
     },
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "scripts/graph/routing.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "scripts/graph/serve.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "scripts/wiki/lib/github.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "scripts/wiki/on-merge-sync.cjs",
       "type": "covers"
     },
     {
@@ -2055,7 +3008,7 @@
       "source": "AGENTS.md",
       "target": "wiki/MECHANICS.md",
       "type": "links-to",
-      "count": 1,
+      "count": 2,
       "anchors": []
     },
     {
@@ -2515,6 +3468,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-23-wiki-actions-evidence-routing.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -2661,6 +3621,13 @@
       "anchors": []
     },
     {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
       "source": "wiki/topics/brain-promotion.md",
       "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
       "type": "links-to",
@@ -2704,6 +3671,13 @@
     },
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/journal/2026-08-23-wiki-actions-evidence-routing.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "type": "links-to",
       "count": 2,
@@ -2712,6 +3686,13 @@
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -3010,6 +3991,11 @@
       "type": "plan"
     },
     {
+      "source": "wiki/journal/2026-08-23-wiki-actions-evidence-routing.md",
+      "target": "wiki/plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md",
+      "type": "plan"
+    },
+    {
       "source": "scripts/evals/graph-check.cjs",
       "target": "scripts/graph/build-graph.cjs",
       "type": "requires"
@@ -3022,6 +4008,16 @@
     {
       "source": "scripts/graph/build-graph.cjs",
       "target": "scripts/wiki/lib/frontmatter.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/graph/build-graph.cjs",
+      "target": "scripts/wiki/lib/github.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/graph/routing.cjs",
+      "target": "scripts/wiki/lib/github.cjs",
       "type": "requires"
     },
     {
@@ -3100,6 +4096,36 @@
       "type": "requires"
     },
     {
+      "source": "scripts/tests/wiki-standard.test.cjs",
+      "target": "scripts/graph/build-graph.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/wiki-standard.test.cjs",
+      "target": "scripts/graph/pre-commit.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/wiki-standard.test.cjs",
+      "target": "scripts/graph/routing.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/wiki-standard.test.cjs",
+      "target": "scripts/wiki/lib/github.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/wiki-standard.test.cjs",
+      "target": "scripts/wiki/on-merge-sync.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/wiki-standard.test.cjs",
+      "target": "scripts/wiki/refresh-issue-state.cjs",
+      "type": "requires"
+    },
+    {
       "source": "scripts/wiki/archive-plan.cjs",
       "target": "scripts/wiki/lib/codex-plans.cjs",
       "type": "requires"
@@ -3146,6 +4172,11 @@
     },
     {
       "source": "scripts/wiki/on-merge-sync.cjs",
+      "target": "scripts/wiki/lib/github.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/on-merge-sync.cjs",
       "target": "scripts/wiki/lib/substantive.cjs",
       "type": "requires"
     },
@@ -3157,6 +4188,11 @@
     {
       "source": "scripts/wiki/pre-commit-journal.cjs",
       "target": "scripts/wiki/lib/substantive.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/wiki/refresh-issue-state.cjs",
+      "target": "scripts/wiki/lib/github.cjs",
       "type": "requires"
     },
     {
@@ -3480,6 +4516,11 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-08-23-wiki-actions-evidence-routing.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
@@ -3551,6 +4592,11 @@
     },
     {
       "source": "wiki/plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
     }

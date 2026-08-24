@@ -5,9 +5,18 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened, edited]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: commitlint-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   commitlint:
-    name: commitlint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,7 +25,6 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
 
-      # Org policy: only GitHub + org-owned actions — Corepack + actions/cache (no pnpm/action-setup).
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -27,7 +35,7 @@ jobs:
 
       - name: Get pnpm store path
         id: pnpm-cache
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
 
       - name: Cache pnpm store
         uses: actions/cache@v4
@@ -44,14 +52,11 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          printf '%s\n' "$PR_TITLE" | pnpm -s run lint:commit --verbose
+          printf '%s\n' "$PR_TITLE" | pnpm exec commitlint --config commitlint.config.cjs --verbose
 
       - name: Lint commit messages (PR range)
-        env:
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          pnpm -s run lint:commit \
-            --from "$PR_BASE_SHA" \
-            --to "$PR_HEAD_SHA" \
+          pnpm exec commitlint --config commitlint.config.cjs \
+            --from "${{ github.event.pull_request.base.sha }}" \
+            --to "${{ github.event.pull_request.head.sha }}" \
             --verbose

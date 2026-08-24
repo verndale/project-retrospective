@@ -47,7 +47,16 @@ The skill's workflow, its references, its scripts, and its tests are one unit. A
 
 ## Knowledge graph & context wiki
 
-`wiki/` records **why** this repo is the way it is — executed plans, decisions, and change history. Read [`wiki/INDEX.md`](wiki/INDEX.md) first and open only what it routes to; never load the whole wiki. The write-side protocol, including when to capture and the page templates, is [`wiki/MECHANICS.md`](wiki/MECHANICS.md). Before a broad context read, prefer `pnpm graph:navigate --intent why|wiring|impact --query <term>`, which returns a minimal deterministic itinerary.
+`wiki/` records **why** this repo is the way it is — executed plans, decisions, and change history. Never bulk-load the wiki or `scripts/graph/data/graph.json`. The write-side protocol, including when to capture and the page templates, is [`wiki/MECHANICS.md`](wiki/MECHANICS.md).
+
+- **Choose the cheapest lookup first:** an exact file, symbol, command, or current-code question goes straight to that file or targeted `rg`; do not load history first.
+- **Single-topic rationale or history:** start at [`wiki/INDEX.md`](wiki/INDEX.md), follow its one matching topic or journal link, and stop when answered.
+- **Cross-page questions only:** when the question spans pages or asks cross-system why, dependency/ownership, wiring, or change impact, silently run `node scripts/wiki/navigate.cjs --intent <why|wiring|impact> --query "<specific term>"`. Read only the returned byte-costed itinerary, in order, and stop as soon as the question is answered; do not open adjacent pages "just in case."
+- **Query GitHub evidence unambiguously:** use a full URL, `owner/repo PR #123`, `owner/repo issue #123`, or `owner/repo#123`. Never query a bare `#123`; PR and issue numbers collide across repositories. Evidence resolves to the existing wiki page that cites it, not a live GitHub node.
+- **Handle misses without widening context:** if the router reports candidates, choose only from those grounded paths or ask one focused question. If it reports no route, use one targeted `rg` over `wiki/` and then the exact source path. Never guess a path or scan the whole wiki.
+- **Generated wiring map:** [`wiki/connections.md`](wiki/connections.md) is a routed index for skill contracts, tests, module dependencies, topic coverage, and wiki relations. Open only the section named by the itinerary. Do not hand-edit it; `pnpm graph:build` rebuilds it and `pnpm run wiki:check` verifies it.
+- **Write in the same delivery:** when a substantive change lands, add the journal entry, archive the executed plan, update the affected topic and indexes, and rebuild the graph per [`wiki/MECHANICS.md`](wiki/MECHANICS.md).
+- **Automation is a safety net:** merge and issue workflows reconcile repo-qualified citations into Markdown and graph nodes derive offline `githubRefs` from them. Agents still author the richer wiki record directly when they do the work.
 
 `scripts/graph/` derives a typed node/edge graph from the repo and renders it (`pnpm graph:view`, port 4175). Details in [`scripts/graph/README.md`](scripts/graph/README.md).
 

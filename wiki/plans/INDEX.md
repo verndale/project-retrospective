@@ -16,12 +16,13 @@ Every agent plan executed for this repo, gathered from Claude plan stores and Co
 - **out-of-scope** — targets another repo/product.
 - **not-verified** — recovered by `pnpm wiki:find-plans --archive`; nobody has checked yet whether it shipped.
 
-Totals: 10 implemented · 1 partial (11 plans).
+Totals: 11 implemented · 1 partial (12 plans).
 
 ## Plans
 
 | Date | Plan | Status | Evidence | Topics |
 | --- | --- | --- | --- | --- |
+| 2026-08-23 | [Standardize wiki actions and offline GitHub evidence routing](2026-08-23-standardize-wiki-actions-and-evidence-routing.md) | implemented | [verndale/project-retrospective issue #83](https://github.com/verndale/project-retrospective/issues/83), working tree verification | graph-wiki-subsystem |
 | 2026-08-19 | [Source-parity capture contract](2026-08-19-source-parity-capture-contract.md) | implemented | issue #75, local validation, [PR #76](https://github.com/verndale/project-retrospective/pull/76) | library-capture, retrospective-workflow |
 | 2026-08-19 | [Automate retrospective GitHub tracking, branches, lifecycle, and Figma delivery](2026-08-19-automate-retrospective-github-tracking.md) | implemented | working tree, deterministic resolver and lifecycle tests, [PR #72](https://github.com/verndale/project-retrospective/pull/72) | retrospective-workflow, library-capture |
 | 2026-08-18 | [Governed Figma completion for Action capture](2026-08-18-governed-figma-capture-completion.md) | implemented | [issue #69](https://github.com/verndale/project-retrospective/issues/69), preflight/conformance tests, [PR #70](https://github.com/verndale/project-retrospective/pull/70) | library-capture |
