@@ -22,6 +22,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-08-24 — feat(project-retrospective): Enhance capture process with Storybook stat ([verndale/project-retrospective PR #82](https://github.com/verndale/project-retrospective/pull/82))
 - 2026-08-24 — fix(project-retrospective): Update wiki guidance and graph data ([verndale/project-retrospective PR #84](https://github.com/verndale/project-retrospective/pull/84))
 - 2026-08-22 — chore(tooling): standardize quality gates ([PR #80](https://github.com/verndale/project-retrospective/pull/80))
 - 2026-08-20 — feat(project-retrospective): Enforce source-parity capture contract ([PR #76](https://github.com/verndale/project-retrospective/pull/76))
