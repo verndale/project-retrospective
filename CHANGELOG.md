@@ -1,3 +1,42 @@
+# v1.23.0 — 2026-08-24
+
+## Summary (AI, bounded)
+- Enhanced the project retrospective capture process by integrating Storybook state (commit fb5642b).
+- Updated and reconciled wiki documentation (commit fd4d542).
+- Merged main branch and regenerated graph artifacts in the wiki (commit 2027ff4).
+- Included merge commits for Figma state capture contract and wiki synchronization (commits 047ccab and cea36a0).
+
+## Highlights
+- commit: Merge pull request #82 from verndale/codex/78-figma-state-capture-contract (047ccab)
+- chore(wiki): merge main and regenerate graph artifacts (2027ff4)
+- commit: Merge pull request #85 from verndale/bot/wiki-sync/84 (cea36a0)
+- docs(wiki): reconcile merged PR #84 (fd4d542)
+- feat(project-retrospective): Enhance capture process with Storybook state (fb5642b)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Enhance capture process with Storybook state (fb5642b)
+
+### Docs
+- docs(wiki): reconcile merged PR #84 (fd4d542)
+
+### Chore
+- chore(wiki): merge main and regenerate graph artifacts (2027ff4)
+
+### Other (unknown)
+- commit: Merge pull request #82 from verndale/codex/78-figma-state-capture-contract (047ccab)
+- commit: Merge pull request #85 from verndale/bot/wiki-sync/84 (cea36a0)
+
+## Full commit list
+- 047ccab commit: Merge pull request #82 from verndale/codex/78-figma-state-capture-contract
+- 2027ff4 chore(wiki): merge main and regenerate graph artifacts
+- cea36a0 commit: Merge pull request #85 from verndale/bot/wiki-sync/84
+- fd4d542 docs(wiki): reconcile merged PR #84
+- fb5642b feat(project-retrospective): Enhance capture process with Storybook state
+
 # v1.22.1 — 2026-08-24
 
 ## Summary (AI, bounded)
