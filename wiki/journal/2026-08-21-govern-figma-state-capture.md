@@ -2,7 +2,7 @@
 date: 2026-08-21
 topics: [library-capture]
 plan: plans/2026-08-21-governed-figma-interaction-states-and-retrospective-capture.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/82
 issue: https://github.com/verndale/project-retrospective/issues/78
 ---
 # Govern interaction states through component capture

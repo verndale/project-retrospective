@@ -2,7 +2,11 @@
 status: implemented
 executed: 2026-08-21
 date: 2026-08-21
-evidence: ["issue #78", "working tree tests", "authenticated live Figma audit of 28 registered nodes"]
+evidence:
+  - "issue #78"
+  - "working tree tests"
+  - "authenticated live Figma audit of 28 registered nodes"
+  - "verndale/project-retrospective PR #82 https://github.com/verndale/project-retrospective/pull/82 (merged 2026-08-24)"
 source_tool: file
 source: "/tmp/governed-figma-interaction-states-plan.md"
 topics: [library-capture]
