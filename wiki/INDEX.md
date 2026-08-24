@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-08-24 — [Make agent wiki guidance deterministic](journal/2026-08-24-deterministic-agent-wiki-guidance.md) — installs the canonical headless route-first contract while preserving repository-owned graph and privacy rules.
 - 2026-08-23 — [Standardize wiki actions and evidence routing](journal/2026-08-23-wiki-actions-evidence-routing.md) — repo-qualified offline GitHub evidence, byte-costed graph routes, safe viewer links, replayable pagination, stable checks, and contamination-safe hooks.
 - 2026-08-22 — [Standardize quality and graph lifecycle](journal/2026-08-22-standardize-quality-and-graph-lifecycle.md) — staged linting, blocking push/PR gates, one public Commitlint config, and unstaged-safe curated graph lifecycle behavior.
 - 2026-08-19 — [Require source parity before component capture](journal/2026-08-19-source-parity-capture-contract.md) — pinned source revisions, one-to-one decision artifacts, and schema-v5 preflight prevent normalized code/Figma agreement from hiding lost source behavior.

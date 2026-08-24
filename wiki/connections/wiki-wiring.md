@@ -18,6 +18,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Require source parity before component capture](../../wiki/journal/2026-08-19-source-parity-capture-contract.md) → [Source-parity capture contract](../../wiki/plans/2026-08-19-source-parity-capture-contract.md)
 - [Standardize quality and graph lifecycle](../../wiki/journal/2026-08-22-standardize-quality-and-graph-lifecycle.md) → [Standardize Retrospective quality and graph lifecycle](../../wiki/plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md)
 - [Standardize wiki actions and evidence routing](../../wiki/journal/2026-08-23-wiki-actions-evidence-routing.md) → [Standardize wiki actions and offline GitHub evidence routing](../../wiki/plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md)
+- [Make agent wiki guidance deterministic](../../wiki/journal/2026-08-24-deterministic-agent-wiki-guidance.md) → [Deterministic, Route-First Wiki Guidance and PR 127 Recovery](../../wiki/plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md)
 
 ## Page → topic
 
@@ -59,6 +60,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Require source parity before component capture](../../wiki/journal/2026-08-19-source-parity-capture-contract.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Standardize quality and graph lifecycle](../../wiki/journal/2026-08-22-standardize-quality-and-graph-lifecycle.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Standardize wiki actions and evidence routing](../../wiki/journal/2026-08-23-wiki-actions-evidence-routing.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
+- [Make agent wiki guidance deterministic](../../wiki/journal/2026-08-24-deterministic-agent-wiki-guidance.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Brain promotion — Design History](../../wiki/topics/brain-promotion.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
@@ -75,3 +77,4 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Source-parity capture contract](../../wiki/plans/2026-08-19-source-parity-capture-contract.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Standardize Retrospective quality and graph lifecycle](../../wiki/plans/2026-08-22-standardize-retrospective-quality-and-graph-lifecycle.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Standardize wiki actions and offline GitHub evidence routing](../../wiki/plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
+- [Deterministic, Route-First Wiki Guidance and PR 127 Recovery](../../wiki/plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)

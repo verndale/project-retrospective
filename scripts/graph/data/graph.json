@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 123,
-    "edges": 329,
+    "nodes": 125,
+    "edges": 335,
     "byType": {
       "root-doc": 4,
       "repo-script": 19,
@@ -13,18 +13,18 @@
       "skill-script": 12,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 30,
-      "wiki-plan": 12,
+      "wiki-journal": 31,
+      "wiki-plan": 13,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 28,
       "covers": 32,
-      "links-to": 136,
-      "plan": 12,
+      "links-to": 139,
+      "plan": 13,
       "requires": 53,
       "tests": 14,
-      "topic": 54
+      "topic": 56
     }
   },
   "nodes": [
@@ -38,8 +38,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 12789,
-      "degree": 7
+      "bytes": 13644,
+      "degree": 6
     },
     {
       "id": "CLAUDE.md",
@@ -363,7 +363,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 25766,
+      "bytes": 26038,
       "degree": 6
     },
     {
@@ -987,7 +987,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 10783,
+      "bytes": 11014,
       "degree": 40
     },
     {
@@ -1807,6 +1807,21 @@
       "degree": 4
     },
     {
+      "id": "wiki/journal/2026-08-24-deterministic-agent-wiki-guidance.md",
+      "label": "Make agent wiki guidance deterministic",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "githubRefs": [],
+      "bytes": 712,
+      "degree": 4
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -2128,6 +2143,21 @@
       "degree": 4
     },
     {
+      "id": "wiki/plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md",
+      "label": "Deterministic, Route-First Wiki Guidance and PR 127 Recovery",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "githubRefs": [],
+      "bytes": 2625,
+      "degree": 4
+    },
+    {
       "id": "wiki/plans/INDEX.md",
       "label": "Plan Audit",
       "type": "wiki-index",
@@ -2238,8 +2268,8 @@
           "url": "https://github.com/verndale/project-retrospective/pull/80"
         }
       ],
-      "bytes": 4399,
-      "degree": 14
+      "bytes": 4662,
+      "degree": 15
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -2350,8 +2380,8 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 6952,
-      "degree": 26
+      "bytes": 7339,
+      "degree": 30
     },
     {
       "id": "wiki/topics/library-capture.md",
@@ -2981,13 +3011,6 @@
     },
     {
       "source": "AGENTS.md",
-      "target": "wiki/INDEX.md",
-      "type": "links-to",
-      "count": 1,
-      "anchors": []
-    },
-    {
-      "source": "AGENTS.md",
       "target": "wiki/MECHANICS.md",
       "type": "links-to",
       "count": 2,
@@ -3457,6 +3480,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-24-deterministic-agent-wiki-guidance.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -3610,6 +3640,13 @@
       "anchors": []
     },
     {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
       "source": "wiki/topics/brain-promotion.md",
       "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
       "type": "links-to",
@@ -3660,6 +3697,13 @@
     },
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/journal/2026-08-24-deterministic-agent-wiki-guidance.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "type": "links-to",
       "count": 2,
@@ -3675,6 +3719,13 @@
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -3975,6 +4026,11 @@
     {
       "source": "wiki/journal/2026-08-23-wiki-actions-evidence-routing.md",
       "target": "wiki/plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md",
+      "type": "plan"
+    },
+    {
+      "source": "wiki/journal/2026-08-24-deterministic-agent-wiki-guidance.md",
+      "target": "wiki/plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md",
       "type": "plan"
     },
     {
@@ -4503,6 +4559,11 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-08-24-deterministic-agent-wiki-guidance.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
@@ -4579,6 +4640,11 @@
     },
     {
       "source": "wiki/plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
     }

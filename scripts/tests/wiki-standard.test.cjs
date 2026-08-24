@@ -478,11 +478,15 @@ test("pre-commit graph lifecycle is contamination-safe, skippable, and fail-open
   assert.equal(normalize(".\\scripts\\graph\\build-graph.cjs"), "scripts/graph/build-graph.cjs");
 });
 
-test("AGENTS routes single-topic history through the index and only cross-page questions through the navigator", () => {
+test("AGENTS carries the deterministic route-first wiki contract", () => {
   const guide = read("AGENTS.md");
-  assert.match(guide, /Single-topic rationale or history:[\s\S]*wiki\/INDEX\.md/);
-  assert.match(guide, /Cross-page questions only:[\s\S]*scripts\/wiki\/navigate\.cjs/);
-  assert.match(guide, /Read only the returned byte-costed itinerary/);
-  assert.match(guide, /Never bulk-load the wiki or `scripts\/graph\/data\/graph\.json`/);
+  assert.match(guide, /exact current-code, file, symbol, or command question[\s\S]*do not load history/);
+  assert.match(guide, /direct single-topic history or rationale question[\s\S]*wiki\/INDEX\.md/);
+  assert.match(guide, /cross-page why, wiring, ownership, or impact question[\s\S]*scripts\/wiki\/navigate\.cjs/);
+  assert.match(guide, /deterministic weighted shortest route/);
+  assert.match(guide, /Read itinerary pages sequentially, never speculatively in parallel/);
+  assert.match(guide, /rerun with one returned exact ID/);
+  assert.match(guide, /rg -n --fixed-strings/);
+  assert.match(guide, /Never read generated graph JSON directly/);
   assert.match(guide, /ask one focused question/);
 });
