@@ -27,6 +27,15 @@ function warns(result, code) {
 }
 
 const MANIFEST = fixture('fake-brain/skills/ui-design-brain/patterns-manifest.json');
+const CMS_CATALOG = [
+  ['contentful', 'Contentful'],
+  ['contentstack', 'Contentstack'],
+  ['optimizely-saas', 'Optimizely SaaS'],
+  ['optimizely-paas', 'Optimizely PaaS'],
+  ['sitecore-on-prem', 'Sitecore on-Prem'],
+  ['sitecore-ai', 'SitecoreAI'],
+  ['wordpress', 'Wordpress'],
+];
 
 function validate(dir, args = []) {
   const result = run('validate-report.cjs', ['--output', dir, ...args]);
@@ -627,9 +636,89 @@ test('meta.json with a null platform is accepted', () => {
   const dir = tempOutput();
   const meta = JSON.parse(readFile(dir, 'meta.json'));
   meta.platform = null;
+  meta.platformDisplay = null;
   writeFile(dir, 'meta.json', JSON.stringify(meta, null, 2));
+  writeFile(
+    dir,
+    'report.md',
+    readFile(dir, 'report.md').replace('| Platform | `Optimizely SaaS` (`optimizely-saas`) |', '| Platform | unknown |'),
+  );
+  const inventory = JSON.parse(readFile(dir, 'inventory.json'));
+  inventory.config.stackAdapter = 'toolkit';
+  inventory.config.cmsKey = null;
+  inventory.config.cmsLabel = null;
+  writeFile(dir, 'inventory.json', JSON.stringify(inventory, null, 2));
   const result = validate(dir);
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
+test('meta.json accepts every exact canonical CMS key and label pair', () => {
+  for (const [key, label] of CMS_CATALOG) {
+    const dir = tempOutput();
+    const meta = JSON.parse(readFile(dir, 'meta.json'));
+    meta.platform = key;
+    meta.platformDisplay = label;
+    writeFile(dir, 'meta.json', JSON.stringify(meta, null, 2));
+    writeFile(
+      dir,
+      'report.md',
+      readFile(dir, 'report.md').replace(
+        '| Platform | `Optimizely SaaS` (`optimizely-saas`) |',
+        `| Platform | \`${label}\` (\`${key}\`) |`,
+      ),
+    );
+    const inventory = JSON.parse(readFile(dir, 'inventory.json'));
+    inventory.config.stackAdapter = key;
+    inventory.config.cmsKey = key;
+    inventory.config.cmsLabel = label;
+    writeFile(dir, 'inventory.json', JSON.stringify(inventory, null, 2));
+    const result = validate(dir, ['--json']);
+    assert.equal(result.status, 0, `${key} should pass: ${JSON.stringify(result.json?.failures, null, 2)}`);
+  }
+});
+
+test('meta.json rejects legacy CMS keys instead of normalizing them', () => {
+  for (const legacyKey of ['contentstack-sdk', 'optimizely', 'sitecore-xp', 'sitecore-xm-cloud']) {
+    const dir = tempOutput();
+    const meta = JSON.parse(readFile(dir, 'meta.json'));
+    meta.platform = legacyKey;
+    meta.platformDisplay = 'Legacy CMS';
+    writeFile(dir, 'meta.json', JSON.stringify(meta, null, 2));
+    assertFails(dir, 'meta-platform');
+  }
+});
+
+test('meta.json rejects a non-canonical display label', () => {
+  const dir = tempOutput();
+  const meta = JSON.parse(readFile(dir, 'meta.json'));
+  meta.platform = 'wordpress';
+  meta.platformDisplay = 'WordPress';
+  writeFile(dir, 'meta.json', JSON.stringify(meta, null, 2));
+  const inventory = JSON.parse(readFile(dir, 'inventory.json'));
+  inventory.config.stackAdapter = 'wordpress';
+  inventory.config.cmsKey = 'wordpress';
+  inventory.config.cmsLabel = 'Wordpress';
+  writeFile(dir, 'inventory.json', JSON.stringify(inventory, null, 2));
+  assertFails(dir, 'meta-platform-display');
+});
+
+test('meta.json CMS identity must match deterministic inventory metadata', () => {
+  const dir = tempOutput();
+  const meta = JSON.parse(readFile(dir, 'meta.json'));
+  meta.platform = 'contentstack';
+  meta.platformDisplay = 'Contentstack';
+  writeFile(dir, 'meta.json', JSON.stringify(meta, null, 2));
+  assertFails(dir, 'meta-inventory-cms');
+});
+
+test('report.md must repeat the exact canonical CMS key and label', () => {
+  const dir = tempOutput();
+  writeFile(
+    dir,
+    'report.md',
+    readFile(dir, 'report.md').replace('`Optimizely SaaS` (`optimizely-saas`)', '`Optimizely` (`optimizely`)'),
+  );
+  assertFails(dir, 'report-platform');
 });
 
 test('scope inventory does not require meta.json', () => {
@@ -974,6 +1063,7 @@ function tempRetrospectiveOutput() {
       client: { name: 'Sample', slug: 'sample' },
       project: { name: 'Sample project', slug: 'sample-project' },
       platform: null,
+      platformDisplay: null,
       priorReports: [],
     }),
   );
@@ -1012,7 +1102,7 @@ function tempRetrospectiveOutput() {
   writeFile(
     dir,
     'report.md',
-    '# Project retrospective — Sample\n\n## Run\n\nRetrospectives-only backfill.\n\n## Summary\n\nOne page captured.\n\n## Team retrospectives\n\n- Build Retrospective\n\n## Gaps\n\n- None.\n\n## Next steps\n\n1. Assign the open action.\n',
+    '# Project retrospective — Sample\n\n## Run\n\n| Field | Value |\n|---|---|\n| Platform | unknown |\n\nRetrospectives-only backfill.\n\n## Summary\n\nOne page captured.\n\n## Team retrospectives\n\n- Build Retrospective\n\n## Gaps\n\n- None.\n\n## Next steps\n\n1. Assign the open action.\n',
   );
   return dir;
 }

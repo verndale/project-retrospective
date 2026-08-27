@@ -5,7 +5,7 @@
 Read this reference when:
 
 - `inventory.json` reports `"mode": "code-scan"`.
-- The warnings include `no-build-config`, `no-artifacts-root`, `no-component-index`, `heuristic-buckets`, or `unknown-adapter`.
+- The warnings include `no-build-config`, `no-artifacts-root`, `no-component-index`, `heuristic-buckets`, `unsupported-cms-discovery`, or `unknown-adapter`.
 
 Skip when the run is in `artifacts` mode — the pipeline evidence is richer and this document's caps do not apply.
 
@@ -17,7 +17,7 @@ That gets you names and locations. It gets you nothing about contract, reuse, or
 
 ## How the scan chose its extensions, roots, and signals
 
-**Extensions and granularity come from the `stackAdapter` profile.** React-family adapters (`optimizely`, `sitecore-ai`, `contentstack`, `contentstack-sdk`) look for `.tsx`/`.jsx` and walk a bucket to its leaves (recursive). The `toolkit` adapter looks for `.hbs` and scans one level deep: each flat file under a root is a component, and each immediate folder is read by the test below (shallow). An unknown or absent adapter falls back to a broad extension set and records an `unknown-adapter` warning. Co-located test, spec, and story files (`*.test.tsx`, `*.spec.tsx`, `*.stories.tsx`) are never counted as components.
+**Extensions and granularity come from a discovery profile, not merely CMS recognition.** The active CMS profiles (`optimizely-saas`, `sitecore-ai`, `contentstack`) look for `.tsx`/`.jsx` and walk a bucket to its leaves (recursive). The `toolkit` adapter is a supported non-CMS profile: it looks for `.hbs` and scans one level deep, where each flat file under a root is a component and each immediate folder is read by the test below (shallow). A canonical CMS without a profile falls back to the broad extension set and records `unsupported-cms-discovery`; an unknown adapter records `unknown-adapter`. Co-located test, spec, and story files (`*.test.tsx`, `*.spec.tsx`, `*.stories.tsx`) are never counted as components.
 
 **One component, or a folder of several?** The same test applies at both granularities. A directory is one component when it holds a matching entry file (`Modal/Modal.tsx`), a single file, or a compound whose parts are all namespaced under the folder (`accordion/AccordionItem.tsx`, `AccordionTrigger.tsx`). A flat container of independent sibling files (`ui/icons/ArrowIcon.tsx`, `CloseIcon.tsx`) — or component files sitting directly at a bucket root — yields one component per file rather than collapsing to the folder, and the folder is not itself recorded as a component. Siblings one level below a bucket root carry that folder as their `domain`; siblings at the root itself, or deeper than one level, have no domain.
 

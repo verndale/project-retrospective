@@ -4,7 +4,7 @@
   "scope": "full",
   "client": { "name": "Fake Project", "slug": "fake-project", "nameSource": "project-dir" },
   "project": { "name": "Fake Project", "slug": "fake-project", "path": "/tmp/fake-project" },
-  "platform": "fake-adapter",
-  "platformDisplay": "Fake Adapter",
+  "platform": "optimizely-saas",
+  "platformDisplay": "Optimizely SaaS",
   "priorReports": []
 }

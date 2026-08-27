@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 127,
-    "edges": 342,
+    "nodes": 130,
+    "edges": 352,
     "byType": {
       "root-doc": 4,
       "repo-script": 19,
@@ -9,22 +9,22 @@
       "test": 15,
       "authoring-spec": 1,
       "skill-readme": 1,
-      "skill-reference": 19,
-      "skill-script": 12,
+      "skill-reference": 20,
+      "skill-script": 13,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 32,
+      "wiki-journal": 33,
       "wiki-plan": 14,
       "wiki-topic": 5
     },
     "byEdgeType": {
-      "contracts": 28,
-      "covers": 32,
-      "links-to": 143,
+      "contracts": 29,
+      "covers": 34,
+      "links-to": 146,
       "plan": 14,
-      "requires": 53,
+      "requires": 56,
       "tests": 14,
-      "topic": 58
+      "topic": 59
     }
   },
   "nodes": [
@@ -246,8 +246,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 22540,
-      "degree": 2
+      "bytes": 25857,
+      "degree": 3
     },
     {
       "id": "scripts/tests/normalize-retrospectives.test.cjs",
@@ -350,7 +350,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 42410,
+      "bytes": 45899,
       "degree": 2
     },
     {
@@ -558,7 +558,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 28212,
+      "bytes": 29504,
       "degree": 4
     },
     {
@@ -575,6 +575,19 @@
       "degree": 3
     },
     {
+      "id": "skills/project-retrospective/references/cms-taxonomy.md",
+      "label": "CMS taxonomy",
+      "type": "skill-reference",
+      "dir": "skills/project-retrospective/references",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "githubRefs": [],
+      "bytes": 1435,
+      "degree": 3
+    },
+    {
       "id": "skills/project-retrospective/references/code-scan-mode.md",
       "label": "Code-scan mode",
       "type": "skill-reference",
@@ -584,7 +597,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 6144,
+      "bytes": 6273,
       "degree": 2
     },
     {
@@ -701,7 +714,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 7056,
+      "bytes": 7128,
       "degree": 2
     },
     {
@@ -779,7 +792,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 2562,
+      "bytes": 2570,
       "degree": 2
     },
     {
@@ -792,7 +805,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 11059,
+      "bytes": 11497,
       "degree": 3
     },
     {
@@ -805,7 +818,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 2467,
+      "bytes": 2480,
       "degree": 2
     },
     {
@@ -857,8 +870,21 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 39986,
-      "degree": 5
+      "bytes": 40852,
+      "degree": 6
+    },
+    {
+      "id": "skills/project-retrospective/scripts/lib/cms-taxonomy.cjs",
+      "label": "cms-taxonomy.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts/lib",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "githubRefs": [],
+      "bytes": 1041,
+      "degree": 4
     },
     {
       "id": "skills/project-retrospective/scripts/lib/util.cjs",
@@ -961,8 +987,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 50232,
-      "degree": 5
+      "bytes": 52462,
+      "degree": 6
     },
     {
       "id": "skills/project-retrospective/SKILL.md",
@@ -974,8 +1000,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 43454,
-      "degree": 51
+      "bytes": 44294,
+      "degree": 53
     },
     {
       "id": "wiki/INDEX.md",
@@ -987,8 +1013,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 11256,
-      "degree": 41
+      "bytes": 11499,
+      "degree": 42
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1871,6 +1897,30 @@
       "degree": 4
     },
     {
+      "id": "wiki/journal/2026-08-27-canonical-cms-taxonomy.md",
+      "label": "Canonicalize CMS identity in retrospective runs",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "87"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 87,
+          "url": "https://github.com/verndale/project-retrospective/issues/87"
+        }
+      ],
+      "bytes": 2093,
+      "degree": 3
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -2611,10 +2661,17 @@
         "1"
       ],
       "issues": [
+        "87",
         "75",
         "57"
       ],
       "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 87,
+          "url": "https://github.com/verndale/project-retrospective/issues/87"
+        },
         {
           "kind": "pull-request",
           "repository": "verndale/project-retrospective",
@@ -2802,8 +2859,8 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 14092,
-      "degree": 56
+      "bytes": 15032,
+      "degree": 60
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -2830,6 +2887,11 @@
     {
       "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/brain-integrity-checklist.md",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/cms-taxonomy.md",
       "type": "contracts"
     },
     {
@@ -3049,6 +3111,11 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/references/cms-taxonomy.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "skills/project-retrospective/references/source-parity.md",
       "type": "covers"
     },
@@ -3075,6 +3142,11 @@
     {
       "source": "wiki/topics/retrospective-workflow.md",
       "target": "skills/project-retrospective/scripts/inventory.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/scripts/lib/cms-taxonomy.cjs",
       "type": "covers"
     },
     {
@@ -3270,6 +3342,13 @@
     {
       "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/brain-integrity-checklist.md",
+      "type": "links-to",
+      "count": 3,
+      "anchors": []
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/references/cms-taxonomy.md",
       "type": "links-to",
       "count": 3,
       "anchors": []
@@ -3626,6 +3705,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-08-27-canonical-cms-taxonomy.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -4060,6 +4146,13 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/journal/2026-08-27-canonical-cms-taxonomy.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
       "type": "links-to",
       "count": 2,
@@ -4254,6 +4347,11 @@
       "type": "requires"
     },
     {
+      "source": "scripts/tests/inventory.test.cjs",
+      "target": "skills/project-retrospective/scripts/lib/cms-taxonomy.cjs",
+      "type": "requires"
+    },
+    {
       "source": "scripts/tests/normalize-retrospectives.test.cjs",
       "target": "scripts/tests/helpers.cjs",
       "type": "requires"
@@ -4420,6 +4518,11 @@
     },
     {
       "source": "skills/project-retrospective/scripts/inventory.cjs",
+      "target": "skills/project-retrospective/scripts/lib/cms-taxonomy.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "skills/project-retrospective/scripts/inventory.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
     },
@@ -4451,6 +4554,11 @@
     {
       "source": "skills/project-retrospective/scripts/update-retrospective-register.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "skills/project-retrospective/scripts/validate-report.cjs",
+      "target": "skills/project-retrospective/scripts/lib/cms-taxonomy.cjs",
       "type": "requires"
     },
     {
@@ -4731,6 +4839,11 @@
     {
       "source": "wiki/journal/2026-08-24-deterministic-agent-wiki-guidance.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-08-27-canonical-cms-taxonomy.md",
+      "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     },
     {

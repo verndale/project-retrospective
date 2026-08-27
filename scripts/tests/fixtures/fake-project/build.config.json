@@ -1,5 +1,5 @@
 {
-  "stackAdapter": "optimizely",
+  "stackAdapter": "optimizely-saas",
   "artifactsRoot": "artifacts",
   "componentBuckets": {
     "ui": "src/components/ui",

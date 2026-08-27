@@ -7,7 +7,9 @@
     "present": true,
     "path": "/tmp/fake-project/build.config.json",
     "artifactsRoot": "artifacts",
-    "stackAdapter": "fake-adapter",
+    "stackAdapter": "optimizely-saas",
+    "cmsKey": "optimizely-saas",
+    "cmsLabel": "Optimizely SaaS",
     "componentBuckets": { "ui": "src/components/ui", "rendering": "src/components/renderings" },
     "renderingDomains": { "marketing": "marketing" }
   },

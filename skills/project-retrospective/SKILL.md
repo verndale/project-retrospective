@@ -40,13 +40,14 @@ Operator docs: [README.md](README.md).
 6. [`references/brain-integrity-checklist.md`](references/brain-integrity-checklist.md) — the ordered promote procedure. Read only for `Action: promote`.
 7. [`references/library-integrity-checklist.md`](references/library-integrity-checklist.md) — the ordered capture procedure. Read only for `Action: capture`.
 8. [`references/code-scan-mode.md`](references/code-scan-mode.md) — degraded-mode procedure. Read only when the inventory reports `mode: code-scan`.
-9. [`references/wiki-feed.md`](references/wiki-feed.md) — the client wiki feed, the `meta.json` contract, client-identity resolution, and the project-memory archive. Read for `Action: analyze`.
-10. [`references/wiki-client-template.md`](references/wiki-client-template.md) — the durable per-client page shape.
-11. [`references/wiki-journal-template.md`](references/wiki-journal-template.md) — the per-run journal entry shape.
-12. [`references/downstream-wiki.md`](references/downstream-wiki.md) — the client-agnostic context-wiki entry in the repo an action touches. Read for `Action: promote` (ui-design-brain) and `Action: capture` (ui-design-library).
-13. [`references/spec-capture.md`](references/spec-capture.md) — the Confluence functional-spec capture recipe: label discovery, the approved-only gate, and the `specs-raw.json` schema. Read for `Action: analyze` when a `Specs` input is given.
-14. [`references/tracking-issues.md`](references/tracking-issues.md) — deterministic GitHub issue, label, linking, and conditional local-branch routing. Read before the first repository write and at `Action: analyze` Step 7.
-15. [`references/team-retrospectives.md`](references/team-retrospectives.md) — Confluence discovery, raw/findings schemas, normalized evidence, action lifecycle, private archive, and retrospectives-only runs. Read when `Retrospectives` is given or `Action: ingest-retrospectives` is used.
+9. [`references/cms-taxonomy.md`](references/cms-taxonomy.md) — the seven canonical CMS key/label pairs and the boundary between identity recognition and discovery support.
+10. [`references/wiki-feed.md`](references/wiki-feed.md) — the client wiki feed, the `meta.json` contract, client-identity resolution, and the project-memory archive. Read for `Action: analyze`.
+11. [`references/wiki-client-template.md`](references/wiki-client-template.md) — the durable per-client page shape.
+12. [`references/wiki-journal-template.md`](references/wiki-journal-template.md) — the per-run journal entry shape.
+13. [`references/downstream-wiki.md`](references/downstream-wiki.md) — the client-agnostic context-wiki entry in the repo an action touches. Read for `Action: promote` (ui-design-brain) and `Action: capture` (ui-design-library).
+14. [`references/spec-capture.md`](references/spec-capture.md) — the Confluence functional-spec capture recipe: label discovery, the approved-only gate, and the `specs-raw.json` schema. Read for `Action: analyze` when a `Specs` input is given.
+15. [`references/tracking-issues.md`](references/tracking-issues.md) — deterministic GitHub issue, label, linking, and conditional local-branch routing. Read before the first repository write and at `Action: analyze` Step 7.
+16. [`references/team-retrospectives.md`](references/team-retrospectives.md) — Confluence discovery, raw/findings schemas, normalized evidence, action lifecycle, private archive, and retrospectives-only runs. Read when `Retrospectives` is given or `Action: ingest-retrospectives` is used.
 
 ## Workflow
 
@@ -80,7 +81,7 @@ Create the directory and state the resolved paths before running anything. If an
 node <skill>/scripts/inventory.cjs --project <Project> --out <Output>/inventory.json --pretty
 ```
 
-Report the `mode`, `sourceSnapshot`, and `warnings` verbatim — warnings become the report's Gaps section. `sourceSnapshot` pins the exact Git HEAD; when the worktree is dirty, every later citation reads from that commit rather than current files. Discovery is stack-aware: `stackAdapter` selects the component file extensions and roots, a filesystem scan of those roots is unioned with `component-index.json` in **both** modes (so components the index omitted are still found), and Storybook is counted where the stack uses it; an unrecognized adapter falls back to a broad default with an `unknown-adapter` warning. If `mode` is `code-scan`, read [`references/code-scan-mode.md`](references/code-scan-mode.md) before continuing — its evidence cap, and the discovery mechanics, change every verdict downstream.
+Report the `mode`, `sourceSnapshot`, `config.cmsKey`, `config.cmsLabel`, and `warnings` verbatim — warnings become the report's Gaps section. `sourceSnapshot` pins the exact Git HEAD; when the worktree is dirty, every later citation reads from that commit rather than current files. CMS identity follows [`references/cms-taxonomy.md`](references/cms-taxonomy.md), independently of discovery support. A supported discovery profile selects component extensions and roots; a recognized CMS without one uses the broad default with an `unsupported-cms-discovery` warning; an unrecognized adapter uses that default with `unknown-adapter`. The filesystem scan is unioned with `component-index.json` in **both** modes, and Storybook is counted where the selected profile uses it. If `mode` is `code-scan`, read [`references/code-scan-mode.md`](references/code-scan-mode.md) before continuing — its evidence cap, and the discovery mechanics, change every verdict downstream.
 
 `Scope: inventory` skips steps 2 and 3, and step 4 writes only the Run, Summary, Inventory, and Gaps sections of `report.md`.
 
@@ -111,7 +112,7 @@ Pass `--retrospectives <Output>/retrospectives.json` when Step 1c ran. Only norm
 
 **4. Draft.** Write, in `<Output>`:
 
-- `meta.json` — machine-readable run identity (client, project, platform, date, scope, priorReports) per [`references/wiki-feed.md`](references/wiki-feed.md). The model writes it; `resolve.cjs`/`inventory.cjs` stay client-agnostic.
+- `meta.json` — machine-readable run identity (client, project, exact canonical CMS key/label, date, scope, priorReports) per [`references/wiki-feed.md`](references/wiki-feed.md). Repeat `inventory.json`'s `config.cmsKey`/`config.cmsLabel` exactly as `platform`/`platformDisplay`; the validator checks the catalog, inventory parity, and report parity.
 - `report.md` — following [`references/report-template.md`](references/report-template.md).
 - `triage.json` — the machine-readable twin of `report.md`'s `## Candidates`, written from your Step-3 verdicts plus `resolution.json`/`inventory.json` metadata (bucket, domain, entry, sources), one entry per triaged candidate split into `promote`/`watch`/`reject`. The evidence promotion radar reads each run's `watch[]` to rank candidates across runs, so every Watch entry's `note` MUST start `provisional canonical: <Name> — …`. Schema and the `provisional canonical:` rule: [`references/triage-schema.md`](references/triage-schema.md). Emitted at `full`/`candidates` scope, not `inventory`.
 - `proposals/<kebab-label>.md` — one per Promote candidate, using the template for its type.
@@ -131,7 +132,7 @@ When `retrospective-actions.json` exists, include every non-`done`/non-`wont-do`
 
 ### Action: ingest-retrospectives
 
-Requires `Data`, `ProjectSlug`, and `Retrospectives`; accepts optional `Date` (today by default). Resolve client identity, platform, and `priorReports` from the latest existing `<Data>/runs/<ProjectSlug>/` run. Stop if the target `<Data>/runs/<ProjectSlug>/<Date>/` already exists.
+Requires `Data`, `ProjectSlug`, and `Retrospectives`; accepts optional `Date` (today by default). Resolve client identity, canonical CMS key/label, and `priorReports` from the latest existing `<Data>/runs/<ProjectSlug>/` run. Stop if that source metadata uses a legacy or unknown CMS value; this producer does not provide runtime aliases. Stop if the target `<Data>/runs/<ProjectSlug>/<Date>/` already exists.
 
 Apply [`references/tracking-issues.md`](references/tracking-issues.md) and resolve `ingest-retrospectives` as evidence-only. Create the emitted evidence run branch off clean aligned `main` before the first write. Follow [`references/team-retrospectives.md`](references/team-retrospectives.md): capture/discover pages, write the four retrospective artifacts, and write `meta.json` with `scope: retrospectives`. Its `report.md` contains exactly the applicable frozen spine: `Run`, `Summary`, `Team retrospectives`, `Gaps`, `Next steps`.
 
@@ -258,6 +259,7 @@ Normative rubric: [`references/evidence-rubric.md`](references/evidence-rubric.m
 - MUST NOT invent wiki outcomes. Every journal Outcome traces to this run's `resolution.json` and its report verdicts; every "What we know" bullet traces to a run report or the analyzed project's `artifacts/memory/` (summarized durable engineering knowledge, never copied client prose).
 - MUST run `archive-memory.cjs` on every analyze run so project memory is never silently dropped — record-only in the home fallback, a near-raw byte copy into `<Data>/wiki/memory/<client-slug>/<project-slug>/source/` (plus a fuller `index.md` digest) under a `Data` = evidence checkout. `validate-report.cjs` fails a run whose inventory shows memory but that produced no archive. The `source/` copy and `index.md` carry engineering knowledge only — never end-customer PII — and live only in the private evidence repo; the `## What we know` bullets stay a summary.
 - MUST write `meta.json` for every analyze run, with `project.slug` and `date` equal to the run's own directory, so the wiki, the graph, and captures' `provenance.run` never disagree.
+- MUST use the exact seven-entry CMS contract in [`references/cms-taxonomy.md`](references/cms-taxonomy.md): repeat inventory's canonical key/label in `meta.json` and the report, reject legacy values, and never infer discovery support from catalog recognition.
 - MUST capture only **approved** functional specs (Document Status = APPROVED), and treat `specs-raw.json`/`specs.json` and the spec archive as client-derived output — written only under `Output`, or archived under `<Data>/wiki/specs/`, never into this repository. `validate-report.cjs` fails a spec pack carrying a non-approved spec.
 - MUST author the downstream wiki (ui-design-brain on promote, ui-design-library on capture) client-agnostically, per [`references/downstream-wiki.md`](references/downstream-wiki.md): no client display name, no run slug or `provenance.source` path in prose, no client-naming `declienting` string. Ground each entry in recurrence and the catalog/de-client decision — these are shared repos, unlike the private evidence wiki that alone may name the client.
 - MUST keep raw retrospective bodies, page ids/URLs, client identities, action owners, and issue links inside the private evidence checkout. Public fixtures and examples stay synthetic.

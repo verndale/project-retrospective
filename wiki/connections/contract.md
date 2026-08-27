@@ -4,9 +4,10 @@ Every reference and script `SKILL.md` declares. These edges are the build's inte
 
 Part of the [connections map](../connections.md), generated from the knowledge graph — **do not edit by hand**. Rebuilt on every `pnpm graph:build` and verified fresh by `pnpm graph:check`.
 
-## References (19)
+## References (20)
 
 - [Brain integrity checklist](../../skills/project-retrospective/references/brain-integrity-checklist.md)
+- [CMS taxonomy](../../skills/project-retrospective/references/cms-taxonomy.md)
 - [Code-scan mode](../../skills/project-retrospective/references/code-scan-mode.md)
 - [Downstream wiki](../../skills/project-retrospective/references/downstream-wiki.md)
 - [Evidence rubric](../../skills/project-retrospective/references/evidence-rubric.md)

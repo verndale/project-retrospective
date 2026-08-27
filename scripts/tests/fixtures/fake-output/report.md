@@ -5,6 +5,7 @@
 | Field | Value |
 |---|---|
 | Project | `/tmp/fake-project` |
+| Platform | `Optimizely SaaS` (`optimizely-saas`) |
 | Date | `2026-01-01` |
 | Mode | `artifacts` |
 | Catalog | `/tmp/fake-brain` (6 canonical entries) |

@@ -9,7 +9,7 @@ The per-run event page in `ui-design-evidence`, at `wiki/journal/<date>-<project
 date: <YYYY-MM-DD>
 client: <client-slug>
 project: <project-slug>
-platform: <adapter-key, or unknown when the run has no adapter — never "none">
+platform: <canonical-cms-key, or unknown when the run has no recognized CMS — never "none">
 run: runs/<project-slug>/<date>/
 prior_run: <same-client previous run, e.g. runs/<slug>/<date>/, or none>
 pr: pending
