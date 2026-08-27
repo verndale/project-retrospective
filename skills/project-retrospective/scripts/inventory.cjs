@@ -38,6 +38,7 @@ const {
   writeOut,
   usage,
 } = require('./lib/util.cjs');
+const { cmsForKey } = require('./lib/cms-taxonomy.cjs');
 
 const USAGE = [
   'Usage: node inventory.cjs --project <path> [--out <file>] [--pretty]',
@@ -78,11 +79,11 @@ const STORY_FILE_RE = /\.stories\.(?:tsx?|jsx?|mdx)$/;
 // (`Modal.test.tsx`, `useX.a11y.test.tsx`, `Card.stories.tsx`). Excluded from component discovery.
 const NON_COMPONENT_RE = /\.(?:test|spec|stories|cy)\.[jt]sx?$/i;
 
-// Stack profiles: which file extensions mark a component, which conventional roots hold
+// Discovery profiles: which file extensions mark a component, which conventional roots hold
 // components (as [path, bucket] pairs), how deep the walk goes, and whether Storybook is
-// the component registry. Grounded in the ai-orchestration adapter rules; adapter names are
-// not stable across projects, so an unknown adapter falls back to the broad default rather
-// than returning zero components.
+// the component registry. These are deliberately separate from the seven-entry CMS catalog:
+// a recognized CMS without a profile falls back to the broad default rather than gaining
+// invented discovery behavior.
 const REACT_EXTS = ['.tsx', '.jsx'];
 const ADAPTER_PROFILES = {
   toolkit: {
@@ -95,10 +96,9 @@ const ADAPTER_PROFILES = {
     granularity: 'shallow',
     storybook: true,
   },
-  optimizely: { exts: REACT_EXTS, roots: [], granularity: 'recursive', storybook: false },
+  'optimizely-saas': { exts: REACT_EXTS, roots: [], granularity: 'recursive', storybook: false },
   'sitecore-ai': { exts: REACT_EXTS, roots: [], granularity: 'recursive', storybook: false },
   contentstack: { exts: REACT_EXTS, roots: [], granularity: 'recursive', storybook: false },
-  'contentstack-sdk': { exts: REACT_EXTS, roots: [], granularity: 'recursive', storybook: false },
 };
 const DEFAULT_PROFILE = {
   exts: ['.tsx', '.jsx', '.vue', '.svelte', '.astro', '.hbs', '.handlebars', '.twig', '.liquid'],
@@ -137,8 +137,19 @@ function sourceSnapshot(projectDir, warnings) {
 /** Resolve a stackAdapter to its discovery profile; warns when it falls back to the default. */
 function profileFor(stackAdapter, warnings) {
   if (stackAdapter == null || stackAdapter === '') return DEFAULT_PROFILE;
-  const profile = ADAPTER_PROFILES[stackAdapter];
+  // Treat the registry as a closed allowlist. Direct indexing would expose
+  // Object.prototype members (for example "toString" or "constructor") as
+  // truthy pseudo-profiles and crash later when their extension list is read.
+  const profile = Object.hasOwn(ADAPTER_PROFILES, stackAdapter) ? ADAPTER_PROFILES[stackAdapter] : null;
   if (profile) return profile;
+  const cms = cmsForKey(stackAdapter);
+  if (cms) {
+    warnings.add(
+      'unsupported-cms-discovery',
+      `${cms.label} ("${cms.key}") is a recognized CMS but has no dedicated discovery profile — using the broad default (all known extensions, heuristic roots).`,
+    );
+    return DEFAULT_PROFILE;
+  }
   warnings.add(
     'unknown-adapter',
     `stackAdapter "${stackAdapter}" has no discovery profile — using the broad default (all known extensions, heuristic roots).`,
@@ -162,18 +173,36 @@ function loadConfig(projectDir, warnings) {
       'no-build-config',
       'No build.config.json at the project root — artifacts root assumed to be "artifacts" and component buckets discovered heuristically.',
     );
-    return { present: false, path: null, artifactsRoot: resolved.artifactsRoot };
+    return {
+      present: false,
+      path: null,
+      artifactsRoot: resolved.artifactsRoot,
+      stackAdapter: null,
+      cmsKey: null,
+      cmsLabel: null,
+    };
   }
   if (resolved.status === 'unreadable') {
     warnings.add('unreadable-json', `build.config.json could not be parsed: ${resolved.error}`);
-    return { present: false, path: resolved.path, artifactsRoot: resolved.artifactsRoot };
+    return {
+      present: false,
+      path: resolved.path,
+      artifactsRoot: resolved.artifactsRoot,
+      stackAdapter: null,
+      cmsKey: null,
+      cmsLabel: null,
+    };
   }
   const cfg = resolved.config;
+  const stackAdapter = cfg.stackAdapter ?? null;
+  const cms = cmsForKey(stackAdapter);
   return {
     present: true,
     path: resolved.path,
     artifactsRoot: resolved.artifactsRoot,
-    stackAdapter: cfg.stackAdapter ?? null,
+    stackAdapter,
+    cmsKey: cms?.key ?? null,
+    cmsLabel: cms?.label ?? null,
     componentBuckets: cfg.componentBuckets ?? null,
     renderingDomains: cfg.renderingDomains ?? null,
     // Deprecated pipeline-side (superseded by componentBuckets) but still declared by some

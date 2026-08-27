@@ -23,7 +23,7 @@ The run's human-readable output. The `##` headings inside the template are **fro
 |---|---|
 | Project | `<absolute path>` |
 | Client | `<display name>` (`<client-slug>`) |
-| Platform | `<Platform display>` (`<adapter-key>`) |
+| Platform | `<Exact canonical CMS label>` (`<canonical-cms-key>`) — or `unknown` when both inventory CMS fields are null |
 | Date | `<YYYY-MM-DD>` |
 | Mode | `artifacts` or `code-scan` |
 | Catalog | `<brain path>` (<N> canonical entries) |

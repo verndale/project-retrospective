@@ -3,6 +3,9 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const { CMS_CATALOG } = require('../../skills/project-retrospective/scripts/lib/cms-taxonomy.cjs');
 const { run, runJson, fixture, tempFixture } = require('./helpers.cjs');
 
 const PROJECT = fixture('fake-project');
@@ -12,12 +15,62 @@ const CODESCAN = fixture('fake-project-codescan');
 const EMPTYINDEX = fixture('fake-project-emptyindex');
 const PARTOF = fixture('fake-project-partof');
 
+const EXPECTED_CMS_CATALOG = [
+  { key: 'contentful', label: 'Contentful' },
+  { key: 'contentstack', label: 'Contentstack' },
+  { key: 'optimizely-saas', label: 'Optimizely SaaS' },
+  { key: 'optimizely-paas', label: 'Optimizely PaaS' },
+  { key: 'sitecore-on-prem', label: 'Sitecore on-Prem' },
+  { key: 'sitecore-ai', label: 'SitecoreAI' },
+  { key: 'wordpress', label: 'Wordpress' },
+];
+
+const DISCOVERY_SUPPORTED_CMS = new Set(['contentstack', 'optimizely-saas', 'sitecore-ai']);
+
 function inventory(project) {
   const result = runJson('inventory.cjs', ['--project', project]);
   assert.equal(result.status, 0, `expected exit 0, got ${result.status}: ${result.stderr}`);
   assert.ok(result.json, 'expected JSON on stdout');
   return result.json;
 }
+
+function inventoryWithAdapter(stackAdapter) {
+  const project = tempFixture('fake-project');
+  const configPath = path.join(project, 'build.config.json');
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  config.stackAdapter = stackAdapter;
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  return inventory(project);
+}
+
+test('the CMS catalog exposes all seven exact canonical key and label pairs', () => {
+  assert.deepEqual(CMS_CATALOG, EXPECTED_CMS_CATALOG);
+});
+
+test('CMS recognition stays separate from dedicated discovery support', () => {
+  for (const cms of EXPECTED_CMS_CATALOG) {
+    const inv = inventoryWithAdapter(cms.key);
+    assert.equal(inv.config.cmsKey, cms.key, `${cms.key} emits its canonical key`);
+    assert.equal(inv.config.cmsLabel, cms.label, `${cms.key} emits its exact canonical label`);
+    const warningCodes = inv.warnings.map((warning) => warning.code);
+    if (DISCOVERY_SUPPORTED_CMS.has(cms.key)) {
+      assert.ok(!warningCodes.includes('unsupported-cms-discovery'), `${cms.key} has an active discovery profile`);
+      assert.ok(!warningCodes.includes('unknown-adapter'), `${cms.key} is recognized`);
+    } else {
+      assert.ok(warningCodes.includes('unsupported-cms-discovery'), `${cms.key} is recognized without invented discovery behavior`);
+      assert.ok(!warningCodes.includes('unknown-adapter'), `${cms.key} is recognized`);
+    }
+  }
+});
+
+test('legacy CMS identifiers are not runtime aliases', () => {
+  for (const legacyKey of ['contentstack-sdk', 'optimizely', 'sitecore-xp', 'sitecore-xm-cloud']) {
+    const inv = inventoryWithAdapter(legacyKey);
+    assert.equal(inv.config.cmsKey, null, `${legacyKey} does not normalize to a canonical CMS key`);
+    assert.equal(inv.config.cmsLabel, null, `${legacyKey} does not gain a canonical CMS label`);
+    assert.ok(inv.warnings.some((warning) => warning.code === 'unknown-adapter'), `${legacyKey} is rejected as unknown`);
+  }
+});
 
 test('artifacts mode is detected when pipeline evidence exists', () => {
   const inv = inventory(PROJECT);
@@ -28,6 +81,8 @@ test('artifacts mode is detected when pipeline evidence exists', () => {
   assert.equal(typeof inv.sourceSnapshot.dirty, 'boolean');
   assert.equal(inv.config.present, true);
   assert.equal(inv.config.artifactsRoot, 'artifacts');
+  assert.equal(inv.config.cmsKey, 'optimizely-saas');
+  assert.equal(inv.config.cmsLabel, 'Optimizely SaaS');
 });
 
 test('a Git project records the exact clean HEAD for future source parity', () => {
@@ -166,7 +221,7 @@ test('an undeclared rendering domain is discovered and labeled from its path', (
 
 test('Storybook is ignored on a stack whose profile opts out (React)', () => {
   const inv = inventory(PROJECT);
-  // fake-project is `optimizely` (storybook: false) and ships two story files. Neither the
+  // fake-project is `optimizely-saas` (storybook: false) and ships two story files. Neither the
   // component-matching story nor the standalone one may influence the census.
   const folders = inv.components.map((c) => c.folder);
   assert.ok(!folders.includes('tokens'), 'a story with no component must not become a phantom on a non-Storybook stack');
@@ -316,6 +371,19 @@ test('an unknown stackAdapter falls back to the default profile with a warning',
   const codes = inv.warnings.map((w) => w.code);
   assert.ok(codes.includes('unknown-adapter'), 'an unrecognized adapter is flagged');
   assert.ok(inv.counts.components > 0, 'the default profile still discovers components');
+});
+
+test('prototype-shaped adapter names remain unknown and degrade without crashing', () => {
+  for (const stackAdapter of ['toString', 'constructor', '__proto__']) {
+    const inv = inventoryWithAdapter(stackAdapter);
+    assert.equal(inv.config.cmsKey, null);
+    assert.equal(inv.config.cmsLabel, null);
+    assert.ok(
+      inv.warnings.some((warning) => warning.code === 'unknown-adapter'),
+      `${stackAdapter} must use the ordinary unknown-adapter fallback`,
+    );
+    assert.ok(inv.counts.components > 0, `${stackAdapter} must still use the broad discovery profile`);
+  }
 });
 
 test('code scan finds declared and undeclared rendering domains', () => {

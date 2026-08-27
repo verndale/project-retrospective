@@ -8,7 +8,7 @@ The durable per-client page in `ui-design-evidence`, at `wiki/clients/<client-sl
 ---
 slug: <client-slug>
 aliases: [<display name>, <other known names>]
-platforms: [<adapter-key>, ...]
+platforms: [<canonical-cms-key>, ...]
 projects: [<project-slug>, ...]
 ---
 # <Client display name> — Client Knowledge
@@ -16,7 +16,7 @@ projects: [<project-slug>, ...]
 <one line: who they are and the platform(s) they build on>
 
 ## Profile
-- Platforms: <Optimizely SaaS>, <Sitecore>, …
+- Platforms: <Optimizely SaaS>, <SitecoreAI>, …
 - Project slugs: `<project-slug>` (first run <date>), …
 
 ## What we know

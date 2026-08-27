@@ -44,6 +44,7 @@ const {
   parseCanonicalLine,
   usage,
 } = require('./lib/util.cjs');
+const { cmsForKey } = require('./lib/cms-taxonomy.cjs');
 const { validateSourceParityDirectory } = require('./source-parity.cjs');
 
 const USAGE = [
@@ -123,6 +124,16 @@ function checkInventory(dir, result) {
   if (Array.isArray(inv.components) && inv.counts?.components !== inv.components.length) {
     result.fail('inventory-counts', `inventory.json counts.components (${inv.counts?.components}) does not match components.length (${inv.components.length})`);
   }
+  const stackAdapter = inv.config?.stackAdapter ?? null;
+  const catalogEntry = cmsForKey(stackAdapter);
+  const expectedKey = catalogEntry?.key ?? null;
+  const expectedLabel = catalogEntry?.label ?? null;
+  if (inv.config?.cmsKey !== expectedKey || inv.config?.cmsLabel !== expectedLabel) {
+    result.fail(
+      'inventory-cms',
+      `inventory.json config CMS metadata must be ${JSON.stringify({ cmsKey: expectedKey, cmsLabel: expectedLabel })} for stackAdapter ${JSON.stringify(stackAdapter)}`,
+    );
+  }
   if (inv.sourceSnapshot === undefined) {
     result.warn('inventory-source-snapshot', 'inventory.json predates pinned source revisions; any capture must use legacy-untracked source parity.');
   } else if (!inv.sourceSnapshot || typeof inv.sourceSnapshot !== 'object' ||
@@ -156,7 +167,7 @@ function checkResolution(dir, result) {
   return res;
 }
 
-function checkMeta(dir, scope, result) {
+function checkMeta(dir, scope, result, inventory = null) {
   const file = path.join(dir, 'meta.json');
   if (!isFile(file)) {
     result.fail('meta-present', 'meta.json is missing');
@@ -187,9 +198,34 @@ function checkMeta(dir, scope, result) {
   ]) {
     if (typeof value !== 'string' || !value) result.fail('meta-fields', `meta.json ${label} must be a non-empty string`);
   }
-  // platform is required as a key but may be null (code-scan / no build.config.json).
+  // Platform identity is required as an exact canonical key/label pair, or a
+  // null/null pair when the project has no recognized CMS identity.
   if (!(typeof meta.platform === 'string' || meta.platform === null)) {
     result.fail('meta-fields', 'meta.json platform must be a string or null');
+  } else if (meta.platform === null) {
+    if (meta.platformDisplay !== null) {
+      result.fail('meta-platform-display', 'meta.json platformDisplay must be null when platform is null');
+    }
+  } else {
+    const cms = cmsForKey(meta.platform);
+    if (!cms) {
+      result.fail('meta-platform', `meta.json platform "${meta.platform}" is not a canonical CMS key`);
+    } else if (meta.platformDisplay !== cms.label) {
+      result.fail(
+        'meta-platform-display',
+        `meta.json platformDisplay must be "${cms.label}" for platform "${cms.key}"`,
+      );
+    }
+  }
+  if (inventory?.config) {
+    const expectedKey = inventory.config.cmsKey ?? null;
+    const expectedLabel = inventory.config.cmsLabel ?? null;
+    if (meta.platform !== expectedKey || meta.platformDisplay !== expectedLabel) {
+      result.fail(
+        'meta-inventory-cms',
+        `meta.json platform identity must match inventory.json config CMS metadata ${JSON.stringify({ platform: expectedKey, platformDisplay: expectedLabel })}`,
+      );
+    }
   }
   if (meta.priorReports !== undefined && !Array.isArray(meta.priorReports)) {
     result.fail('meta-fields', 'meta.json priorReports must be an array');
@@ -520,7 +556,7 @@ function checkRetrospectives(dir, required, result) {
   return pack;
 }
 
-function checkReport(dir, scope, noBrain, result) {
+function checkReport(dir, scope, noBrain, result, meta = null) {
   const file = path.join(dir, 'report.md');
   const text = isFile(file) ? readTextSafe(file) : null;
   if (text === null) {
@@ -544,6 +580,17 @@ function checkReport(dir, scope, noBrain, result) {
   for (const heading of required) {
     if (!present.has(heading)) {
       result.fail('report-sections', `report.md is missing the "## ${heading}" section (headings must match exactly)`);
+    }
+  }
+
+  const runSection = topLevel.find((section) => section.heading === 'Run');
+  if (meta && runSection) {
+    const expectedPlatformRow = meta.platform === null
+      ? '| Platform | unknown |'
+      : `| Platform | \`${meta.platformDisplay}\` (\`${meta.platform}\`) |`;
+    const runRows = runSection.body.split('\n').map((line) => line.trim());
+    if (!runRows.includes(expectedPlatformRow)) {
+      result.fail('report-platform', `report.md Run table must contain: ${expectedPlatformRow}`);
     }
   }
 
@@ -1011,7 +1058,7 @@ function main() {
   if (!['inventory', 'retrospectives'].includes(scope) && !noBrain) checkResolution(dir, result);
   // Identity is required wherever the run has candidates (full and candidates
   // scopes); an inventory-only run has no client wiki to feed.
-  if (scope !== 'inventory') checkMeta(dir, scope, result);
+  const meta = scope !== 'inventory' ? checkMeta(dir, scope, result, inventory) : null;
   // The machine-readable twin of the report's "## Candidates" verdicts; the evidence
   // promotion radar reads it, so a run with candidates must emit it (full and candidates).
   if (!['inventory', 'retrospectives'].includes(scope)) checkTriage(dir, scope, result);
@@ -1025,7 +1072,7 @@ function main() {
   // the append-only retrospectives scope.
   if (scope !== 'inventory') checkRetrospectives(dir, scope === 'retrospectives', result);
 
-  const { promoted, captured, capturesSectionPresent } = checkReport(dir, scope, noBrain, result);
+  const { promoted, captured, capturesSectionPresent } = checkReport(dir, scope, noBrain, result, meta);
 
   if (scope === 'full') {
     checkProposals(dir, promoted, manifestEntries, result);

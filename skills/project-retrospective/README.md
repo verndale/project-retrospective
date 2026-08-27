@@ -5,6 +5,7 @@ What the skill does, how to run it, and what it produces. The skill's own instru
 ## Contents
 
 - [What it does](#what-it-does)
+- [CMS identity contract](#cms-identity-contract)
 - [Install](#install)
 - [End-to-end walkthrough](#end-to-end-walkthrough)
 - [Invocation](#invocation)
@@ -21,6 +22,24 @@ What the skill does, how to run it, and what it produces. The skill's own instru
 Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what didn't resolve into reviewable proposals. Reusable component captures include an explicit server-first module graph and source-parity v2 interaction-state inventory, then finish with source-backed Storybook evidence and an unpublished, reviewed Figma master/state presentation. Applying one creates aligned code, Storybook, and design-library contracts instead of reproducing a monolithic client TSX file. The skill can also ingest seeded team retrospectives and post-mortems, preserve their original structure privately, and turn every action into an owned, auditable lifecycle record.
 
 The division of labour matters: **scripts decide structure, the model exercises judgment.** Discovery, label resolution, and output validation are deterministic and zero-LLM. Deciding whether an unresolved label is real platform vocabulary is the part that needs a model — and it is advisory. Nothing reaches the catalog without a human commit.
+
+## CMS identity contract
+
+New inventories and run metadata use these exact CMS identities:
+
+| Label | Key |
+|---|---|
+| Contentful | `contentful` |
+| Contentstack | `contentstack` |
+| Optimizely SaaS | `optimizely-saas` |
+| Optimizely PaaS | `optimizely-paas` |
+| Sitecore on-Prem | `sitecore-on-prem` |
+| SitecoreAI | `sitecore-ai` |
+| Wordpress | `wordpress` |
+
+`inventory.json` emits the recognized identity as `config.cmsKey` and `config.cmsLabel`; `meta.json` and the report repeat that exact pair. Only Contentstack, Optimizely SaaS, and SitecoreAI have CMS-specific discovery profiles in this skill. The other catalog entries are recognized but use the broad scan with an `unsupported-cms-discovery` warning. `toolkit` remains a supported non-CMS profile.
+
+This is an intentional breaking contract. `contentstack-sdk`, `optimizely`, `sitecore-xp`, and Sitecore XM Cloud-era keys are not accepted as aliases in new output. Historical normalization is owned by the evidence repository's read boundary.
 
 ## Install
 
@@ -181,7 +200,7 @@ Written to `Output`, never into this skill's repository:
 
 | File | Contents |
 |---|---|
-| `meta.json` | Machine-readable run identity: client, project, platform, date, scope, priorReports. Grounds the client wiki. |
+| `meta.json` | Machine-readable run identity: client, project, exact canonical CMS key/label, date, scope, priorReports. Grounds the client wiki. |
 | `report.md` | The human-readable retrospective: summary, inventory, resolution, candidates with verdicts and evidence, learnings, gaps, next steps. |
 | `memory-archive.json` | Manifest proving the project's memory was preserved: `status` (`archived` / `skipped-no-data` / `no-memory`), the files archived, and `skippedEmpty` (empty placeholder shards dropped). Written every run; the validator fails a run that had memory but no archive. |
 | `inventory.json` | Every component found, with its evidence sources, build pack, fingerprint, and exact Git source snapshot. |
@@ -283,7 +302,8 @@ One project's retrospective is a snapshot; the signal gets much stronger with hi
 | Validator fails on `meta-present` / `meta-dir` | `meta.json` is missing, or its `project.slug`/`date` disagree with the run directory. Write it in Step 4 with slug and date matching `runs/<project-slug>/<date>/`. |
 | `mode: code-scan` on a pipeline project | The artifacts root was not found. Check `artifactsRoot` in the project's `build.config.json` and that you pointed `Project` at the repo root, not the app subdirectory. |
 | `no-build-config` warning | No `build.config.json` at the project root. Expected for pre-pipeline projects; the scan falls back to conventional component roots. |
-| `unknown-adapter` warning | The `stackAdapter` in `build.config.json` has no discovery profile, so a broad default (all known extensions, heuristic roots) was used. Harmless; set `stackAdapter` to a known adapter (`toolkit`, `optimizely`, `sitecore-ai`, `contentstack`, `contentstack-sdk`) for precise extensions and roots. |
+| `unsupported-cms-discovery` warning | The `stackAdapter` is a canonical CMS identity but this skill has no dedicated discovery profile for it. The canonical key/label are still emitted; discovery uses the broad default without inventing platform behavior. |
+| `unknown-adapter` warning | The `stackAdapter` is neither a current discovery profile nor a canonical CMS key, so a broad default was used. Current precise profiles are `toolkit`, `optimizely-saas`, `sitecore-ai`, and `contentstack`; legacy CMS keys are intentionally unknown. |
 | `rendering-domain-missing` warning | A domain listed in `renderingDomains` has no directory under the rendering bucket — a stale/fictional mapping. Discovery still finds the real domains from the directory structure; fix or drop the declaration. |
 | Fewer components than the project has | Discovery is stack-aware. If a template stack (Handlebars `.hbs`, etc.) reports too few, confirm `stackAdapter` is set so the right extensions, roots, and Storybook registry are used — an `unknown-adapter` warning means it fell back to the default. |
 | Everything unresolved | Usually `--brain` pointed somewhere without `skills/ui-design-brain/patterns-manifest.json` (exit 4), or the project genuinely uses domain-specific names — which is the finding, not an error. |

@@ -23,7 +23,7 @@ The run already chose a **project-slug** (the `runs/<project-slug>/<date>/` dire
 
 - **Client display name**: the `Client` input if given; else the client name in the report H1 (`# Project retrospective — <name> (<platform>)`); else the humanized project-dir basename, flagged `nameSource: "project-dir"`.
 - **Client-slug**: `kebab(Client)` if `Client` given; else `kebab(display name)` — but first check existing `<Data>/wiki/clients/*.md`: if one already matches this client (by `slug` or `aliases`, or already lists a sibling project-slug for it), reuse that client-slug. The client-slug is not the project-slug.
-- **Platform**: `platform` = `inventory.json → config.stackAdapter` (the adapter key, e.g. `optimizely`); `platformDisplay` = the H1 parenthetical. Both `null`/`"unknown"` when there is no adapter.
+- **CMS identity**: `platform` = `inventory.json → config.cmsKey`; `platformDisplay` = `inventory.json → config.cmsLabel`. Copy the deterministic pair exactly. Both are `null` when inventory has no recognized CMS; the report uses `unknown`. CMS recognition and discovery support are separate, so a run with `unsupported-cms-discovery` still writes its recognized canonical pair.
 
 ## meta.json
 
@@ -36,13 +36,13 @@ Write `runs/<project-slug>/<date>/meta.json` in Step 4 (the model writes it — 
   "scope": "full",
   "client": { "name": "<Client>", "slug": "<client-slug>", "nameSource": "input|h1|project-dir" },
   "project": { "name": "<Project>", "slug": "<project-slug>", "path": "<abs path, optional>" },
-  "platform": "<adapter-key or null>",
-  "platformDisplay": "<Platform display or null>",
+  "platform": "<canonical-cms-key or null>",
+  "platformDisplay": "<exact canonical CMS label or null>",
   "priorReports": ["runs/<slug>/<date>/report.md"]
 }
 ```
 
-`project.slug` and `date` MUST equal the run's own directory. One `project.slug` maps to exactly one `client.slug`.
+`project.slug` and `date` MUST equal the run's own directory. One `project.slug` maps to exactly one `client.slug`. `validate-report.cjs` requires one of the seven exact pairs from `cms-taxonomy.md`, checks it against inventory, and checks the report's Run table. It rejects legacy values; do not add an alias or copy an old value into a new run.
 
 ## Project-memory archive
 
@@ -78,7 +78,7 @@ Merge `retrospective-actions.json` with `update-retrospective-register.cjs` into
 ## Step 6 procedure
 
 1. Resolve client identity (above).
-2. Upsert `<Data>/wiki/clients/<client-slug>.md` from the client template: create it if absent; otherwise add the project-slug to `projects[]`, the platform to `platforms[]`, any new alias, and a `## Runs` line. Keep these sets additive. Distil the analyzed project's `artifacts/memory/*.md` — architecture and platform decisions, known issues and caveats, naming and coding conventions — into durable `## What we know` bullets: summarize in your own words, attribute to the project memory, and carry only what a sibling project would benefit from. Link the per-project memory archive (`../memory/<client-slug>/<project-slug>/`) from the client page, and author its `index.md` digest (see Project-memory archive). Add specs, retrospective archive, and action-register links to the same run line when those inputs exist; fold only durable, client-safe engineering facts into `## What we know` and keep action lifecycle in the register.
+2. Upsert `<Data>/wiki/clients/<client-slug>.md` from the client template: create it if absent; otherwise add the project-slug to `projects[]`, the canonical CMS key to `platforms[]`, any new alias, and a `## Runs` line. Keep these sets additive. Distil the analyzed project's `artifacts/memory/*.md` — architecture and platform decisions, known issues and caveats, naming and coding conventions — into durable `## What we know` bullets: summarize in your own words, attribute to the project memory, and carry only what a sibling project would benefit from. Link the per-project memory archive (`../memory/<client-slug>/<project-slug>/`) from the client page, and author its `index.md` digest (see Project-memory archive). Add specs, retrospective archive, and action-register links to the same run line when those inputs exist; fold only durable, client-safe engineering facts into `## What we know` and keep action lifecycle in the register.
 3. Append `<Data>/wiki/journal/<date>-<project-slug>.md` from the journal template — never overwrite. Outcomes are grounded in this run's `resolution.json` counts and the report's `## Candidates`/`## Captures` verdicts; the `Specs` outcome line and the Specs archive link trace to `specs.json` and `resolution.json`'s `specs` block, and are omitted when the run had no `Specs` input.
 4. Add exactly one line per new file to `<Data>/wiki/INDEX.md` (Journal always; Clients only when the client page is new). Create a minimal INDEX if it does not exist.
 5. **Rebuild the evidence repo's generated, drift-gated trees from the `Data` root**, so a run hands back a CI-clean working tree instead of leaving the committed artifacts stale for the repo's pre-commit hook to catch (and a hook-bypassing commit to leak past). Run each independently — `pnpm -C <Data> graph:build`, then `pnpm -C <Data> wiki:build`, then `pnpm -C <Data> query:build` — **not** as one `&&`-joined line, so a checkout missing one script (a non-zero exit) does not short-circuit the others. These regenerate `scripts/graph/data/graph.json`, `wiki/connections*`, and `wiki/start-packs/*` — the exact files the repo's `pnpm test` drift-gates via `evals:graph`/`evals:wiki`/`evals:query`. Run whichever the checkout defines; skip a missing script with a note rather than failing. Leave the regenerated files in place and name them in the handback so the maintainer is not surprised by the diff; never hand-edit them.

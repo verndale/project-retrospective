@@ -23,7 +23,7 @@ How `Action: promote` and `Action: capture` author a client-agnostic entry in th
 
 `ui-design-brain` and `ui-design-library` are shared platform repos, not the private evidence store — the opposite of `wiki-feed.md`, where naming the client is correct. Here the entry MUST be client-agnostic. Enforce it as a positive allowlist, not a blocklist: the run slug is not automatically safe — a real one is `runs/canadian-national/2026-07-26/`, where the slug *is* the client.
 
-- **Safe to cite:** the canonical name/slug; the manifest count delta (e.g. 70 → 71); the platform *adapter key* (`optimizely`) as a generic capability note; the recurrence *count* ("two independent retrospectives"); the de-cliented decision prose; `pr: pending`.
+- **Safe to cite:** the canonical name/slug; the manifest count delta (e.g. 70 → 71); the canonical CMS key (`optimizely-saas`) as a generic capability note; the recurrence *count* ("two independent retrospectives"); the de-cliented decision prose; `pr: pending`.
 - **Never write:** the client display name; the `runs/<project-slug>/...` slug or a `provenance.source` path quoted in prose; any `declienting` string that names the client or a client repo path, including a client-prefixed *source* token name (e.g. `--cn-brand-red`).
 - **Provenance stays in `component.json`.** The run and source already live there inside the library repo; the journal points at `component.json` and does not re-quote the path in prose. Say "a project retrospective", never the run slug — do not make it a per-slug judgement call.
 
