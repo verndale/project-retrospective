@@ -1,3 +1,35 @@
+# v2.0.0 — 2026-08-27
+
+## Summary (AI, bounded)
+- Emit canonical CMS metadata in project-retrospective feature, introducing breaking changes (6b0c12d)
+- Merge pull request #88 improving CMS taxonomy management (da6a09a)
+- Merge pull request #86 enhancing bot wiki synchronization (5472155)
+- Wiki documentation updated to reconcile merged PR #82 (4fe11f8)
+
+## Highlights
+- commit: Merge pull request #88 from verndale/codex/87-cms-taxonomy (da6a09a)
+- commit: feat(project-retrospective)!: Emit canonical CMS metadata (6b0c12d)
+- commit: Merge pull request #86 from verndale/bot/wiki-sync/82 (5472155)
+- docs(wiki): reconcile merged PR #82 (4fe11f8)
+
+## Breaking changes
+- Retrospective metadata now emits canonical CMS keys
+
+## Changes by type
+### Docs
+- docs(wiki): reconcile merged PR #82 (4fe11f8)
+
+### Other (unknown)
+- commit: feat(project-retrospective)!: Emit canonical CMS metadata (6b0c12d)
+- commit: Merge pull request #86 from verndale/bot/wiki-sync/82 (5472155)
+- commit: Merge pull request #88 from verndale/codex/87-cms-taxonomy (da6a09a)
+
+## Full commit list
+- da6a09a commit: Merge pull request #88 from verndale/codex/87-cms-taxonomy
+- 6b0c12d commit: feat(project-retrospective)!: Emit canonical CMS metadata
+- 5472155 commit: Merge pull request #86 from verndale/bot/wiki-sync/82
+- 4fe11f8 docs(wiki): reconcile merged PR #82
+
 # v1.23.0 — 2026-08-24
 
 ## Summary (AI, bounded)
