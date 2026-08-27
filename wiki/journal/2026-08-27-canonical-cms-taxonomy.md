@@ -2,7 +2,7 @@
 date: 2026-08-27
 topics: [retrospective-workflow]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/88
 issue: https://github.com/verndale/project-retrospective/issues/87
 issues: [https://github.com/verndale/project-retrospective/issues/87]
 ---

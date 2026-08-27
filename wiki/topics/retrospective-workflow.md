@@ -24,6 +24,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-08-27 — chore(pr): codex/87-cms-taxonomy ([verndale/project-retrospective PR #88](https://github.com/verndale/project-retrospective/pull/88))
 - 2026-08-27 — Separated the authoritative CMS catalog from discovery profiles and rejected adapter-era aliases in new output so identity stays exact without inventing platform behavior ([issue #87](https://github.com/verndale/project-retrospective/issues/87), [journal](../journal/2026-08-27-canonical-cms-taxonomy.md)).
 - 2026-08-24 — feat(project-retrospective): Enhance capture process with Storybook stat ([verndale/project-retrospective PR #82](https://github.com/verndale/project-retrospective/pull/82))
 - 2026-08-24 — fix(project-retrospective): Update wiki guidance and graph data ([verndale/project-retrospective PR #84](https://github.com/verndale/project-retrospective/pull/84))
