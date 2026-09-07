@@ -5,6 +5,7 @@ date: 2026-09-06
 evidence:
   - "verndale/project-retrospective issue #90"
   - "working tree tests"
+  - "verndale/project-retrospective PR #91 https://github.com/verndale/project-retrospective/pull/91 (merged 2026-09-07)"
 source_tool: codex
 source: "verndale/project-retrospective issue #90"
 topics: [retrospective-workflow, library-capture]
