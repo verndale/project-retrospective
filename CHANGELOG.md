@@ -1,3 +1,41 @@
+# v2.2.0 — 2026-09-07
+
+## Summary (AI, bounded)
+- Introduced a requirement for reviewed ready-for-dev evidence in the capture process (commit 0abe17e).
+- Added verification for unversioned source trees to enhance capture accuracy (commit b1ce841).
+- Merged source parity contract feature updates for improved functionality (commit 84959ae).
+- Updated documentation by reconciling merged pull request #91 with wiki content (commit 4c05f54).
+- Included automated synchronization of the wiki through bot pull request merges (commit 20dc7ff).
+
+## Highlights
+- commit: Merge pull request #94 from verndale/feat/93-source-parity-contract (84959ae)
+- feat(capture): require reviewed ready-for-dev evidence (0abe17e)
+- feat(capture): verify unversioned source trees (b1ce841)
+- commit: Merge pull request #92 from verndale/bot/wiki-sync/91 (20dc7ff)
+- docs(wiki): reconcile merged PR #91 (4c05f54)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(capture): require reviewed ready-for-dev evidence (0abe17e)
+- feat(capture): verify unversioned source trees (b1ce841)
+
+### Docs
+- docs(wiki): reconcile merged PR #91 (4c05f54)
+
+### Other (unknown)
+- commit: Merge pull request #92 from verndale/bot/wiki-sync/91 (20dc7ff)
+- commit: Merge pull request #94 from verndale/feat/93-source-parity-contract (84959ae)
+
+## Full commit list
+- 84959ae commit: Merge pull request #94 from verndale/feat/93-source-parity-contract
+- 0abe17e feat(capture): require reviewed ready-for-dev evidence
+- b1ce841 feat(capture): verify unversioned source trees
+- 20dc7ff commit: Merge pull request #92 from verndale/bot/wiki-sync/91
+- 4c05f54 docs(wiki): reconcile merged PR #91
+
 # v2.1.0 — 2026-09-07
 
 ## Summary (AI, bounded)
