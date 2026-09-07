@@ -302,7 +302,18 @@ function relativeImports(source) {
 
 function resolveModule(from, specifier, modules) {
   const base = path.posix.normalize(path.posix.join(path.posix.dirname(from), specifier));
-  const candidates = [base, `${base}.ts`, `${base}.tsx`, `${base}/index.ts`, `${base}/index.tsx`];
+  const sourceBase = /\.m?js$/.test(base) ? base.replace(/\.m?js$/, '') : base;
+  const candidates = [
+    base,
+    `${base}.ts`,
+    `${base}.tsx`,
+    `${base}/index.ts`,
+    `${base}/index.tsx`,
+    `${sourceBase}.ts`,
+    `${sourceBase}.tsx`,
+    `${sourceBase}/index.ts`,
+    `${sourceBase}/index.tsx`,
+  ];
   return candidates.find((candidate) => modules.has(candidate)) || null;
 }
 
@@ -891,6 +902,62 @@ function stateCoverageIssues(interactionStates, coverage) {
   return issues;
 }
 
+function presentationEvidenceIssues(evidence) {
+  const issues = [];
+  if (!evidence || typeof evidence !== 'object' || Array.isArray(evidence)) {
+    return ['figma.presentationEvidence is missing'];
+  }
+  if (!sameKeys(evidence, ['contractVersion', 'referencePageId', 'referencePageName', 'sections'])) {
+    issues.push('figma.presentationEvidence keys must be exactly contractVersion, referencePageId, referencePageName, sections');
+  }
+  if (evidence.contractVersion !== 1) issues.push('figma.presentationEvidence.contractVersion must equal 1');
+  if (!/^\d+:\d+$/.test(evidence.referencePageId ?? '') || !String(evidence.referencePageName ?? '').trim()) {
+    issues.push('figma.presentationEvidence must name a stable live precedent page');
+  }
+  const expected = { documentation: 1, main: 2, interactionStates: 3, publishSource: null };
+  if (!sameKeys(evidence.sections, Object.keys(expected).sort())) {
+    issues.push('figma.presentationEvidence.sections must contain documentation, main, interactionStates, and publishSource');
+    return issues;
+  }
+  for (const [role, order] of Object.entries(expected)) {
+    const section = evidence.sections[role];
+    if (!sameKeys(section, ['nodeId', 'order']) || !/^\d+:\d+$/.test(section?.nodeId ?? '') || (section?.order ?? null) !== order) {
+      issues.push(`figma.presentationEvidence.sections.${role} must carry the governed node ID and order ${order}`);
+    }
+  }
+  return issues;
+}
+
+function tokenBindingAuditIssues(interactionStates, audit, tokenPolicy) {
+  const issues = [];
+  if (!audit || typeof audit !== 'object' || Array.isArray(audit)) return ['figma.tokenBindingAudit is missing'];
+  if (!sameKeys(audit, ['contractVersion', 'stateRequirements'])) {
+    issues.push('figma.tokenBindingAudit keys must be exactly contractVersion and stateRequirements');
+  }
+  if (audit.contractVersion !== 1) issues.push('figma.tokenBindingAudit.contractVersion must equal 1');
+  const requirements = audit.stateRequirements;
+  if (!requirements || typeof requirements !== 'object' || Array.isArray(requirements) ||
+    (interactionStates.status === 'covered' && Object.keys(requirements).length === 0)) {
+    issues.push(`figma.tokenBindingAudit.stateRequirements must be ${interactionStates.status === 'covered' ? 'a non-empty' : 'an'} object`);
+    return issues;
+  }
+  const states = new Set((interactionStates.states ?? []).map((state) => state.id));
+  const variables = tokenPolicy?.componentVariableIds ?? {};
+  for (const [stateId, tokens] of Object.entries(requirements)) {
+    if (!states.has(stateId)) issues.push(`figma.tokenBindingAudit references unknown state ${stateId}`);
+    if (!Array.isArray(tokens) || tokens.length === 0 || new Set(tokens).size !== tokens.length) {
+      issues.push(`figma.tokenBindingAudit state ${stateId} must list unique semantic tokens`);
+      continue;
+    }
+    for (const token of tokens) {
+      if (!/^color\//.test(token) || !/^VariableID:\d+:\d+$/.test(variables[token] ?? '')) {
+        issues.push(`figma.tokenBindingAudit state ${stateId} references unknown code-parity token ${token}`);
+      }
+    }
+  }
+  return issues;
+}
+
 /** Apply the Storybook/Figma/evidence lifecycle after source-parity v2 is validated. */
 function applyInteractionStateGate(component, artifact, libraryDir, figmaCapabilityReady) {
   component.interactionStates = artifact?.schemaVersion === 2 ? artifact.interactionStates : null;
@@ -919,19 +986,31 @@ function applyInteractionStateGate(component, artifact, libraryDir, figmaCapabil
       (candidate?.variant ?? null) === component.variant)
     : null;
   const coverageProblems = stateCoverageIssues(interactionStates, registration?.figma?.stateCoverage);
+  const presentationProblems = presentationEvidenceIssues(registration?.figma?.presentationEvidence);
+  const tokenProblems = tokenBindingAuditIssues(
+    interactionStates,
+    registration?.figma?.tokenBindingAudit,
+    registryRead.value?.library?.tokenPolicy,
+  );
   const reviewPasses = registration?.figma?.review?.passes ?? [];
   const figmaComplete = Boolean(
     registration?.figma?.nodeId &&
     registration?.figma?.nodeKey &&
+    registration?.figma?.status === 'ready-for-dev' &&
     registration?.figma?.publicationStatus === 'unpublished' &&
     registration?.figma?.review?.status === 'passed' &&
     ['source-parity', 'adversarial', 'design'].every((pass) => reviewPasses.includes(pass)) &&
-    coverageProblems.length === 0,
+    coverageProblems.length === 0 && presentationProblems.length === 0 && tokenProblems.length === 0,
   );
   component.figma = {
     ...(component.figma ?? {}),
     interactionStateCoverageComplete: coverageProblems.length === 0,
     interactionStateCoverageIssues: coverageProblems,
+    presentationEvidenceComplete: presentationProblems.length === 0,
+    presentationEvidenceIssues: presentationProblems,
+    tokenBindingAuditComplete: tokenProblems.length === 0,
+    tokenBindingAuditIssues: tokenProblems,
+    status: registration?.figma?.status ?? null,
     publicationStatus: registration?.figma?.publicationStatus ?? null,
   };
   const sourceReviews = artifact.reviews ?? {};
@@ -946,7 +1025,7 @@ function applyInteractionStateGate(component, artifact, libraryDir, figmaCapabil
     if (component.applied) {
       component.blockers.push({
         code: 'applied-state-coverage-drift',
-        message: `Applied claims landed before unpublished governed interaction-state coverage is complete: ${coverageProblems.join('; ') || 'Figma registration/review is incomplete'}.`,
+        message: `Applied claims landed before governed Figma evidence is complete: ${[...coverageProblems, ...presentationProblems, ...tokenProblems].join('; ') || 'Figma registration/review is incomplete'}.`,
       });
       component.status = 'blocked';
     } else {
@@ -960,15 +1039,23 @@ function applyInteractionStateGate(component, artifact, libraryDir, figmaCapabil
   if (component.applied && artifact.schemaVersion === 2) {
     const appliedFigma = component.applied.figma;
     const appliedCoverageProblems = stateCoverageIssues(interactionStates, appliedFigma?.stateCoverage);
+    const appliedPresentationProblems = presentationEvidenceIssues(appliedFigma?.presentationEvidence);
+    const appliedTokenProblems = tokenBindingAuditIssues(interactionStates, appliedFigma?.tokenBindingAudit, registryRead.value?.library?.tokenPolicy);
     const appliedPasses = appliedFigma?.review?.passes ?? [];
-    if (appliedFigma?.publicationStatus !== 'unpublished' ||
+    if (appliedFigma?.status !== 'ready-for-dev' ||
+      appliedFigma?.publicationStatus !== 'unpublished' ||
       appliedFigma?.review?.status !== 'passed' ||
       !sameValueSet(appliedPasses, ['source-parity', 'adversarial', 'design']) ||
       appliedCoverageProblems.length > 0 ||
-      JSON.stringify(stableJson(appliedFigma?.stateCoverage)) !== JSON.stringify(stableJson(registration.figma.stateCoverage))) {
+      appliedPresentationProblems.length > 0 ||
+      appliedTokenProblems.length > 0 ||
+      JSON.stringify(stableJson(appliedFigma?.stateCoverage)) !== JSON.stringify(stableJson(registration.figma.stateCoverage)) ||
+      JSON.stringify(stableJson(appliedFigma?.presentationEvidence)) !== JSON.stringify(stableJson(registration.figma.presentationEvidence)) ||
+      JSON.stringify(stableJson(appliedFigma?.tokenBindingAudit)) !== JSON.stringify(stableJson(registration.figma.tokenBindingAudit)) ||
+      appliedFigma?.status !== registration.figma.status) {
       component.blockers.push({
         code: 'applied-figma-evidence',
-        message: `Applied must copy the unpublished reviewed registry stateCoverage exactly: ${appliedCoverageProblems.join('; ') || 'identity/review/coverage metadata disagrees'}.`,
+        message: `Applied must copy the ready-for-dev, unpublished reviewed registry stateCoverage, presentationEvidence, and tokenBindingAudit exactly: ${[...appliedCoverageProblems, ...appliedPresentationProblems, ...appliedTokenProblems].join('; ') || 'identity/review/coverage metadata disagrees'}.`,
       });
       component.status = 'blocked';
       return;
@@ -1734,6 +1821,13 @@ function inspectFigmaPromotion(libraryDir, capability = {}) {
       if (value?.library?.publishing?.ci !== 'read-only-validation') {
         issues.push(`${registry} must declare read-only CI validation`);
       }
+      const tokenPolicy = value?.library?.tokenPolicy ?? {};
+      if (!/^\d+:\d+$/.test(tokenPolicy.componentVariableCollectionId ?? '') ||
+        !tokenPolicy.componentVariableIds || typeof tokenPolicy.componentVariableIds !== 'object' ||
+        Object.keys(tokenPolicy.componentVariableIds).length === 0 ||
+        Object.values(tokenPolicy.componentVariableIds).some((id) => !/^VariableID:\d+:\d+$/.test(id))) {
+        issues.push(`${registry} does not expose stable code-parity variable IDs for the authoritative component token collection`);
+      }
       const pattern = value?.library?.promotionPattern ?? {};
       if (pattern.handoffTarget !== 'direct-canonical-instance' ||
         pattern.annotationPlacement !== 'outside-component-instance') {
@@ -1770,6 +1864,8 @@ function inspectFigmaPromotion(libraryDir, capability = {}) {
       ['the 1440/1024/768/390 responsive widths', /1440[\s\S]{0,80}1024[\s\S]{0,80}768[\s\S]{0,80}390/],
       ['unpublished candidate status', /unpublished/i],
       ['source-parity, adversarial, and design review passes', /source[- ]parity[\s\S]{0,160}adversarial[\s\S]{0,160}design review/i],
+      ['a named live presentation precedent and structural evidence', /precedent[\s\S]{0,200}presentationEvidence/i],
+      ['the authoritative code-parity token collection and token binding audit', /code-parity[\s\S]{0,200}tokenBindingAudit/i],
     ];
     for (const [label, pattern] of requirements) {
       if (!pattern.test(source)) issues.push(`${checklist} does not require ${label}`);
@@ -1839,6 +1935,7 @@ function inspectFigmaPromotion(libraryDir, capability = {}) {
     contractReady,
     capabilityReady,
     writeCapabilityRequired: true,
+    status: 'ready-for-dev',
     publicationStatus: 'unpublished',
     reviewPasses: ['source-parity', 'adversarial', 'design'],
     registry,

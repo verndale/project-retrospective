@@ -67,6 +67,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Canonicalize CMS identity in retrospective runs](../../wiki/journal/2026-08-27-canonical-cms-taxonomy.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Make the retrospective knowledge loop source-first](../../wiki/journal/2026-09-06-source-first-knowledge-loop.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Make the retrospective knowledge loop source-first](../../wiki/journal/2026-09-06-source-first-knowledge-loop.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
+- [Make ready-for-development the capture terminal state](../../wiki/journal/2026-09-07-ready-for-development-capture-gate.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Verify unversioned source without requiring pipeline artifacts](../../wiki/journal/2026-09-07-verified-unversioned-source-capture.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Brain promotion — Design History](../../wiki/topics/brain-promotion.md)
