@@ -429,6 +429,43 @@ test('capture source hashes and sibling inventory revision must stay pinned', ()
   assertBlocked(result, 'source-parity');
 });
 
+test('capture preflight accepts explicitly unversioned source after exact current-tree verification', () => {
+  const captures = tempCaptures();
+  syncSourceParity(captures);
+  const inventoryPath = path.resolve(captures, '..', 'inventory.json');
+  const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+  inventory.sourceSnapshot = { strategy: 'unavailable', commit: null, dirty: null };
+  fs.writeFileSync(inventoryPath, `${JSON.stringify(inventory, null, 2)}\n`);
+
+  const parityPath = path.resolve(captures, '..', 'source-parity/modal.json');
+  const artifact = JSON.parse(fs.readFileSync(parityPath, 'utf8'));
+  artifact.sourceSnapshot.revision = {
+    strategy: 'legacy-untracked',
+    commit: null,
+    inventoryGeneratedAt: inventory.generatedAt,
+  };
+  fs.writeFileSync(parityPath, `${JSON.stringify(artifact, null, 2)}\n`);
+
+  const result = runPreparedPreflight(captures, fixture('fake-library'));
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(only(result).status, 'ready');
+  assert.ok(result.json.warnings.some((entry) => entry.code === 'source-unversioned-current-tree'));
+});
+
+test('unavailable inventory cannot claim recorded source parity', () => {
+  const captures = tempCaptures();
+  syncSourceParity(captures);
+  const inventoryPath = path.resolve(captures, '..', 'inventory.json');
+  const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+  inventory.sourceSnapshot = { strategy: 'unavailable', commit: null, dirty: null };
+  fs.writeFileSync(inventoryPath, `${JSON.stringify(inventory, null, 2)}\n`);
+
+  const result = runPreparedPreflight(captures, fixture('fake-library'));
+  assertBlocked(result, 'source-inventory');
+  assert.ok(only(result).blockers.some((blocker) =>
+    blocker.code === 'source-inventory' && blocker.message.includes('legacy-untracked')));
+});
+
 test('capture Source must match the exact inventoried entry verified by source parity', () => {
   const captures = tempCaptures();
   syncSourceParity(captures);

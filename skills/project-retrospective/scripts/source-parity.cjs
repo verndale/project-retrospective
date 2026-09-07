@@ -5,7 +5,8 @@
  * The model authors the evidence and decisions. This script owns their shape,
  * capture cardinality, closed classification vocabulary, safe source citations,
  * and (when a Project checkout is supplied) whole-file hashes at the pinned Git
- * revision. It writes nothing unless --out is explicitly supplied.
+ * revision or the explicitly unversioned current tree. It writes nothing unless
+ * --out is explicitly supplied.
  *
  * Usage:
  *   node source-parity.cjs --source-parity <dir> [--captures <dir>]
@@ -18,6 +19,7 @@
 'use strict';
 
 const crypto = require('node:crypto');
+const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const {
@@ -40,7 +42,7 @@ const USAGE = [
   '  --source-parity  Directory containing one <component-key>.json per capture',
   '  --captures       Optional captures/ directory for one-to-one parity checks',
   '  --project        Read-only source repository used with --verify-source',
-  '  --verify-source  Re-hash every citation from its pinned Git revision',
+  '  --verify-source  Re-hash every citation from its pinned Git revision or explicit unversioned tree',
   '  --out            Write the validation result instead of stdout',
   '  --pretty         Indent JSON output',
 ];
@@ -85,6 +87,42 @@ function issue(componentKey, code, message) {
 
 function safeRelative(value) {
   return isSafeRepositoryRelativePath(value);
+}
+
+/**
+ * Read one file from an explicitly unversioned checkout without following any
+ * symlink segment. The returned shape mirrors spawnSync enough for the shared
+ * hash/range verification loop below.
+ */
+function readCurrentTreeFile(projectDir, relativePath) {
+  if (!safeRelative(relativePath)) {
+    return { status: 1, stdout: null, stderr: 'path is not safe and repository-relative' };
+  }
+  const root = path.resolve(projectDir);
+  const target = path.resolve(root, ...relativePath.split('/'));
+  if (!target.startsWith(`${root}${path.sep}`)) {
+    return { status: 1, stdout: null, stderr: 'path escapes the source checkout' };
+  }
+  let cursor = root;
+  try {
+    for (const segment of relativePath.split('/')) {
+      cursor = path.join(cursor, segment);
+      const stat = fs.lstatSync(cursor);
+      if (stat.isSymbolicLink()) {
+        return { status: 1, stdout: null, stderr: `symlink segment is not verifiable: ${relativePath}` };
+      }
+    }
+    const stat = fs.lstatSync(target);
+    if (!stat.isFile()) {
+      return { status: 1, stdout: null, stderr: 'path is not a regular file' };
+    }
+    if (stat.size > 20 * 1024 * 1024) {
+      return { status: 1, stdout: null, stderr: 'file exceeds the 20 MiB verification limit' };
+    }
+    return { status: 0, stdout: fs.readFileSync(target), stderr: '' };
+  } catch (error) {
+    return { status: 1, stdout: null, stderr: error instanceof Error ? error.message : String(error) };
+  }
 }
 
 function expectedCapture(componentKey) {
@@ -243,6 +281,9 @@ function validateArtifact(value, options = {}) {
       }
       if (revision.strategy !== 'legacy-untracked' && !revision.commit) {
         fail('source-revision', `${revision.strategy} provenance requires a pinned commit.`);
+      }
+      if (revision.strategy === 'legacy-untracked' && revision.commit !== null) {
+        fail('source-revision', 'legacy-untracked provenance requires commit: null.');
       }
       if (typeof revision.inventoryGeneratedAt !== 'string' || Number.isNaN(Date.parse(revision.inventoryGeneratedAt))) {
         fail('source-revision', 'sourceSnapshot.revision.inventoryGeneratedAt must be an ISO date-time.');
@@ -501,7 +542,45 @@ function validateArtifact(value, options = {}) {
       }
     }
   } else if (options.verifySource && snapshot?.revision?.strategy === 'legacy-untracked') {
-    warnings.push(issue(componentKey, 'source-hash-unverified', 'legacy-untracked provenance cannot be re-hashed from a pinned revision.'));
+    const projectDir = options.projectDir;
+    if (!projectDir || !isDir(projectDir)) {
+      fail('source-project', 'legacy-untracked source verification requires a readable Project checkout.');
+    } else {
+      const current = new Map();
+      const readCurrent = (relativePath) => {
+        if (!current.has(relativePath)) current.set(relativePath, readCurrentTreeFile(projectDir, relativePath));
+        return current.get(relativePath);
+      };
+      for (const citation of citations.filter((entry) => safeRelative(entry?.path))) {
+        const shown = readCurrent(citation.path);
+        if (shown.status !== 0) {
+          fail('source-hash', `${citation.id} could not be read from the unversioned current tree: ${shown.stderr || 'file read failed'}.`);
+          continue;
+        }
+        const actual = crypto.createHash('sha256').update(shown.stdout).digest('hex');
+        if (actual !== citation.sha256) {
+          fail('source-hash', `${citation.id} hash does not match the unversioned current tree.`);
+        }
+        const source = shown.stdout.toString('utf8');
+        const lines = source.length === 0 ? [] : source.split(/\r\n|\n|\r/);
+        if (lines.at(-1) === '') lines.pop();
+        if (citation.endLine > lines.length) {
+          fail('source-citations', `${citation.id} ends at line ${citation.endLine}, beyond current file length ${lines.length}.`);
+        }
+      }
+      const inspectedPaths = INSPECTION_KEYS.flatMap((key) => inspection?.[key]?.paths ?? []);
+      for (const inspectedPath of new Set(inspectedPaths.filter(safeRelative))) {
+        const shown = readCurrent(inspectedPath);
+        if (shown.status !== 0) {
+          fail('source-inspection', `${inspectedPath} could not be read from the unversioned current tree: ${shown.stderr || 'file read failed'}.`);
+        }
+      }
+      warnings.push(issue(
+        componentKey,
+        'source-unversioned-current-tree',
+        'legacy-untracked provenance verified current non-symlink file bytes and ranges, but no Git revision identifies that snapshot.',
+      ));
+    }
   }
 
   return {

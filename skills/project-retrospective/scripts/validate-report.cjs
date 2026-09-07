@@ -1089,11 +1089,23 @@ function checkCaptures(dir, captured, capturesSectionPresent, inventory, result)
 
   const sourceParityDir = path.join(dir, 'source-parity');
   if (executableKeys.size === 0 && !isDir(sourceParityDir)) return;
+  const projectDir = typeof inventory?.project === 'string' ? inventory.project : null;
+  const unversionedArchiveOnly = !isDir(projectDir) && executableKeys.size > 0 &&
+    [...executableKeys].every((key) => {
+      const read = readJsonSafe(path.join(sourceParityDir, `${key}.json`));
+      return read.ok && read.value?.sourceSnapshot?.revision?.strategy === 'legacy-untracked';
+    });
+  if (unversionedArchiveOnly) {
+    result.warn(
+      'source-parity',
+      '[source-unversioned-checkout-unavailable] legacy-untracked source structure remains valid, but its current-tree bytes cannot be re-verified because the recorded checkout is unavailable; capture preflight still requires a readable checkout',
+    );
+  }
   const parity = validateSourceParityDirectory({
     sourceParityDir,
     capturesDir,
-    projectDir: typeof inventory?.project === 'string' ? inventory.project : null,
-    verifySource: true,
+    projectDir,
+    verifySource: !unversionedArchiveOnly,
     expectedComponentKeys: executableKeys,
   });
   for (const failure of parity.issues) {

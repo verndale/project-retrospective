@@ -290,3 +290,53 @@ test('verified citation ranges cannot extend beyond the pinned file', () => {
   assert.equal(result.status, 1);
   assert.ok(result.json.issues.some((entry) => entry.code === 'source-citations' && entry.message.includes('beyond pinned file length')));
 });
+
+test('legacy-untracked verification hashes the current non-symlink tree and validates ranges', () => {
+  const root = tempFixture('fake-output');
+  const project = path.join(root, 'unversioned-project');
+  const sourcePath = path.join(project, 'src/components/ui/modal/Modal.tsx');
+  const source = 'export const Modal = () => null;\n';
+  fs.mkdirSync(path.dirname(sourcePath), { recursive: true });
+  fs.writeFileSync(sourcePath, source);
+
+  const artifact = JSON.parse(readFile(root, 'source-parity/modal.json'));
+  artifact.sourceSnapshot.revision = {
+    strategy: 'legacy-untracked',
+    commit: null,
+    inventoryGeneratedAt: '2026-01-01T00:00:00.000Z',
+  };
+  artifact.sourceSnapshot.citations[0].endLine = 1;
+  artifact.sourceSnapshot.citations[0].sha256 = crypto.createHash('sha256').update(source).digest('hex');
+  writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
+
+  const verified = validate(root, ['--project', project, '--verify-source']);
+  assert.equal(verified.status, 0, verified.stderr || verified.stdout);
+  assert.ok(verified.json.warnings.some((entry) => entry.code === 'source-unversioned-current-tree'));
+
+  fs.writeFileSync(sourcePath, `${source}// changed\n`);
+  const changed = validate(root, ['--project', project, '--verify-source']);
+  assert.equal(changed.status, 1);
+  assert.ok(changed.json.issues.some((entry) => entry.code === 'source-hash'));
+});
+
+test('legacy-untracked verification rejects symlinked source paths', () => {
+  const root = tempFixture('fake-output');
+  const project = path.join(root, 'unversioned-project');
+  const sourceDir = path.join(project, 'src/components/ui');
+  const realDir = path.join(project, 'real-modal');
+  const source = 'export const Modal = () => null;\n';
+  fs.mkdirSync(sourceDir, { recursive: true });
+  fs.mkdirSync(realDir, { recursive: true });
+  fs.writeFileSync(path.join(realDir, 'Modal.tsx'), source);
+  fs.symlinkSync(realDir, path.join(sourceDir, 'modal'));
+
+  const artifact = JSON.parse(readFile(root, 'source-parity/modal.json'));
+  artifact.sourceSnapshot.citations[0].endLine = 1;
+  artifact.sourceSnapshot.citations[0].sha256 = crypto.createHash('sha256').update(source).digest('hex');
+  writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
+
+  const result = validate(root, ['--project', project, '--verify-source']);
+  assert.equal(result.status, 1);
+  assert.ok(result.json.issues.some((entry) =>
+    entry.code === 'source-hash' && entry.message.includes('symlink segment is not verifiable')));
+});

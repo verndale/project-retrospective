@@ -1891,9 +1891,23 @@ function loadCaptureSource(capturesDir, projectOverride, warnings) {
   if (!projectDir || !isDir(projectDir)) {
     issues.push('the source Project checkout is unavailable; pass --project to override inventory.json project');
   }
-  if (inventory.sourceSnapshot?.strategy !== 'recorded' ||
-    !/^[a-f0-9]{40}$/.test(String(inventory.sourceSnapshot?.commit || ''))) {
-    issues.push('sibling inventory.json must carry a recorded full Git sourceSnapshot before capture');
+  const inventoryStrategy = inventory.sourceSnapshot?.strategy;
+  const inventoryCommit = inventory.sourceSnapshot?.commit;
+  if (inventoryStrategy === 'recorded') {
+    if (!/^[a-f0-9]{40}$/.test(String(inventoryCommit || ''))) {
+      issues.push('sibling inventory.json recorded sourceSnapshot must carry a full Git SHA before capture');
+    }
+  } else if (inventoryStrategy === 'unavailable') {
+    if (inventoryCommit != null) {
+      issues.push('sibling inventory.json unavailable sourceSnapshot must use commit: null');
+    } else {
+      warnings.add(
+        'source-unversioned-current-tree',
+        'The sibling inventory has no Git revision; capture requires legacy-untracked source parity whose current non-symlink bytes and ranges verify exactly.',
+      );
+    }
+  } else {
+    issues.push('sibling inventory.json sourceSnapshot.strategy must be recorded or unavailable before capture');
   }
   if (typeof inventory.generatedAt !== 'string' || Number.isNaN(Date.parse(inventory.generatedAt))) {
     issues.push('sibling inventory.json generatedAt must be an ISO date-time');
@@ -1985,7 +1999,14 @@ function sourceInventoryIssues(component, artifact, sourceContext, proposals) {
   if (!artifact.sourceSnapshot?.citations?.some((citation) => citation?.path === entry)) {
     issues.push('source-parity citations must include a whole-file hash for the exact sourceSnapshot.entry');
   }
-  if (artifact.sourceSnapshot?.revision?.commit !== inventory.sourceSnapshot?.commit) {
+  const revision = artifact.sourceSnapshot?.revision;
+  if (inventory.sourceSnapshot?.strategy === 'recorded' && revision?.strategy !== 'recorded') {
+    issues.push('source-parity revision.strategy must be recorded when sibling inventory.json has a recorded sourceSnapshot');
+  }
+  if (inventory.sourceSnapshot?.strategy === 'unavailable' && revision?.strategy !== 'legacy-untracked') {
+    issues.push('source-parity revision.strategy must be legacy-untracked when sibling inventory.json sourceSnapshot is unavailable');
+  }
+  if (revision?.commit !== inventory.sourceSnapshot?.commit) {
     issues.push('source-parity revision.commit does not match sibling inventory.json sourceSnapshot.commit');
   }
   if (artifact.sourceSnapshot?.revision?.inventoryGeneratedAt !== inventory.generatedAt) {

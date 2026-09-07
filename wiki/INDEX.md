@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-09-07 — [Verify unversioned source without requiring pipeline artifacts](journal/2026-09-07-verified-unversioned-source-capture.md) — capture can use a current non-symlink source tree when Git identity is unavailable, while build packs and fingerprints remain optional corroboration.
 - 2026-09-06 — [Make the retrospective knowledge loop source-first](journal/2026-09-06-source-first-knowledge-loop.md) — ordinary repos feed deterministic discovery, analyze keeps capture intents light, and selected capture work re-verifies pinned source before governed downstream writes.
 - 2026-08-27 — [Canonicalize CMS identity in retrospective runs](journal/2026-08-27-canonical-cms-taxonomy.md) — adds the seven-entry identity contract while keeping discovery capability separate and rejecting legacy keys in new evidence.
 - 2026-08-24 — [Make agent wiki guidance deterministic](journal/2026-08-24-deterministic-agent-wiki-guidance.md) — installs the canonical headless route-first contract while preserving repository-owned graph and privacy rules.

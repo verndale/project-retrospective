@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 134,
-    "edges": 371,
+    "nodes": 135,
+    "edges": 374,
     "byType": {
       "root-doc": 4,
       "repo-script": 19,
@@ -13,18 +13,18 @@
       "skill-script": 14,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 34,
+      "wiki-journal": 35,
       "wiki-plan": 15,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 30,
       "covers": 37,
-      "links-to": 152,
+      "links-to": 154,
       "plan": 15,
       "requires": 59,
       "tests": 15,
-      "topic": 63
+      "topic": 64
     }
   },
   "nodes": [
@@ -220,7 +220,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 80939,
+      "bytes": 82795,
       "degree": 2
     },
     {
@@ -324,7 +324,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 13819,
+      "bytes": 16385,
       "degree": 2
     },
     {
@@ -571,7 +571,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 31950,
+      "bytes": 32353,
       "degree": 4
     },
     {
@@ -649,7 +649,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 22457,
+      "bytes": 22783,
       "degree": 3
     },
     {
@@ -740,7 +740,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 15178,
+      "bytes": 15512,
       "degree": 4
     },
     {
@@ -870,7 +870,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 103034,
+      "bytes": 104200,
       "degree": 5
     },
     {
@@ -974,7 +974,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 30986,
+      "bytes": 34663,
       "degree": 6
     },
     {
@@ -1013,7 +1013,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 63661,
+      "bytes": 64334,
       "degree": 6
     },
     {
@@ -1026,7 +1026,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 45324,
+      "bytes": 45670,
       "degree": 54
     },
     {
@@ -1039,8 +1039,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 11793,
-      "degree": 43
+      "bytes": 12088,
+      "degree": 44
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1988,6 +1988,30 @@
       "degree": 6
     },
     {
+      "id": "wiki/journal/2026-09-07-verified-unversioned-source-capture.md",
+      "label": "Verify unversioned source without requiring pipeline artifacts",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "93"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 93,
+          "url": "https://github.com/verndale/project-retrospective/issues/93"
+        }
+      ],
+      "bytes": 2192,
+      "degree": 3
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -2672,6 +2696,7 @@
       ],
       "prs": [],
       "issues": [
+        "93",
         "90",
         "78",
         "75",
@@ -2681,6 +2706,12 @@
         "60"
       ],
       "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 93,
+          "url": "https://github.com/verndale/project-retrospective/issues/93"
+        },
         {
           "kind": "issue",
           "repository": "verndale/project-retrospective",
@@ -2724,8 +2755,8 @@
           "url": "https://github.com/verndale/project-retrospective/issues/60"
         }
       ],
-      "bytes": 15359,
-      "degree": 43
+      "bytes": 16246,
+      "degree": 45
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -3875,6 +3906,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-09-07-verified-unversioned-source-capture.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -4205,6 +4243,13 @@
     {
       "source": "wiki/topics/library-capture.md",
       "target": "wiki/journal/2026-09-06-source-first-knowledge-loop.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
+      "target": "wiki/journal/2026-09-07-verified-unversioned-source-capture.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -5077,6 +5122,11 @@
     {
       "source": "wiki/journal/2026-09-06-source-first-knowledge-loop.md",
       "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-09-07-verified-unversioned-source-capture.md",
+      "target": "wiki/topics/library-capture.md",
       "type": "topic"
     },
     {
