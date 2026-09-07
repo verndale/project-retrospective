@@ -25,6 +25,9 @@
  * Usage:
  *   node capture-preflight.cjs --captures <dir> --library <dir>
  *                              [--brain <dir> | --manifest <file>]
+ *                              [--capture-keys <comma-separated keys>]
+ *                              [--project <source checkout>]
+ *                              --figma-writer figma-use --figma-live-validated
  *                              [--out <file>] [--pretty]
  *
  * Exit codes:
@@ -60,6 +63,8 @@ const {
   sections,
   fencedBlock,
   parseCanonicalLine,
+  isSafeRepositoryRelativePath,
+  singleBacktickedBullet,
   Warnings,
   writeOut,
   usage,
@@ -67,15 +72,20 @@ const {
 const { validateSourceParityDirectory } = require('./source-parity.cjs');
 
 const USAGE = [
-  'Usage: node capture-preflight.cjs --captures <dir> --library <dir> [--brain <dir> | --manifest <file>] [--out <file>] [--pretty]',
+  'Usage: node capture-preflight.cjs --captures <dir> --library <dir> [--brain <dir> | --manifest <file>] [--capture-keys <keys>] [--project <dir>] --figma-writer figma-use --figma-live-validated [--out <file>] [--pretty]',
   '',
   "  --captures  A run's captures/ directory, applied as a set (required)",
   '  --library   Local ui-design-library checkout (required)',
   '  --brain     Local ui-design-brain checkout, for the canonical check',
   '  --manifest  patterns-manifest.json directly; wins over --brain',
+  '  --capture-keys  Optional comma-separated component keys to preflight',
+  '  --project   Read-only source checkout; overrides inventory.json project path',
+  '  --figma-writer  Current supported writer capability: figma-use',
+  '  --figma-live-validated  Assert pnpm figma:live passed in this library checkout',
   '  --out       Write the plan to a file instead of stdout',
   '  --pretty    Indent the JSON output',
 ];
+const FIGMA_WRITER_CAPABILITIES = new Set(['figma-use']);
 
 const MANIFEST_REL = 'skills/ui-design-brain/patterns-manifest.json';
 const CAPTURE_TYPE = 'component-capture';
@@ -257,7 +267,16 @@ function loadProposals(proposalsDir, warnings) {
       );
       continue;
     }
-    out.push({ file: file.name, canonical: entry.name });
+    const aliases = Array.isArray(entry.aliases)
+      ? entry.aliases.flatMap((alias) => {
+          if (typeof alias === 'string' && alias.trim()) return [alias.trim()];
+          if (alias && typeof alias === 'object' && typeof alias.name === 'string' && alias.name.trim()) {
+            return [alias.name.trim()];
+          }
+          return [];
+        })
+      : [];
+    out.push({ file: file.name, canonical: entry.name, aliases });
   }
   return out;
 }
@@ -453,6 +472,12 @@ function nodeReferences(value, label, block) {
 function sameValueSet(left, right) {
   const normalize = (items) => [...new Set(items.map((item) => JSON.stringify(item)))].sort();
   return JSON.stringify(normalize(left)) === JSON.stringify(normalize(right));
+}
+
+function stableJson(value) {
+  if (Array.isArray(value)) return value.map(stableJson);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.keys(value).sort().map((key) => [key, stableJson(value[key])]));
 }
 
 function valueMatchesProp(value, prop) {
@@ -803,13 +828,19 @@ function stateCoverageIssues(interactionStates, coverage) {
     return issues;
   }
   if (interactionStates.status === 'not-applicable') {
-    if (typeof coverage.reason !== 'string' || !coverage.reason.trim()) {
-      issues.push('not-applicable figma.stateCoverage requires a reason');
+    if (!sameKeys(coverage, ['reason', 'states', 'status'])) {
+      issues.push('not-applicable figma.stateCoverage keys must be exactly reason, states, status');
+    }
+    if (coverage.reason !== interactionStates.reason) {
+      issues.push('not-applicable figma.stateCoverage reason must equal source parity');
     }
     if (!Array.isArray(coverage.states) || coverage.states.length !== 0) {
       issues.push('not-applicable figma.stateCoverage requires states: []');
     }
     return issues;
+  }
+  if (!sameKeys(coverage, ['states', 'status', 'storyExport'])) {
+    issues.push('covered figma.stateCoverage keys must be exactly states, status, storyExport');
   }
   if (coverage.storyExport !== interactionStates.storyExport) {
     issues.push(`figma.stateCoverage.storyExport must equal ${interactionStates.storyExport}`);
@@ -831,24 +862,37 @@ function stateCoverageIssues(interactionStates, coverage) {
     if (registered.source?.trigger !== state.source.trigger || registered.source?.value !== state.source.value) {
       issues.push(`${state.id} source disagrees with source parity`);
     }
+    if (!sameKeys(registered.source, ['trigger', 'value'])) {
+      issues.push(`${state.id} source keys must be exactly trigger and value`);
+    }
     if (state.classification === 'runtime-only') {
-      if (typeof registered.reason !== 'string' || !registered.reason.trim()) {
-        issues.push(`${state.id} runtime-only registry state requires a reason`);
+      if (!sameKeys(registered, ['classification', 'id', 'label', 'reason', 'source', 'target'])) {
+        issues.push(`${state.id} runtime-only registry state has unexpected or missing keys`);
+      }
+      if (registered.reason !== state.reason) {
+        issues.push(`${state.id} runtime-only registry reason disagrees with source parity`);
       }
       if (['frameNodeId', 'instanceNodeId', 'componentNodeId'].some((key) => registered[key] != null)) {
         issues.push(`${state.id} runtime-only registry state cannot claim visual node IDs`);
       }
-    } else if (['frameNodeId', 'instanceNodeId', 'componentNodeId'].some(
-      (key) => typeof registered[key] !== 'string' || !registered[key].trim(),
-    )) {
-      issues.push(`${state.id} visual registry state requires frame, instance, and component node IDs`);
+    } else {
+      if (!sameKeys(registered, [
+        'classification', 'componentNodeId', 'frameNodeId', 'id', 'instanceNodeId', 'label', 'source', 'target',
+      ])) {
+        issues.push(`${state.id} visual registry state has unexpected or missing keys`);
+      }
+      if (['frameNodeId', 'instanceNodeId', 'componentNodeId'].some(
+        (key) => typeof registered[key] !== 'string' || !registered[key].trim(),
+      )) {
+        issues.push(`${state.id} visual registry state requires frame, instance, and component node IDs`);
+      }
     }
   }
   return issues;
 }
 
 /** Apply the Storybook/Figma/evidence lifecycle after source-parity v2 is validated. */
-function applyInteractionStateGate(component, artifact, libraryDir) {
+function applyInteractionStateGate(component, artifact, libraryDir, figmaCapabilityReady) {
   component.interactionStates = artifact?.schemaVersion === 2 ? artifact.interactionStates : null;
   if (!component.interactionStates || !component.library?.complete || component.blockers.length > 0) return;
 
@@ -906,9 +950,29 @@ function applyInteractionStateGate(component, artifact, libraryDir) {
       });
       component.status = 'blocked';
     } else {
-      component.status = 'figma-pending';
+      component.resumeAt = 'figma';
+      component.resumeExistingBranch = component.progress?.blockedOn?.code === 'figma-capability-lost';
+      component.status = component.resumeExistingBranch && !figmaCapabilityReady ? 'figma-pending' : 'ready';
     }
     return;
+  }
+  component.resumeAt = component.applied ? null : 'evidence';
+  if (component.applied && artifact.schemaVersion === 2) {
+    const appliedFigma = component.applied.figma;
+    const appliedCoverageProblems = stateCoverageIssues(interactionStates, appliedFigma?.stateCoverage);
+    const appliedPasses = appliedFigma?.review?.passes ?? [];
+    if (appliedFigma?.publicationStatus !== 'unpublished' ||
+      appliedFigma?.review?.status !== 'passed' ||
+      !sameValueSet(appliedPasses, ['source-parity', 'adversarial', 'design']) ||
+      appliedCoverageProblems.length > 0 ||
+      JSON.stringify(stableJson(appliedFigma?.stateCoverage)) !== JSON.stringify(stableJson(registration.figma.stateCoverage))) {
+      component.blockers.push({
+        code: 'applied-figma-evidence',
+        message: `Applied must copy the unpublished reviewed registry stateCoverage exactly: ${appliedCoverageProblems.join('; ') || 'identity/review/coverage metadata disagrees'}.`,
+      });
+      component.status = 'blocked';
+      return;
+    }
   }
   component.status = component.applied && evidenceComplete ? 'skipped' : 'evidence-pending';
 }
@@ -1129,6 +1193,7 @@ function readCapture(file, ctx) {
     slug: stem,
     componentKey: stem,
     componentPath: `components/${stem}`,
+    resumeAt: 'code',
     variant: null,
     variantLabel: null,
     default: true,
@@ -1147,6 +1212,7 @@ function readCapture(file, ctx) {
     applied: null,
     companionWrites: [],
     figma: null,
+    sourceEntry: null,
     tokens: { declared: [], undefined: [] },
   };
   const block = (code, message) => record.blockers.push({ code, message });
@@ -1248,6 +1314,16 @@ function readCapture(file, ctx) {
     );
   }
 
+  const sourceSections = topLevel.filter((section) => section.heading === 'Source');
+  const sourceEntry = sourceSections.length === 1
+    ? singleBacktickedBullet(sourceSections[0].body, 'Entry')
+    : { count: 0, value: null };
+  if (sourceSections.length !== 1 || sourceEntry.count !== 1 || !isSafeRepositoryRelativePath(sourceEntry.value)) {
+    block('source-entry', `${name} Source must contain exactly one safe repository-relative Entry line.`);
+  } else {
+    record.sourceEntry = sourceEntry.value;
+  }
+
   const progressSection = topLevel.find((s) => s.heading === 'Progress');
   const progressJson = progressSection ? fencedBlock(progressSection.body, 'json') : null;
   if (progressSection && !progressJson) {
@@ -1259,6 +1335,11 @@ function readCapture(file, ctx) {
         block('progress-status', `Progress status must be one of ${CAPTURE_PROGRESS_STATES.join(', ')}.`);
       } else if (progress.status === 'code-complete' && progress.componentPath !== `components/${componentKey}`) {
         block('progress-component-path', `code-complete Progress componentPath must equal "components/${componentKey}".`);
+      } else if (progress.blockedOn !== undefined &&
+        (!sameKeys(progress.blockedOn, ['code']) || progress.blockedOn.code !== 'figma-capability-lost')) {
+        block('progress-blocked-on', 'Progress blockedOn is reserved for {"code":"figma-capability-lost"} after unexpected mid-run loss.');
+      } else if (progress.status !== 'code-complete' && progress.blockedOn !== undefined) {
+        block('progress-blocked-on', 'Only code-complete Progress can record a mid-run Figma capability loss.');
       } else {
         record.progress = progress;
       }
@@ -1516,10 +1597,11 @@ function readCapture(file, ctx) {
         );
       }
       if (record.blockers.length === 0) {
+        record.resumeAt = !figmaComplete ? 'figma' : !record.applied ? 'evidence' : null;
         record.status = record.deferred
           ? 'deferred'
           : !figmaComplete
-            ? 'figma-pending'
+            ? 'ready'
             : !record.applied
               ? 'evidence-pending'
               : 'skipped';
@@ -1549,7 +1631,7 @@ function readCapture(file, ctx) {
  * Library components claiming a run this capture set covers, with no capture
  * behind them — a component that reached the library with no evidence.
  */
-function findOrphanedByRun(libraryDir, records, warnings) {
+function findOrphanedByRun(libraryDir, records, warnings, allCaptureKeys = null) {
   const runs = new Set(
     records.map((r) => r.componentJson?.provenance?.run).filter((run) => typeof run === 'string' && run),
   );
@@ -1566,7 +1648,7 @@ function findOrphanedByRun(libraryDir, records, warnings) {
     return [];
   }
 
-  const captured = new Set(records.map((r) => r.componentKey));
+  const captured = allCaptureKeys instanceof Set ? allCaptureKeys : new Set(records.map((r) => r.componentKey));
   const componentsDir = path.join(libraryDir, 'components');
   const orphans = [];
 
@@ -1589,12 +1671,13 @@ function findOrphanedByRun(libraryDir, records, warnings) {
  * The retrospective skill never invents this interface: the target library
  * owns the registry, checklist, and executable commands.
  */
-function inspectFigmaPromotion(libraryDir) {
+function inspectFigmaPromotion(libraryDir, capability = {}) {
   const registry = 'figma/library.json';
   const checklist = 'figma/PROMOTION-CHECKLIST.md';
   const codeContractsCommand = 'pnpm contracts:code';
   const codeTestCommand = 'pnpm test:code';
   const coverageCommand = 'pnpm figma:coverage';
+  const liveValidationCommand = 'pnpm figma:live';
   const validationCommand = 'pnpm figma:validate';
   const issues = [];
   const codeConnectPattern = /@figma\/code-connect|figma[\s:_-]*connect|code[\s:_-]*connect/i;
@@ -1661,11 +1744,14 @@ function inspectFigmaPromotion(libraryDir) {
         issues.push(`${registry} does not expose the governed 1440/1024/768/390 breakpoints`);
       }
       const interactionStates = pattern.interactionStates ?? {};
-      if (interactionStates.presentation !== 'Interaction states' ||
-        interactionStates.masterPolicy !== 'documentation-specimens-only' ||
-        interactionStates.instancePolicy !== 'connected-to-registered-master' ||
-        interactionStates.labels !== 'outside-instance' ||
-        interactionStates.visualSource !== 'semantic-variables') {
+      if (interactionStates.presentationName !== 'Interaction states' ||
+        interactionStates.storyExport !== 'InteractionStates' ||
+        interactionStates.specimenRole !== 'documentation' ||
+        interactionStates.masterProperties !== 'unchanged' ||
+        interactionStates.instanceConnection !== 'registered-master' ||
+        interactionStates.labelPlacement !== 'outside-component-instance' ||
+        interactionStates.visualSource !== 'semantic-variables' ||
+        interactionStates.rasterScreenshots !== false) {
         issues.push(`${registry} does not expose the governed Interaction states presentation contract`);
       }
       const surfaces = findCodeConnectSurfaces(value);
@@ -1683,10 +1769,16 @@ function inspectFigmaPromotion(libraryDir) {
       ['Button, Section header, and Alert as reference standards', /Button[\s,/]+Section header[\s,/]+(?:and\s+)?Alert/i],
       ['the 1440/1024/768/390 responsive widths', /1440[\s\S]{0,80}1024[\s\S]{0,80}768[\s\S]{0,80}390/],
       ['unpublished candidate status', /unpublished/i],
-      ['Interaction states with connected instances and governed node IDs', /Interaction states[\s\S]{0,240}connected instances[\s\S]{0,240}(?:node IDs|node ids)/i],
       ['source-parity, adversarial, and design review passes', /source[- ]parity[\s\S]{0,160}adversarial[\s\S]{0,160}design review/i],
     ];
     for (const [label, pattern] of requirements) {
+      if (!pattern.test(source)) issues.push(`${checklist} does not require ${label}`);
+    }
+    for (const [label, pattern] of [
+      ['an Interaction states presentation', /Interaction states/i],
+      ['connected instances', /connected instances/i],
+      ['governed state node IDs', /frameNodeId[\s\S]*instanceNodeId[\s\S]*componentNodeId|node IDs/i],
+    ]) {
       if (!pattern.test(source)) issues.push(`${checklist} does not require ${label}`);
     }
   }
@@ -1712,6 +1804,7 @@ function inspectFigmaPromotion(libraryDir) {
       'test:code': 'pnpm typecheck && pnpm lint && pnpm architecture && pnpm architecture:selftest && pnpm contracts:code && pnpm contracts:code:selftest && pnpm accessibility:report && pnpm release:preflight:selftest && pnpm exports:check && pnpm test:ssr && pnpm accessibility && pnpm test:a11y:webkit && pnpm test:a11y:modes && pnpm test:motion',
       'figma:coverage': 'node scripts/check-figma-coverage.cjs',
       'figma:contracts': 'node scripts/check-figma-contracts.cjs',
+      'figma:live': 'node scripts/check-figma-live.cjs',
       'figma:live:if-token': 'node scripts/check-figma-live.cjs --if-token',
       'figma:validate': 'pnpm figma:coverage && pnpm figma:contracts && pnpm figma:live:if-token',
     };
@@ -1728,10 +1821,23 @@ function inspectFigmaPromotion(libraryDir) {
   for (const forbidden of findForbiddenCodeConnectFiles()) {
     issues.push(`${forbidden} must not exist`);
   }
+  const contractReady = issues.length === 0;
+  const capabilityIssues = [];
+  const writer = typeof capability.writer === 'string' ? capability.writer.trim() : '';
+  if (!FIGMA_WRITER_CAPABILITIES.has(writer)) {
+    capabilityIssues.push('the current session has no confirmed supported write-capable Figma tool (expected figma-use; REST/token/read-only identifiers do not qualify)');
+  }
+  if (capability.liveValidated !== true) {
+    capabilityIssues.push(`${liveValidationCommand} was not confirmed for the current library checkout`);
+  }
+  issues.push(...capabilityIssues);
+  const capabilityReady = capabilityIssues.length === 0;
 
   return {
     required: true,
     ready: issues.length === 0,
+    contractReady,
+    capabilityReady,
     writeCapabilityRequired: true,
     publicationStatus: 'unpublished',
     reviewPasses: ['source-parity', 'adversarial', 'design'],
@@ -1740,15 +1846,158 @@ function inspectFigmaPromotion(libraryDir) {
     codeContractsCommand,
     codeTestCommand,
     coverageCommand,
+    liveValidationCommand,
     validationCommand,
+    writer: FIGMA_WRITER_CAPABILITIES.has(writer) ? writer : null,
+    liveValidated: capability.liveValidated === true,
     issues,
   };
 }
 
+function selectedCaptureKeys(raw) {
+  if (!raw) return null;
+  const keys = String(raw).split(',').map((value) => value.trim()).filter(Boolean);
+  if (keys.length === 0 || new Set(keys).size !== keys.length ||
+    keys.some((key) => !/^[a-z0-9]+(?:-[a-z0-9]+)*(?:--[a-z0-9]+(?:-[a-z0-9]+)*)?$/.test(key))) {
+    usage('--capture-keys must be unique comma-separated component keys', USAGE);
+  }
+  return new Set(keys);
+}
+
+function isIsoCalendarDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return false;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+/** Resolve the analyzed source checkout and inventory contract before any write branch exists. */
+function loadCaptureSource(capturesDir, projectOverride, warnings) {
+  const inventoryPath = path.resolve(capturesDir, '..', 'inventory.json');
+  const resolutionPath = path.resolve(capturesDir, '..', 'resolution.json');
+  const metaPath = path.resolve(capturesDir, '..', 'meta.json');
+  const issues = [];
+  const read = readJsonSafe(inventoryPath);
+  if (!read.ok || !read.value || typeof read.value !== 'object' || Array.isArray(read.value)) {
+    issues.push(`sibling inventory.json could not be read: ${read.error || 'not a JSON object'}`);
+    return { inventoryPath, inventory: null, resolutionPath, resolution: null, metaPath, meta: null, projectDir: null, issues };
+  }
+  const inventory = read.value;
+  if (inventory.schemaVersion !== 1) issues.push(`sibling inventory.json schemaVersion must equal 1`);
+  const projectDir = projectOverride
+    ? path.resolve(projectOverride)
+    : typeof inventory.project === 'string' && inventory.project
+      ? path.resolve(inventory.project)
+      : null;
+  if (!projectDir || !isDir(projectDir)) {
+    issues.push('the source Project checkout is unavailable; pass --project to override inventory.json project');
+  }
+  if (inventory.sourceSnapshot?.strategy !== 'recorded' ||
+    !/^[a-f0-9]{40}$/.test(String(inventory.sourceSnapshot?.commit || ''))) {
+    issues.push('sibling inventory.json must carry a recorded full Git sourceSnapshot before capture');
+  }
+  if (typeof inventory.generatedAt !== 'string' || Number.isNaN(Date.parse(inventory.generatedAt))) {
+    issues.push('sibling inventory.json generatedAt must be an ISO date-time');
+  }
+  if (!Array.isArray(inventory.components)) issues.push('sibling inventory.json has no components array');
+  const resolutionRead = readJsonSafe(resolutionPath);
+  const resolution = resolutionRead.ok && resolutionRead.value && typeof resolutionRead.value === 'object' &&
+    !Array.isArray(resolutionRead.value) && resolutionRead.value.schemaVersion === 1 &&
+    Array.isArray(resolutionRead.value.resolved) && Array.isArray(resolutionRead.value.unresolved)
+    ? resolutionRead.value
+    : null;
+  if (!resolution) {
+    issues.push(`sibling resolution.json must be a readable schema-v1 result with resolved and unresolved arrays`);
+  }
+  const metaRead = readJsonSafe(metaPath);
+  const meta = metaRead.ok && metaRead.value && typeof metaRead.value === 'object' &&
+    !Array.isArray(metaRead.value) && metaRead.value.schemaVersion === 1 &&
+    typeof metaRead.value.project?.slug === 'string' && metaRead.value.project.slug &&
+    normalizeLabel(metaRead.value.project.slug) === metaRead.value.project.slug &&
+    isIsoCalendarDate(metaRead.value.date)
+    ? metaRead.value
+    : null;
+  if (!meta) {
+    issues.push('sibling meta.json must prove a schema-v1 project slug and ISO run date');
+  }
+  if (projectOverride && projectDir && isDir(projectDir)) {
+    warnings.add('source-project-override', `Using explicit Project checkout ${projectDir} for pinned source verification.`);
+  }
+  return { inventoryPath, inventory, resolutionPath, resolution, metaPath, meta, projectDir, issues };
+}
+
+function sourceInventoryIssues(component, artifact, sourceContext, proposals) {
+  const issues = [...sourceContext.issues];
+  const inventory = sourceContext.inventory;
+  if (!inventory || !artifact) return issues;
+  const entry = artifact.sourceSnapshot?.entry;
+  if (sourceContext.meta) {
+    const expectedProject = sourceContext.meta.project.slug;
+    const expectedRun = `runs/${expectedProject}/${sourceContext.meta.date}/`;
+    if (artifact.sourceSnapshot?.project !== expectedProject) {
+      issues.push(`source-parity sourceSnapshot.project must equal sibling meta.json project slug ${JSON.stringify(expectedProject)}`);
+    }
+    if (artifact.sourceSnapshot?.run !== expectedRun) {
+      issues.push(`source-parity sourceSnapshot.run must equal sibling meta.json run ${JSON.stringify(expectedRun)}`);
+    }
+  }
+  if (component.sourceEntry !== entry) {
+    issues.push(
+      `capture Source entry ${JSON.stringify(component.sourceEntry)} does not match source-parity sourceSnapshot.entry ${JSON.stringify(entry)}`,
+    );
+  }
+  const sources = Array.isArray(inventory.components)
+    ? inventory.components.filter((candidate) =>
+      candidate?.entry === entry || candidate?.sourceEvidence?.entryPoints?.includes(entry))
+    : [];
+  if (sources.length === 0) {
+    issues.push(`${entry || 'sourceSnapshot.entry'} is not pinned by sibling inventory.json`);
+  } else {
+    const owners = new Set(sources.map((source) => normalizeLabel(source?.folder || source?.name)).filter(Boolean));
+    if (owners.size > 1) {
+      issues.push(`${entry} has ambiguous sibling inventory owners: ${[...owners].sort().join(', ')}`);
+    }
+  }
+  if (sources.length > 0 && sourceContext.resolution) {
+    const canonical = normalizeLabel(component.canonical);
+    const resolved = sources.some((source) => sourceContext.resolution.resolved.some((row) =>
+      normalizeLabel(row?.component) === normalizeLabel(source?.folder) &&
+      normalizeLabel(row?.canonical) === canonical));
+    const matchingProposals = proposals.filter((proposal) => normalizeLabel(proposal.canonical) === canonical);
+    const proposed = matchingProposals.some((proposal) => {
+      const identities = new Set([proposal.canonical, ...proposal.aliases].map(normalizeLabel).filter(Boolean));
+      return sources.some((source) => sourceContext.resolution.unresolved.some((row) => {
+        const rowIdentities = [row?.label, row?.normalized].map(normalizeLabel).filter(Boolean);
+        const identityMatches = rowIdentities.some((identity) => identities.has(identity));
+        return identityMatches && Array.isArray(row?.locations) && row.locations.some((location) =>
+          normalizeLabel(location?.component) === normalizeLabel(source?.folder));
+      }));
+    });
+    if (!resolved && !proposed) {
+      const identities = sources.map((source) => source?.folder || source?.name).filter(Boolean).join(', ') || 'unknown';
+      issues.push(
+        `${entry} belongs to inventory component ${JSON.stringify(identities)}, but sibling resolution.json does not resolve that component to capture canonical ${JSON.stringify(component.canonical)}`,
+      );
+    }
+  }
+  if (!artifact.sourceInspection?.entryPoints?.paths?.includes(entry)) {
+    issues.push('source-parity sourceInspection.entryPoints.paths must include the exact sourceSnapshot.entry');
+  }
+  if (!artifact.sourceSnapshot?.citations?.some((citation) => citation?.path === entry)) {
+    issues.push('source-parity citations must include a whole-file hash for the exact sourceSnapshot.entry');
+  }
+  if (artifact.sourceSnapshot?.revision?.commit !== inventory.sourceSnapshot?.commit) {
+    issues.push('source-parity revision.commit does not match sibling inventory.json sourceSnapshot.commit');
+  }
+  if (artifact.sourceSnapshot?.revision?.inventoryGeneratedAt !== inventory.generatedAt) {
+    issues.push('source-parity inventoryGeneratedAt does not match sibling inventory.json generatedAt');
+  }
+  return issues;
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2), {
-    keys: ['captures', 'library', 'brain', 'manifest', 'out', 'proposals'],
-    flags: ['pretty'],
+    keys: ['captures', 'library', 'brain', 'manifest', 'out', 'proposals', 'capture-keys', 'project', 'figma-writer'],
+    flags: ['pretty', 'figma-live-validated'],
   });
   const { values } = args;
 
@@ -1781,23 +2030,41 @@ function main() {
   // proposals/ sibling degrades silently to an empty set (most runs have none).
   const proposals = manifest ? loadProposals(proposalsDir, warnings) : [];
 
-  const files = listEntries(capturesDir).filter((e) => !e.dir && e.name.endsWith('.md'));
+  const allFiles = listEntries(capturesDir).filter((e) => !e.dir && e.name.endsWith('.md'));
+  const requestedKeys = selectedCaptureKeys(values['capture-keys']);
+  const allCaptureKeys = new Set(allFiles.map((file) => path.basename(file.name, '.md')));
+  if (requestedKeys) {
+    const missing = [...requestedKeys].filter((key) => !allCaptureKeys.has(key));
+    if (missing.length > 0) usage(`--capture-keys not found in captures/: ${missing.join(', ')}`, USAGE);
+  }
+  const files = requestedKeys
+    ? allFiles.filter((file) => requestedKeys.has(path.basename(file.name, '.md')))
+    : allFiles;
   if (files.length === 0) {
     warnings.add('no-captures', `${capturesDir} contains no capture files — nothing to apply.`);
   }
 
+  const sourceContext = loadCaptureSource(capturesDir, values.project, warnings);
   const ctx = { manifest, tokens, libraryDir, proposals, warnings };
   const components = files.map((file) => readCapture(file, ctx));
+  const componentKeys = new Set(components.map((component) => component.componentKey));
   const sourceParity = validateSourceParityDirectory({
     sourceParityDir: path.resolve(capturesDir, '..', 'source-parity'),
     capturesDir,
-    verifySource: false,
+    projectDir: sourceContext.projectDir,
+    verifySource: true,
+    componentKeys,
+    expectedComponentKeys: componentKeys,
     legacyV1ComponentKeys: new Set(
       components.filter((component) => component.status === 'skipped').map((component) => component.componentKey),
     ),
   });
   const parityByKey = new Map(sourceParity.records.map((record) => [record.componentKey, record.artifact]));
   const parityInvalid = new Set(sourceParity.issues.map((entry) => entry.componentKey ?? '*'));
+  const figmaPromotion = inspectFigmaPromotion(libraryDir, {
+    writer: values['figma-writer'],
+    liveValidated: Boolean(values['figma-live-validated']),
+  });
   for (const component of components) {
     const artifact = parityByKey.get(component.componentKey) || null;
     component.sourceParity = artifact
@@ -1816,7 +2083,11 @@ function main() {
         }
       : null;
     if (!parityInvalid.has('*') && !parityInvalid.has(component.componentKey)) {
-      applyInteractionStateGate(component, artifact, libraryDir);
+      applyInteractionStateGate(component, artifact, libraryDir, figmaPromotion.capabilityReady);
+    }
+    for (const message of sourceInventoryIssues(component, artifact, sourceContext, proposals)) {
+      component.blockers.push({ code: 'source-inventory', message });
+      component.status = 'blocked';
     }
   }
   for (const failure of sourceParity.issues) {
@@ -1831,15 +2102,15 @@ function main() {
   for (const warning of sourceParity.warnings) {
     warnings.add('source-parity', `${warning.componentKey ? `${warning.componentKey}: ` : ''}[${warning.code}] ${warning.message}`);
   }
-  const figmaPromotion = inspectFigmaPromotion(libraryDir);
   if (!figmaPromotion.ready) {
     const message = `The target library cannot complete governed Figma promotion: ${figmaPromotion.issues.join('; ')}.`;
     for (const component of components) {
+      if (figmaPromotion.contractReady && component.status === 'figma-pending') continue;
       component.blockers.push({ code: 'figma-promotion-unavailable', message });
       component.status = 'blocked';
     }
   }
-  const orphanedByRun = findOrphanedByRun(libraryDir, components, warnings);
+  const orphanedByRun = findOrphanedByRun(libraryDir, components, warnings, allCaptureKeys);
 
   const counts = {
     captures: components.length,
@@ -1856,6 +2127,12 @@ function main() {
     {
       schemaVersion: 6,
       captures: capturesDir,
+      selection: requestedKeys ? [...requestedKeys] : null,
+      source: {
+        inventory: sourceContext.inventoryPath,
+        project: sourceContext.projectDir,
+        verified: sourceContext.issues.length === 0 && sourceParity.issues.length === 0,
+      },
       sourceParity: {
         directory: sourceParity.sourceParityDir,
         counts: sourceParity.counts,

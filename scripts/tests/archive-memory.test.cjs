@@ -134,3 +134,47 @@ test('a project whose memory is all placeholders reports no-memory', () => {
     fs.rmSync(proj, { recursive: true, force: true });
   }
 });
+
+test('memory archive never follows root or nested symlinks outside the pinned project', () => {
+  for (const surface of ['artifacts', 'memory', 'nested-file', 'nested-directory']) {
+    const proj = tempProject((w) => w('package.json', '{}\n'));
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-archive-outside-'));
+    fs.mkdirSync(path.join(outside, 'memory', 'nested'), { recursive: true });
+    fs.writeFileSync(path.join(outside, 'memory', 'outside.md'), '# Outside\n\n- must not be archived\n');
+    fs.writeFileSync(path.join(outside, 'memory', 'nested', 'outside.md'), '# Outside nested\n\n- must not be archived\n');
+    fs.mkdirSync(path.join(proj, 'artifacts', 'memory'), { recursive: true });
+
+    if (surface === 'artifacts') {
+      fs.rmSync(path.join(proj, 'artifacts'), { recursive: true });
+      fs.symlinkSync(outside, path.join(proj, 'artifacts'), 'dir');
+    } else if (surface === 'memory') {
+      fs.rmSync(path.join(proj, 'artifacts', 'memory'), { recursive: true });
+      fs.symlinkSync(path.join(outside, 'memory'), path.join(proj, 'artifacts', 'memory'), 'dir');
+    } else if (surface === 'nested-file') {
+      fs.symlinkSync(
+        path.join(outside, 'memory', 'outside.md'),
+        path.join(proj, 'artifacts', 'memory', 'outside.md'),
+      );
+    } else {
+      fs.symlinkSync(
+        path.join(outside, 'memory', 'nested'),
+        path.join(proj, 'artifacts', 'memory', 'nested'),
+        'dir',
+      );
+    }
+
+    try {
+      const dest = path.join(proj, '__out__', 'source');
+      const r = archive(['--project', proj, '--archive', dest]);
+      assert.equal(r.status, 0, `${surface}: ${r.stderr}`);
+      assert.equal(r.json.status, 'no-memory', surface);
+      assert.deepEqual(r.json.files, [], surface);
+      assert.ok(r.json.warnings.some((warning) => warning.code === 'source-symlink-skipped'), surface);
+      assert.ok(!fs.existsSync(path.join(dest, 'outside.md')), surface);
+      assert.ok(!fs.existsSync(path.join(dest, 'nested', 'outside.md')), surface);
+    } finally {
+      fs.rmSync(proj, { recursive: true, force: true });
+      fs.rmSync(outside, { recursive: true, force: true });
+    }
+  }
+});

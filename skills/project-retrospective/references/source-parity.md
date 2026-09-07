@@ -1,6 +1,6 @@
 # Source-parity inventory
 
-Use this contract before drafting or applying any component capture. It records which reusable behavior, visual layout, and invariants existed in the analyzed project, then proves how the normalized library represents or deliberately rejects each fact.
+Use this contract when `Action: capture` enriches a selected analyze-time intent. It records which reusable behavior, visual layout, accessibility evidence, and invariants existed at the pinned source revision, then proves how the normalized library represents or deliberately rejects each fact. Analyze itself emits no source-parity artifact.
 
 ## Contents
 
@@ -21,9 +21,11 @@ Historical inventories without a snapshot use one of two explicit strategies:
 - `reconstructed` — select the last commit at or before `inventory.generatedAt`, record the full commit, and hash cited files from that commit.
 - `legacy-untracked` — only when no commit can be recovered. Record the limitation; never present it as exact provenance.
 
-Every citation is repository-relative, includes an inclusive positive line range, and carries the SHA-256 digest of the entire file at the pinned revision. Do not cite absolute paths or paths containing `..`.
+Every citation is one normalized repository-relative path, includes an inclusive positive line range, and carries the SHA-256 digest of the entire file at the pinned revision. Do not cite absolute, traversal, control-byte, or alternate-spelling paths. The capture's single `## Source` Entry (every Entry declaration counts, even malformed duplicates), `sourceSnapshot.entry`, one unambiguous sibling-inventory owner, `sourceInspection.entryPoints.paths`, and at least one hashed citation path must all name the same file. `sourceSnapshot.project` and `run` must exactly join sibling `meta.json`. Sibling `resolution.json` must join the matched inventory folder to the capture canonical, including legitimate alias resolution; another component from the same inventory is not interchangeable evidence.
 
-Record the inspected source matrix separately from citations. `entryPoints`, `tests`, `styles`, `buildPacks`, `directImporters`, and `composedConsumers` each declare `status: reviewed | not-present` plus repository-relative `paths`. A reviewed category requires at least one path; `not-present` requires an empty list. Verification proves every listed path exists in the pinned Git object. Citations support observations; the inspection matrix proves the required search was actually performed.
+Record the inspected source matrix separately from citations. `entryPoints`, `tests`, `styles`, `accessibility`, `buildPacks`, `directImporters`, and `composedConsumers` each declare `status: reviewed | not-present` plus repository-relative `paths`. A reviewed category requires at least one path; `not-present` requires an empty list. Verification proves every listed path exists in the pinned Git object. Citations support observations; the inspection matrix proves the required search was actually performed.
+
+Also record `accessibilityDisposition`. It is exactly `{ "status": "source-present", "gap": null }` when inspected source accessibility is present, or `{ "status": "remediation-gap", "gap": "<concrete missing source behavior/evidence>" }` when it is absent. Missing source accessibility never suppresses a pending intent and can never use `remediationStatus: "not-required"`.
 
 ## Audit matrix
 
@@ -104,10 +106,12 @@ Write exactly one `source-parity/<component-key>.json` beside each `captures/<co
     "entryPoints": { "status": "reviewed", "paths": ["src/components/notice-panel/NoticePanel.tsx"] },
     "tests": { "status": "reviewed", "paths": ["src/components/notice-panel/NoticePanel.test.tsx"] },
     "styles": { "status": "not-present", "paths": [] },
+    "accessibility": { "status": "reviewed", "paths": ["src/components/notice-panel/NoticePanel.tsx"] },
     "buildPacks": { "status": "not-present", "paths": [] },
     "directImporters": { "status": "reviewed", "paths": ["src/features/alerts/Alerts.tsx"] },
     "composedConsumers": { "status": "not-present", "paths": [] }
   },
+  "accessibilityDisposition": { "status": "source-present", "gap": null },
   "coverage": {
     "sourceBehavior": "reviewed",
     "sourceVisualLayout": "reviewed",
@@ -169,7 +173,7 @@ Write exactly one `source-parity/<component-key>.json` beside each `captures/<co
 
 Allowed observation kinds are `behavior`, `visual-layout`, and `invariant`. Allowed target surfaces are `code`, `storybook`, `figma`, `ai-registry`, `brain`, and `evidence`.
 
-New analyze runs always emit schema v2. Pending, deferred, ready, or reopened actionable captures require v2. A schema-v1 companion remains readable only when its matching capture is already landed/skipped; reactivation requires upgrading the companion to v2 before work resumes.
+New `Action: capture` enrichment always emits schema v2 for the selected intents. Pending analyze-time intents have no companion. Deferred, ready, or reopened executable captures require v2. A schema-v1 companion remains readable only when its matching capture is already landed/skipped; reactivation requires upgrading the companion to v2 before work resumes.
 
 Use `remediationStatus: not-required` when no accepted difference exists, `pending` while any accepted decision remains unrepresented, and `complete` only after every accepted decision is represented and fresh review evidence exists. `status` is `actionable` only while remediation is pending; it becomes `cleared` for `not-required` or completed work. Preserved observations use `classification: null`, `decision: document`, `implementationStatus: not-required`, and no remediation targets. Accepted observations use `implementationStatus: pending` or `complete`.
 
@@ -185,6 +189,7 @@ Use `remediationStatus: not-required` when no accepted difference exists, `pendi
 - `intentional-declienting` documents an intentional absence and does not create implementation work.
 - When applying an accepted decision to the public library, retain one audited family identity and set its `implementationKey` to the exact default or `components/<slug>--<variant>` directory that owns the representation. New captures cannot use the legacy baseline's null structural-target exception.
 - Complete the `decision` source-parity review before component implementation. It cannot cite the decision JSON itself. Completed remediation requires a fresh `post-remediation` source-parity pass plus adversarial and design passes after the changed code, Storybook, unpublished Figma representation, and AI metadata agree.
+- Treat absent source accessibility as explicit remediation work: keep the capture actionable, design the normalized ownership/behavior/evidence, and do not claim the source supplied it.
 
 ## Validation and lifecycle
 
@@ -200,6 +205,8 @@ node <skill>/scripts/source-parity.cjs \
 ```
 
 `validate-report.cjs` invokes the same implementation and fails a full run when cardinality, inspected-source coverage, citations and real line ranges, normalized coverage, interaction-state classification, decisions, review phases, or pinned hashes do not validate. `capture-preflight.cjs` revalidates structure, returns `interactionStates` separately from `componentJson`, `architecture`, and the source-parity decision summary in its schema-v6 plan, and blocks any capture without a passed source-parity review.
+
+Before a modern capture lands, `## Applied` copies the registry's client-neutral Figma proof: stable top-level `nodeId`/`nodeKey`, `publicationStatus: "unpublished"`, exactly the source-parity/adversarial/design passed reviews, and exact semantic `stateCoverage`. Visual states carry non-empty frame/instance/component node IDs; a child variant `componentNodeId` need not equal the top-level component-set `nodeId`. Runtime-only states carry the agreed reason and no visual IDs. Not-applicable coverage carries the agreed reason and empty states. Private source citation IDs never enter this public projection.
 
 Historical landed/skipped schema-v1 captures remain readable. If one becomes actionable again, upgrade its companion to v2 before preflight; use `reconstructed` provenance where possible and `legacy-untracked` only when recovery is impossible.
 

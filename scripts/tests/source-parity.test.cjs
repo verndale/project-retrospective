@@ -86,6 +86,38 @@ test('every governed source inspection category is explicit and grounded by path
   assert.ok(validate(vacuous).json.issues.some((entry) => entry.code === 'source-inspection'));
 });
 
+test('missing source accessibility is an explicit remediation gap, never not-required', () => {
+  const root = tempFixture('fake-output');
+  const artifact = JSON.parse(readFile(root, 'source-parity/modal.json'));
+  artifact.status = 'actionable';
+  artifact.remediationStatus = 'pending';
+  artifact.sourceInspection.accessibility = { status: 'not-present', paths: [] };
+  artifact.accessibilityDisposition = {
+    status: 'remediation-gap',
+    gap: 'The source exposes no accessible name or keyboard contract; the normalized implementation must add both.',
+  };
+  artifact.observations[0] = {
+    ...artifact.observations[0],
+    comparison: 'difference',
+    classification: 'semantic-public-prop',
+    decision: 'accept',
+    implementationStatus: 'pending',
+    targetSurfaces: ['code', 'storybook'],
+  };
+  artifact.reviews.sourceParity.phase = 'decision';
+  artifact.reviews.adversarial = { status: 'pending', evidence: [] };
+  artifact.reviews.design = { status: 'pending', evidence: [] };
+  writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
+  assert.equal(validate(root).status, 0, 'an explicit accessibility gap stays actionable');
+
+  artifact.remediationStatus = 'not-required';
+  artifact.status = 'cleared';
+  writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
+  const invalid = validate(root);
+  assert.equal(invalid.status, 1);
+  assert.ok(invalid.json.issues.some((entry) => entry.code === 'accessibility-disposition'));
+});
+
 test('accepted decisions require explicit implementation status and completed review evidence', () => {
   const root = tempFixture('fake-output');
   const artifact = JSON.parse(readFile(root, 'source-parity/modal.json'));
@@ -216,14 +248,16 @@ test('legacy v1 is readable only after the matching capture is landed', () => {
   assert.equal(validate(landed).status, 0);
 });
 
-test('source citations cannot escape the analyzed repository', () => {
-  const root = tempFixture('fake-output');
-  const artifact = JSON.parse(readFile(root, 'source-parity/modal.json'));
-  artifact.sourceSnapshot.citations[0].path = '../secret.tsx';
-  writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
-  const result = validate(root);
-  assert.equal(result.status, 1);
-  assert.ok(result.json.issues.some((entry) => entry.code === 'source-citations'));
+test('source citations reject traversal, alternate path spellings, Windows roots, and control bytes', () => {
+  for (const unsafe of ['../secret.tsx', './src/Modal.tsx', 'C:/private/Modal.tsx', 'src/Modal\u0000.tsx']) {
+    const root = tempFixture('fake-output');
+    const artifact = JSON.parse(readFile(root, 'source-parity/modal.json'));
+    artifact.sourceSnapshot.citations[0].path = unsafe;
+    writeFile(root, 'source-parity/modal.json', `${JSON.stringify(artifact, null, 2)}\n`);
+    const result = validate(root);
+    assert.equal(result.status, 1, `${JSON.stringify(unsafe)} must fail deterministically`);
+    assert.ok(result.json.issues.some((entry) => entry.code === 'source-citations'));
+  }
 });
 
 test('verified citation ranges cannot extend beyond the pinned file', () => {

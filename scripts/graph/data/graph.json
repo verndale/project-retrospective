@@ -1,30 +1,30 @@
 {
   "counts": {
-    "nodes": 130,
-    "edges": 352,
+    "nodes": 134,
+    "edges": 371,
     "byType": {
       "root-doc": 4,
       "repo-script": 19,
       "tooling-doc": 1,
-      "test": 15,
+      "test": 16,
       "authoring-spec": 1,
       "skill-readme": 1,
       "skill-reference": 20,
-      "skill-script": 13,
+      "skill-script": 14,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 33,
-      "wiki-plan": 14,
+      "wiki-journal": 34,
+      "wiki-plan": 15,
       "wiki-topic": 5
     },
     "byEdgeType": {
-      "contracts": 29,
-      "covers": 34,
-      "links-to": 146,
-      "plan": 14,
-      "requires": 56,
-      "tests": 14,
-      "topic": 59
+      "contracts": 30,
+      "covers": 37,
+      "links-to": 152,
+      "plan": 15,
+      "requires": 59,
+      "tests": 15,
+      "topic": 63
     }
   },
   "nodes": [
@@ -77,7 +77,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 12850,
+      "bytes": 13140,
       "degree": 8
     },
     {
@@ -194,7 +194,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 5929,
+      "bytes": 8107,
       "degree": 2
     },
     {
@@ -220,7 +220,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 58888,
+      "bytes": 80939,
       "degree": 2
     },
     {
@@ -234,7 +234,7 @@
       "issues": [],
       "githubRefs": [],
       "bytes": 1900,
-      "degree": 12
+      "degree": 13
     },
     {
       "id": "scripts/tests/inventory.test.cjs",
@@ -246,7 +246,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 25857,
+      "bytes": 34262,
       "degree": 3
     },
     {
@@ -276,6 +276,19 @@
       "degree": 2
     },
     {
+      "id": "scripts/tests/prior-evidence.test.cjs",
+      "label": "prior-evidence.test.cjs",
+      "type": "test",
+      "dir": "scripts/tests",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "githubRefs": [],
+      "bytes": 20153,
+      "degree": 2
+    },
+    {
       "id": "scripts/tests/resolve.test.cjs",
       "label": "resolve.test.cjs",
       "type": "test",
@@ -298,7 +311,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 7743,
+      "bytes": 8634,
       "degree": 3
     },
     {
@@ -311,7 +324,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 12088,
+      "bytes": 13819,
       "degree": 2
     },
     {
@@ -324,7 +337,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 12528,
+      "bytes": 16940,
       "degree": 2
     },
     {
@@ -350,7 +363,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 45899,
+      "bytes": 55074,
       "degree": 2
     },
     {
@@ -558,7 +571,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 29504,
+      "bytes": 31950,
       "degree": 4
     },
     {
@@ -597,8 +610,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 6273,
-      "degree": 2
+      "bytes": 7356,
+      "degree": 3
     },
     {
       "id": "skills/project-retrospective/references/downstream-wiki.md",
@@ -623,8 +636,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 10179,
-      "degree": 2
+      "bytes": 11518,
+      "degree": 3
     },
     {
       "id": "skills/project-retrospective/references/library-integrity-checklist.md",
@@ -636,7 +649,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 19452,
+      "bytes": 22457,
       "degree": 3
     },
     {
@@ -662,7 +675,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 14475,
+      "bytes": 18635,
       "degree": 3
     },
     {
@@ -714,7 +727,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 7128,
+      "bytes": 7386,
       "degree": 2
     },
     {
@@ -727,7 +740,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 13041,
+      "bytes": 15178,
       "degree": 4
     },
     {
@@ -766,7 +779,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 7645,
+      "bytes": 8684,
       "degree": 4
     },
     {
@@ -805,7 +818,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 11497,
+      "bytes": 11974,
       "degree": 3
     },
     {
@@ -818,7 +831,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 2480,
+      "bytes": 2505,
       "degree": 2
     },
     {
@@ -844,7 +857,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 8899,
+      "bytes": 10508,
       "degree": 3
     },
     {
@@ -857,7 +870,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 87534,
+      "bytes": 103034,
       "degree": 5
     },
     {
@@ -870,7 +883,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 40852,
+      "bytes": 63044,
       "degree": 6
     },
     {
@@ -884,7 +897,7 @@
       "issues": [],
       "githubRefs": [],
       "bytes": 1041,
-      "degree": 4
+      "degree": 5
     },
     {
       "id": "skills/project-retrospective/scripts/lib/util.cjs",
@@ -896,8 +909,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 12697,
-      "degree": 11
+      "bytes": 15320,
+      "degree": 12
     },
     {
       "id": "skills/project-retrospective/scripts/normalize-retrospectives.cjs",
@@ -926,6 +939,19 @@
       "degree": 5
     },
     {
+      "id": "skills/project-retrospective/scripts/prior-evidence.cjs",
+      "label": "prior-evidence.cjs",
+      "type": "skill-script",
+      "dir": "skills/project-retrospective/scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "githubRefs": [],
+      "bytes": 19003,
+      "degree": 5
+    },
+    {
       "id": "skills/project-retrospective/scripts/resolve.cjs",
       "label": "resolve.cjs",
       "type": "skill-script",
@@ -948,7 +974,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 29087,
+      "bytes": 30986,
       "degree": 6
     },
     {
@@ -961,7 +987,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 14293,
+      "bytes": 18020,
       "degree": 3
     },
     {
@@ -987,7 +1013,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 52462,
+      "bytes": 63661,
       "degree": 6
     },
     {
@@ -1000,8 +1026,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 44294,
-      "degree": 53
+      "bytes": 45324,
+      "degree": 54
     },
     {
       "id": "wiki/INDEX.md",
@@ -1013,8 +1039,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 11499,
-      "degree": 42
+      "bytes": 11793,
+      "degree": 43
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -1929,6 +1955,31 @@
       "degree": 3
     },
     {
+      "id": "wiki/journal/2026-09-06-source-first-knowledge-loop.md",
+      "label": "Make the retrospective knowledge loop source-first",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "retrospective-workflow",
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "90"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 90,
+          "url": "https://github.com/verndale/project-retrospective/issues/90"
+        }
+      ],
+      "bytes": 6445,
+      "degree": 6
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -2306,6 +2357,22 @@
       "degree": 4
     },
     {
+      "id": "wiki/plans/2026-09-06-source-first-knowledge-loop.md",
+      "label": "Source-first retrospective knowledge loop",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "retrospective-workflow",
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "githubRefs": [],
+      "bytes": 5286,
+      "degree": 6
+    },
+    {
       "id": "wiki/plans/INDEX.md",
       "label": "Plan Audit",
       "type": "wiki-index",
@@ -2327,12 +2394,19 @@
         "80"
       ],
       "issues": [
+        "90",
         "83",
         "69",
         "57",
         "60"
       ],
       "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 90,
+          "url": "https://github.com/verndale/project-retrospective/issues/90"
+        },
         {
           "kind": "issue",
           "repository": "verndale/project-retrospective",
@@ -2430,8 +2504,8 @@
           "url": "https://github.com/verndale/project-retrospective/pull/80"
         }
       ],
-      "bytes": 5235,
-      "degree": 16
+      "bytes": 5521,
+      "degree": 17
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -2574,6 +2648,7 @@
       ],
       "prs": [],
       "issues": [
+        "90",
         "78",
         "75",
         "69",
@@ -2582,6 +2657,12 @@
         "60"
       ],
       "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 90,
+          "url": "https://github.com/verndale/project-retrospective/issues/90"
+        },
         {
           "kind": "issue",
           "repository": "verndale/project-retrospective",
@@ -2619,8 +2700,8 @@
           "url": "https://github.com/verndale/project-retrospective/issues/60"
         }
       ],
-      "bytes": 13229,
-      "degree": 39
+      "bytes": 15359,
+      "degree": 43
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -2632,6 +2713,8 @@
         "analyze path",
         "retrospective run",
         "component inventory",
+        "source-first discovery",
+        "prior evidence",
         "label resolution",
         "evidence triage",
         "promote watch reject",
@@ -2670,11 +2753,18 @@
         "1"
       ],
       "issues": [
+        "90",
         "87",
         "75",
         "57"
       ],
       "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 90,
+          "url": "https://github.com/verndale/project-retrospective/issues/90"
+        },
         {
           "kind": "pull-request",
           "repository": "verndale/project-retrospective",
@@ -2874,8 +2964,8 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 15183,
-      "degree": 60
+      "bytes": 17294,
+      "degree": 67
     },
     {
       "id": "wiki/topics/skill-authoring.md",
@@ -3031,6 +3121,11 @@
     },
     {
       "source": "skills/project-retrospective/SKILL.md",
+      "target": "skills/project-retrospective/scripts/prior-evidence.cjs",
+      "type": "contracts"
+    },
+    {
+      "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/scripts/resolve.cjs",
       "type": "contracts"
     },
@@ -3131,6 +3226,16 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/references/code-scan-mode.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/references/evidence-rubric.md",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "skills/project-retrospective/references/source-parity.md",
       "type": "covers"
     },
@@ -3172,6 +3277,11 @@
     {
       "source": "wiki/topics/retrospective-workflow.md",
       "target": "skills/project-retrospective/scripts/normalize-specs.cjs",
+      "type": "covers"
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "skills/project-retrospective/scripts/prior-evidence.cjs",
       "type": "covers"
     },
     {
@@ -3463,7 +3573,7 @@
       "source": "skills/project-retrospective/SKILL.md",
       "target": "skills/project-retrospective/references/tracking-issues.md",
       "type": "links-to",
-      "count": 9,
+      "count": 8,
       "anchors": []
     },
     {
@@ -3727,6 +3837,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-09-06-source-first-knowledge-loop.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -3894,6 +4011,13 @@
       "anchors": []
     },
     {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-09-06-source-first-knowledge-loop.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
       "source": "wiki/topics/brain-promotion.md",
       "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
       "type": "links-to",
@@ -4049,6 +4173,13 @@
     },
     {
       "source": "wiki/topics/library-capture.md",
+      "target": "wiki/journal/2026-09-06-source-first-knowledge-loop.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
       "target": "wiki/plans/2026-08-12-server-first-component-architecture.md",
       "type": "links-to",
       "count": 1,
@@ -4085,6 +4216,13 @@
     {
       "source": "wiki/topics/library-capture.md",
       "target": "wiki/plans/2026-08-21-governed-figma-interaction-states-and-retrospective-capture.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
+      "target": "wiki/plans/2026-09-06-source-first-knowledge-loop.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -4168,6 +4306,13 @@
     },
     {
       "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/journal/2026-09-06-source-first-knowledge-loop.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
       "target": "wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md",
       "type": "links-to",
       "count": 2,
@@ -4197,6 +4342,13 @@
     {
       "source": "wiki/topics/retrospective-workflow.md",
       "target": "wiki/plans/2026-08-19-source-parity-capture-contract.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/retrospective-workflow.md",
+      "target": "wiki/plans/2026-09-06-source-first-knowledge-loop.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -4307,6 +4459,11 @@
       "type": "plan"
     },
     {
+      "source": "wiki/journal/2026-09-06-source-first-knowledge-loop.md",
+      "target": "wiki/plans/2026-09-06-source-first-knowledge-loop.md",
+      "type": "plan"
+    },
+    {
       "source": "scripts/evals/graph-check.cjs",
       "target": "scripts/graph/build-graph.cjs",
       "type": "requires"
@@ -4373,6 +4530,11 @@
     },
     {
       "source": "scripts/tests/normalize-specs.test.cjs",
+      "target": "scripts/tests/helpers.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "scripts/tests/prior-evidence.test.cjs",
       "target": "scripts/tests/helpers.cjs",
       "type": "requires"
     },
@@ -4552,6 +4714,16 @@
       "type": "requires"
     },
     {
+      "source": "skills/project-retrospective/scripts/prior-evidence.cjs",
+      "target": "skills/project-retrospective/scripts/lib/cms-taxonomy.cjs",
+      "type": "requires"
+    },
+    {
+      "source": "skills/project-retrospective/scripts/prior-evidence.cjs",
+      "target": "skills/project-retrospective/scripts/lib/util.cjs",
+      "type": "requires"
+    },
+    {
       "source": "skills/project-retrospective/scripts/resolve.cjs",
       "target": "skills/project-retrospective/scripts/lib/util.cjs",
       "type": "requires"
@@ -4614,6 +4786,11 @@
     {
       "source": "scripts/tests/normalize-specs.test.cjs",
       "target": "skills/project-retrospective/scripts/normalize-specs.cjs",
+      "type": "tests"
+    },
+    {
+      "source": "scripts/tests/prior-evidence.test.cjs",
+      "target": "skills/project-retrospective/scripts/prior-evidence.cjs",
       "type": "tests"
     },
     {
@@ -4862,6 +5039,16 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-09-06-source-first-knowledge-loop.md",
+      "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-09-06-source-first-knowledge-loop.md",
+      "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
@@ -4949,6 +5136,16 @@
     {
       "source": "wiki/plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-09-06-source-first-knowledge-loop.md",
+      "target": "wiki/topics/library-capture.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-09-06-source-first-knowledge-loop.md",
+      "target": "wiki/topics/retrospective-workflow.md",
       "type": "topic"
     }
   ]

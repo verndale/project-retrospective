@@ -40,6 +40,7 @@
 
 'use strict';
 
+const fs = require('node:fs');
 const path = require('node:path');
 const {
   parseArgs,
@@ -99,9 +100,40 @@ function isSubstantiveMemory(text) {
  * treats as memory evidence. Empty placeholder shards are dropped and returned in
  * `skippedEmpty` so the manifest can report them.
  */
-function findMemoryFiles(artifactsDir, warnings) {
+function sourcePathHasSymlink(projectDir, relative, warnings) {
+  let current = projectDir;
+  for (const segment of relative.split('/')) {
+    current = path.join(current, segment);
+    try {
+      if (fs.lstatSync(current).isSymbolicLink()) {
+        warnings.add(
+          'source-symlink-skipped',
+          `Skipped memory symlink "${path.relative(projectDir, current).split(path.sep).join('/')}" because its target bytes are not proven by the pinned repository.`,
+        );
+        return true;
+      }
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+function findMemoryFiles(projectDir, artifactsRoot, warnings) {
+  const artifactsDir = path.join(projectDir, artifactsRoot);
   const memoryDir = path.join(artifactsDir, 'memory');
-  const candidates = listFilesRecursive(memoryDir)
+  if (sourcePathHasSymlink(projectDir, `${artifactsRoot}/memory`, warnings)) {
+    return { files: [], skippedEmpty: [] };
+  }
+  const candidates = listFilesRecursive(memoryDir, {
+    followSymlinks: false,
+    onSymlink(rel) {
+      warnings.add(
+        'source-symlink-skipped',
+        `Skipped memory symlink "${artifactsRoot}/memory/${rel}" because its target bytes are not proven by the pinned repository.`,
+      );
+    },
+  })
     .filter((rel) => rel.toLowerCase().endsWith('.md'))
     .map((rel) => ({ rel, src: path.join(memoryDir, rel) }));
 
@@ -145,12 +177,22 @@ function main() {
     warnings.add('no-build-config', 'No build.config.json at the project root — artifacts root assumed to be "artifacts".');
   } else if (resolved.status === 'unreadable') {
     warnings.add('unreadable-json', `build.config.json could not be parsed: ${resolved.error} — artifacts root assumed to be "artifacts".`);
+  } else if (resolved.status === 'unsafe') {
+    warnings.add(
+      'source-symlink-skipped',
+      'Skipped source symlink "build.config.json" because its target bytes are outside the repository’s pinned Git evidence; artifacts root assumed to be "artifacts".',
+    );
+  } else if (resolved.unsafeArtifactsRoot !== null) {
+    warnings.add(
+      'path-outside-project',
+      `build.config.json artifactsRoot ${JSON.stringify(resolved.unsafeArtifactsRoot)} is not a safe repository-relative path — using "artifacts".`,
+    );
   }
   const artifactsRoot = resolved.artifactsRoot;
   const artifactsDir = path.join(projectDir, artifactsRoot);
   const memoryDir = path.join(artifactsDir, 'memory');
 
-  const { files: found, skippedEmpty } = findMemoryFiles(artifactsDir, warnings);
+  const { files: found, skippedEmpty } = findMemoryFiles(projectDir, artifactsRoot, warnings);
   const archiveDir = values.archive ? path.resolve(values.archive) : null;
 
   if (skippedEmpty.length) {

@@ -6,8 +6,8 @@
   "status": "cleared",
   "remediationStatus": "not-required",
   "sourceSnapshot": {
-    "project": "synthetic-project",
-    "run": "runs/synthetic-project/2026-01-01/",
+    "project": "fake-project",
+    "run": "runs/fake-project/2026-01-01/",
     "entry": "src/components/ui/modal/Modal.tsx",
     "revision": {
       "strategy": "legacy-untracked",
@@ -48,7 +48,15 @@
     "composedConsumers": {
       "status": "not-present",
       "paths": []
+    },
+    "accessibility": {
+      "status": "reviewed",
+      "paths": ["src/components/ui/modal/Modal.tsx"]
     }
+  },
+  "accessibilityDisposition": {
+    "status": "source-present",
+    "gap": null
   },
   "coverage": {
     "sourceBehavior": "reviewed",

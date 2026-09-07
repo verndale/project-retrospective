@@ -27,7 +27,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Wiki feed](../../skills/project-retrospective/references/wiki-feed.md)
 - [wiki journal entry template](../../skills/project-retrospective/references/wiki-journal-template.md)
 
-## Scripts (9)
+## Scripts (10)
 
 - [adf-to-markdown.cjs](../../skills/project-retrospective/scripts/adf-to-markdown.cjs)
 - [archive-memory.cjs](../../skills/project-retrospective/scripts/archive-memory.cjs)
@@ -35,6 +35,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [inventory.cjs](../../skills/project-retrospective/scripts/inventory.cjs)
 - [normalize-retrospectives.cjs](../../skills/project-retrospective/scripts/normalize-retrospectives.cjs)
 - [normalize-specs.cjs](../../skills/project-retrospective/scripts/normalize-specs.cjs)
+- [prior-evidence.cjs](../../skills/project-retrospective/scripts/prior-evidence.cjs)
 - [resolve.cjs](../../skills/project-retrospective/scripts/resolve.cjs)
 - [update-retrospective-register.cjs](../../skills/project-retrospective/scripts/update-retrospective-register.cjs)
 - [validate-report.cjs](../../skills/project-retrospective/scripts/validate-report.cjs)

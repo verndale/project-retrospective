@@ -11,9 +11,9 @@ Skip when the run is in `artifacts` mode — the pipeline evidence is richer and
 
 ## What code-scan mode means
 
-The project has no pipeline artifacts to read: no `component-index.json`, no build packs. The inventory came from a stack-aware filesystem scan — the component file extensions and roots are chosen from the project's `stackAdapter`, and Storybook stories are folded in where the stack uses them (see below).
+The project has no usable pipeline artifact set to read. The inventory therefore starts from ordinary repository structure: the root package manifest plus only nested manifests admitted by its workspace declaration or `pnpm-workspace.yaml`, exact framework and platform dependency markers, imports, source roots, tests, stories, styles/tokens, consumers, and delivery configuration. Unrelated nested example packages cannot contribute platform markers or component roots. `build.config.json`, component indexes, build packs, fingerprints, design facts, and memory are optional corroboration rather than prerequisites.
 
-That gets you names and locations. It gets you nothing about contract, reuse, or intent. Treat the inventory as a list of *candidate* components, not a verified one.
+That gets you names, locations, and a bounded evidence map. Treat it as a list of *candidate* components, not a verified reusable contract: only source inspection can establish the behavior, accessibility, and de-client boundary.
 
 ## How the scan chose its extensions, roots, and signals
 
@@ -21,14 +21,14 @@ That gets you names and locations. It gets you nothing about contract, reuse, or
 
 **One component, or a folder of several?** The same test applies at both granularities. A directory is one component when it holds a matching entry file (`Modal/Modal.tsx`), a single file, or a compound whose parts are all namespaced under the folder (`accordion/AccordionItem.tsx`, `AccordionTrigger.tsx`). A flat container of independent sibling files (`ui/icons/ArrowIcon.tsx`, `CloseIcon.tsx`) — or component files sitting directly at a bucket root — yields one component per file rather than collapsing to the folder, and the folder is not itself recorded as a component. Siblings one level below a bucket root carry that folder as their `domain`; siblings at the root itself, or deeper than one level, have no domain.
 
-**Roots**, in order, de-duplicated:
+**Roots**, in order, de-duplicated for every root/workspace package manifest:
 
-1. **`componentBuckets` from `build.config.json`** when present — trustworthy, since the project declared them. Every bucket is walked at the profile's granularity, so on a recursive stack rendering domains are discovered from the directory structure whether or not they are listed in `renderingDomains` (a declared domain that has no directory is flagged with `rendering-domain-missing`).
+1. **`componentBuckets` from `build.config.json`** when present and safe. Every bucket must be a normalized repository-relative path with no symlink segment, then is walked at the profile's granularity, so on a recursive stack rendering domains are discovered from the directory structure whether or not they are listed in `renderingDomains` (a declared domain that has no directory is flagged with `rendering-domain-missing`).
 2. **The adapter profile's conventional roots** (e.g. `toolkit` → `frontend/src/html/{components,modules,templates}`) and a deprecated `reusableComponentsBase` pointer, when declared.
 3. **A `layouts` root** derived alongside the buckets, so layouts and page templates are covered.
-4. **Heuristic probe** only when nothing above is declared: `src/components`, `components`, `src/ui`, `app/components`, `frontend/src/html/{components,modules}`, `src/modules`. A `heuristic-buckets` warning records this; bucket and domain are usually `null`.
+4. **Conventional probe** from common framework layouts: `src/components`, `components`, `src/ui`, `ui`, `app/components`, `app/ui`, `frontend/src/html/{components,modules,templates}`, `src/modules`, and package-local equivalents. A `heuristic-buckets` warning records this when no stronger root was declared; bucket and domain are usually `null`.
 
-**Storybook** stories (`*.stories.*`) are a supplementary signal, not a first-class one — most projects have none and it is a no-op. For the `toolkit` stack, where Storybook is the component registry, each story contributes to the census (a `storybook` source), unioned with the markup.
+**Source evidence** is recorded per component without changing inventory schema v1: entry points, colocated tests, stories, styles, token files, imports, direct consumers, manifests, framework markers, and delivery configuration. Source symlinks are reported and skipped whether they name a file, workspace/component root, nested directory, or cycle; a symlink target is working-tree state, not bytes the pinned Git revision proves. Unsafe configured roots fall back inside the project. Storybook can contribute components only for a profile where it is the registry; otherwise a story enriches its source component and cannot create a phantom component.
 
 This same scan **also runs in artifacts mode**, where it corroborates and supplements `component-index.json` rather than replacing it — so a component the index omitted is still found.
 
@@ -39,16 +39,16 @@ The recursive walk does not descend into a component's own subdirectories, skips
 - **`fingerprint.json`** next to a component — read even in this mode, and still a strong source.
 - **Project memory** (`MEMORY.md`, `memory/*.md`) if the project has any — a component discussed by name is real.
 - **The directory name itself** — the label to resolve. A kebab-case directory beside a PascalCase entry file is a genuine naming convention, not noise.
-- **Co-located tests or stories** — evidence the component was built deliberately. Storybook stories are collected automatically (the `storybook` source); co-located tests are not — check by hand for a candidate you are considering promoting.
+- **Co-located tests, stories, styles, and consumers** — useful inspection paths recorded under `sourceEvidence`, but still part of the same project implementation family as the component source.
 
 ## The evidence cap
 
-**A candidate evidenced only by `code-scan` caps at Watch.** One weak source cannot clear the rubric's two-source bar.
+**A candidate evidenced only by the source implementation family caps at Watch.** Source code plus its colocated tests, stories, styles, imports, and consumers is one occurrence, not several independent sources.
 
 It can still reach Promote when either holds:
 
 - A second source appears for that component in this project (`fingerprint`, `memory`).
-- A `PriorReports` entry supplies the recurrence — the same label surfaced in another project's run.
+- Selected eligible prior evidence supplies recurrence — the same label surfaced in another project. `Data` supplies it automatically; legacy `PriorReports` can add an eligible explicit run, but the latest run per project still wins.
 
 Do not compensate by counting directories: five components in a folder is one source, not five.
 

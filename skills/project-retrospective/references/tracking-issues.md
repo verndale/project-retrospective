@@ -18,33 +18,34 @@ Run `tracking-targets.cjs` before a write and again after issue/repository check
 | Repository | Issue trigger | Local branch trigger | Labels |
 |---|---|---|---|
 | `verndale/project-retrospective` | an approved source-parity contract changes the skill/tooling | a non-empty contract write set exists | `Feature`, `area:tooling` |
-| `verndale/ui-design-evidence` | a validated analyze or retrospective-ingestion run is written in the evidence checkout | before the run/wiki's first write | `Feature`, `area: retrospectives` |
+| `verndale/ui-design-evidence` | a validated run/ingestion exists, or capture enrichment/lifecycle evidence has a non-empty write set | before that evidence write | `Feature`, `area: retrospectives` |
 | `verndale/ui-design-brain` | at least one pending catalog proposal exists | promote has an approved proposal and a non-empty brain write set | `Feature`, `area: catalog` |
 | `verndale/ui-design-library` | capture preflight reports actionable library work | capture has a non-empty library write set and required capabilities | `Feature`, `area: components` |
 | `ai-orchestration` | never | never | none |
 
 - Analyze never creates brain or library branches.
 - A proposal creates brain tracking, never library tracking.
-- A draft capture does not itself create library tracking. `ready` or `figma-pending` work from schema-v6 capture preflight does; `deferred`, `blocked`, `skipped`, `landed`, and evidence-only reconciliation do not.
+- A lightweight capture intent does not itself create library tracking. A selected intent first enters `enrichment-pending`, which may prepare only its evidence run branch after writer/live proof. Only `ready` work from schema-v6 capture preflight creates library tracking; `enrichment-pending`, `deferred`, `blocked`, `skipped`, `landed`, current `figma-pending`, and evidence-only reconciliation do not.
 - `source-parity-audit` uses one foundation issue per repository with a non-empty contract/audit/governance write set, then one library issue per `actionable` component remediation. Cleared components and absent brain canonicals create no downstream issue or branch.
-- A missing Figma writer keeps actionable work `issue-pending` and creates no empty library branch.
+- A missing writer or failed current `pnpm figma:live` validation keeps fresh/resumed work before branch creation. If capability disappears unexpectedly after work began, record current `figma-pending`; restored capability returns the capture to `ready` and resumes the exact existing issue branch instead of creating it again.
 - Home fallback creates no evidence issue or branch.
 
 ## Deterministic sequence
 
-1. Write a JSON snapshot of the action, exact artifact IDs, capture statuses, existing exact open issues, repository readiness, and capabilities. Analyze/ingest use `stage: "prewrite"` before the evidence write and `stage: "postvalidate"` only after the run validator passes. Run:
+1. Write a JSON snapshot of the action, exact artifact IDs, capture statuses, existing exact open issues, repository readiness, and capabilities. Capture/remediation IDs must be unique canonical component keys; project must be a lowercase kebab slug and date a real ISO calendar date before either can enter an evidence branch name. Analyze/ingest use `stage: "prewrite"` before the evidence write and `stage: "postvalidate"` only after the run validator passes. Run:
 
    ```bash
    node <skill>/scripts/tracking-targets.cjs --input <snapshot.json> --pretty
    ```
 
-2. On analyze/ingest `prewrite`, create only the evidence branch emitted as `write-ready`; do not file the evidence or brain issue yet. On `postvalidate`, each `issue-pending` target is authorized: reconcile only the sanctioned labels, search open issues for the exact `Tracking key: <issueMatchKey>` line, and reuse it or use `github-issue-creator` to file immediately without a confirmation pause.
+2. On analyze/ingest `prewrite`, create only the evidence branch emitted as `write-ready`; do not file the evidence or brain issue yet. For capture, snapshot selected intent keys as `enrichment-pending` only after current writer/live proof; the resolver may resume/create the run's evidence branch but must emit library `skip` with `capture-enrichment-required`. Enrich and run schema-v6 preflight, then rerun tracking with its governed status. On `postvalidate`, each `issue-pending` target is authorized: reconcile only the sanctioned labels, search open issues for the exact `Tracking key: <issueMatchKey>` line, and reuse it or use `github-issue-creator` to file immediately without a confirmation pause.
 3. Link a later library issue from the private evidence hub. Never put the private hub URL or run identity in the shared library issue.
 4. Before a promote/capture target becomes `write-ready`, require successful GitHub authentication/issue creation, exact labels, a clean local `main`, and local `main` aligned with `origin/main`. Evidence prewrite also requires authentication, exact labels, clean main, and alignment, but its hub issue is deliberately post-validation. Rerun the resolver with those checks and the exact issue number where an issue is required.
 5. Create only the emitted branch and only while the target is `write-ready`:
    - Evidence: `feat/<project>-<date>-run`
    - Brain: `feat/<issue-number>-catalog-promotion`
    - Library: `feat/<issue-number>-library-capture`
+   When the target emits `resumeExistingBranch`, switch to that exact existing branch; do not run `switch -c` again.
 6. Keep the branch local. Stop at handback with nothing committed or pushed.
 
 Compute a branch from actual planned writes, never artifact presence alone. If the work set becomes empty after preflight, do not create the branch.

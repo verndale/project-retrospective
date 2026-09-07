@@ -19,7 +19,7 @@ What the skill does, how to run it, and what it produces. The skill's own instru
 
 ## What it does
 
-Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what didn't resolve into reviewable proposals. Reusable component captures include an explicit server-first module graph and source-parity v2 interaction-state inventory, then finish with source-backed Storybook evidence and an unpublished, reviewed Figma master/state presentation. Applying one creates aligned code, Storybook, and design-library contracts instead of reproducing a monolithic client TSX file. The skill can also ingest seeded team retrospectives and post-mortems, preserve their original structure privately, and turn every action into an owned, auditable lifecycle record.
+Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what did not resolve into reviewable proposals. Analyze is source-first and lightweight: ordinary package/workspace structure works without pipeline artifacts, and library candidates are pending intents rather than speculative target designs. `Action: capture` reopens the pinned source, enriches selected intents to source-parity v2 plus an explicit server-first plan, then creates aligned code, Storybook, and unpublished reviewed Figma evidence. The skill can also ingest seeded team retrospectives and post-mortems into durable evidence.
 
 The division of labour matters: **scripts decide structure, the model exercises judgment.** Discovery, label resolution, and output validation are deterministic and zero-LLM. Deciding whether an unresolved label is real platform vocabulary is the part that needs a model — and it is advisory. Nothing reaches the catalog without a human commit.
 
@@ -68,7 +68,7 @@ Data: /Users/you/Projects/ui-design-evidence
 
 `Data` is what puts the run in the evidence repo. Without it, output lands in `~/project-retrospective/runs/` and the skill tells you so.
 
-Output goes to `<Data>/runs/<project-slug>/<YYYY-MM-DD>/`. **Done when:** that directory holds `meta.json`, `report.md`, `inventory.json`, `resolution.json`, `memory-archive.json`, `orchestration-drafts.md`, plus `proposals/`, `captures/`, and one-to-one `source-parity/` companions if anything qualified — the validator exits 0 — and (because `Data` is set) the client wiki under `<Data>/wiki/` gained a journal entry, its client page, and the project's memory archive under `<Data>/wiki/memory/`. When `Retrospectives` was supplied, the run also contains the four retrospective artifacts, while the private wiki gains the reviewed source archive and living action register.
+Output goes to `<Data>/runs/<project-slug>/<YYYY-MM-DD>/`. **Done when:** that directory holds `meta.json`, `report.md`, schema-v1 `inventory.json`, `resolution.json`, `memory-archive.json`, `orchestration-drafts.md`, plus `proposals/` and lightweight pending `captures/` intents when anything qualifies — the validator exits 0 — and the evidence wiki has been updated. Analyze does not emit `source-parity/`; capture enrichment adds it only for selected intents. Optional retrospective inputs add their private artifacts/register.
 
 ### Step 2 — Read the report
 
@@ -77,10 +77,10 @@ Open `report.md`. Three of its sections each pair with an artifact and a destina
 | Section | Artifact | Goes to |
 |---|---|---|
 | `## Candidates` (Promote verdicts) | `proposals/<slug>.md` | ui-design-brain |
-| `## Captures` | `captures/<slug>.md` or `captures/<slug>--<variant>.md` plus `source-parity/<component-key>.json` | ui-design-library |
+| `## Captures` | lightweight `captures/<slug>.md` or `captures/<slug>--<variant>.md` intent | capture-time enrichment, then ui-design-library |
 | `## Learnings` | `orchestration-drafts.md` | ai-orchestration |
 
-Check `## Gaps` first — it carries the script warnings verbatim, and a `mode: code-scan` run caps every verdict at Watch, which means no proposals by design.
+Check `## Gaps` first — it carries script warnings verbatim. Code plus colocated tests/stories/styles/consumers is one project implementation family, so it caps at Watch unless another project or genuinely independent evidence corroborates it.
 
 **This is the only content-approval gate.** Everything downstream applies what you approve here, so throw out what you disagree with now. (Steps 3 and 4 each stop at a handback for review before you commit, but neither re-litigates the decision made here.) **Done when:** you know which proposals and which captures you want.
 
@@ -113,11 +113,12 @@ The whole directory in one invocation:
 /project-retrospective
 Action: capture
 Captures: /Users/you/Projects/ui-design-evidence/runs/some-client-site/2026-06-14/captures
+CaptureKeys: modal,notice-panel
 Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
 ```
 
-Preflight checks every capture at once and returns a schema-v6 plan keyed by exact `(canonical, variant)` identity, with source-parity decisions, a separate validated interaction-state model, runtime architecture, realization v1, lifecycle state, companion default migrations, and the required Figma promotion interface. New actionable work requires source-parity v2; legacy v1 remains readable only for landed/skipped captures. `ready` starts code, `figma-pending` resumes at Figma, `evidence-pending` resumes in private evidence, and `skipped` is fully reconciled. Without a source-parity companion or write-capable Figma session, work remains blocked/pending and creates no empty library branch. Code Connect is not used; imports remain `components/<slug>` and `components/<slug>--<variant>`.
+Before branching, the action confirms the supported `figma-use` writer and current `pnpm figma:live`, then resolves the source checkout from sibling `inventory.json` (or optional `Project` override). Selected intents enter `enrichment-pending`: tracking can prepare only the existing evidence run branch, never a library issue/branch. Enrichment preserves exactly one safe intent Source entry and proves sibling metadata, inventory, source-parity project/run/entry, inspected entry points, and hashed citation all join the same run and file. An entry with multiple inventory owners is ambiguous; sibling `resolution.json` must resolve the one owner to the capture canonical, so a valid but unrelated component cannot substitute. It adds source-parity v2, accessibility/state dispositions, runtime architecture, and realization. Missing source accessibility becomes a remediation gap. Schema-v6 preflight then makes `ready` actionable for the library; `figma-pending` is only a current unexpected mid-run loss; restored capability resumes the existing issue branch; `evidence-pending` reconciles private evidence; `skipped` is fully reconciled. Code Connect is not used.
 
 Then you commit, one per component:
 
@@ -133,9 +134,9 @@ cd /Users/you/Projects/ui-design-library && pnpm commit
 
 **Done when:** each draft is either filed there or consciously dropped.
 
-### Step 6 — Keep the report
+### Step 6 — Keep the evidence loop
 
-Keep `report.md` where it is. On the next project, pass it as `PriorReports` — a label two independent projects both had to invent is the strongest promotion evidence there is, and a Watch that recurs is elevated to Promote automatically.
+Keep runs under `Data`. The next analyze automatically selects the latest eligible run per other project; invalid/stale runs and Reject verdicts do not drive recurrence. `PriorReports` remains an explicit compatibility escape hatch for an eligible run outside `Data`, or when `Data` is unavailable. It enters the same latest-per-project merge and cannot replace a newer run.
 
 ## Invocation
 
@@ -153,14 +154,22 @@ Project: /Users/you/Projects/some-client-site
 Scope: inventory
 ```
 
-Writing into the evidence repo, with cross-project history:
+Writing into the evidence repo, with automatic cross-project history:
 
 ```text
 /project-retrospective
 Project: /Users/you/Projects/site-b
 Brain: /Users/you/Projects/ui-design-brain
 Data: /Users/you/Projects/ui-design-evidence
-PriorReports: /Users/you/Projects/ui-design-evidence/runs/site-a/2026-05-02/report.md
+```
+
+Explicit compatibility fallback for an eligible run outside `Data`:
+
+```text
+/project-retrospective
+Project: /Users/you/Projects/site-b
+Brain: /Users/you/Projects/ui-design-brain
+PriorReports: /Users/you/Archives/runs/site-a/2026-05-02/report.md
 ```
 
 Append-only retrospective backfill, without re-running project discovery:
@@ -179,19 +188,21 @@ The action derives client, platform, and `prior_run` from the latest existing ev
 
 | Parameter | Required | Default | Meaning |
 |---|---|---|---|
-| `Project` | for analyze | — | Absolute path to the completed project repository. **Read-only** — the retrospective never writes here. |
+| `Project` | for analyze; optional capture override | sibling inventory on capture | Absolute path to the completed project repository. **Read-only**; capture overrides only the checkout location, never the pinned revision. |
 | `Brain` | for resolution, promote, and capture | — | Absolute path to a local ui-design-brain checkout. Without it, resolution is skipped and the report records the gap. |
 | `Data` | no | — | Absolute path to the private `ui-design-evidence` repo. When given, runs land under `<Data>/runs/<project-slug>/<date>/`. |
 | `Output` | no | `<Data>/runs/…`, else `~/project-retrospective/runs/…` | Where run output is written. Never inside `Project`. |
 | `Client` | no | derived | Human-readable client name; sets the wiki client-slug (distinct from the project-slug — one client may own several projects). Resolution order in [`references/wiki-feed.md`](references/wiki-feed.md). |
 | `Scope` | no | `full` | `inventory` (what was built), `candidates` (adds resolution and verdicts), `full` (adds proposals and drafts), or `retrospectives` (append-only team-retrospective backfill). |
-| `PriorReports` | no | — | Comma-separated paths to earlier `report.md` files. A Watch candidate that recurs is elevated to Promote. |
+| `Platform` | no | exact marker inference | Canonical CMS key override when exact repository markers are missing or ambiguous. |
+| `PriorReports` | no | automatic from `Data` | Legacy escape hatch for eligible explicit `report.md` paths, usable without `Data`; stale paths cannot override a newer run for that project. |
 | `Specs` | no | — | Confluence source for the project's functional specs — a space key + label(s), or an approvals-page URL. Enables spec capture (Step 1b). |
 | `Retrospectives` | no | — | Comma-separated Confluence page and space URLs. Explicit pages are always audited; discovery stays inside the seeded spaces. |
 | `ProjectSlug` | for ingest-retrospectives | — | Existing evidence project whose latest metadata supplies client, platform, and prior run. |
 | `Action` | no | `analyze` | `analyze`, `ingest-retrospectives`, `promote`, or `capture`. |
 | `Proposal` | for promote | — | Path to the approved proposal file to apply. |
 | `Captures` | for capture | — | Path to a run's `captures/` directory. Applied as a set — one invocation covers every capture in it. |
+| `CaptureKeys` | no | all pending | Comma-separated exact component keys to enrich/apply. |
 | `Library` | for capture | — | Absolute path to a local ui-design-library checkout. |
 
 ## Outputs
@@ -202,12 +213,12 @@ Written to `Output`, never into this skill's repository:
 |---|---|
 | `meta.json` | Machine-readable run identity: client, project, exact canonical CMS key/label, date, scope, priorReports. Grounds the client wiki. |
 | `report.md` | The human-readable retrospective: summary, inventory, resolution, candidates with verdicts and evidence, learnings, gaps, next steps. |
-| `memory-archive.json` | Manifest proving the project's memory was preserved: `status` (`archived` / `skipped-no-data` / `no-memory`), the files archived, and `skippedEmpty` (empty placeholder shards dropped). Written every run; the validator fails a run that had memory but no archive. |
-| `inventory.json` | Every component found, with its evidence sources, build pack, fingerprint, and exact Git source snapshot. |
+| `memory-archive.json` | Manifest proving the project's memory was preserved: `status` (`archived` / `skipped-no-data` / `no-memory`), the files archived, and `skippedEmpty` (empty placeholder shards dropped). Symlinked memory is warned and skipped because its target is outside pinned evidence. Written every run; the validator fails a run that had memory but no archive. |
+| `inventory.json` | Schema v1: components plus source entry/tests/stories/styles/tokens/imports/consumers/manifests/framework/delivery evidence, optional artifact corroboration, and exact Git snapshot. |
 | `resolution.json` | Resolved labels with how they resolved; unresolved labels with occurrences and locations. |
 | `proposals/<slug>.md` | One per Promote candidate — a ready-to-apply catalog change with its evidence. |
-| `captures/<slug>.md`, `captures/<slug>--<variant>.md` | Default and qualified structural implementations mature enough to seed `ui-design-library`, with exact identity, lifecycle, de-clienting, and validated architecture. |
-| `source-parity/<component-key>.json` | Schema-v2 pinned, hashed source facts; explicit inspected entry/test/style/build-pack/importer/consumer coverage; visual/runtime interaction-state inventory; classifications, target surfaces, review phase, and implementation state across code, Storybook, Figma, and AI representation; exactly one per new capture. |
+| `captures/<slug>.md`, `captures/<slug>--<variant>.md` | Analyze-time pending intent: exact identity, one source entry, why/evidence present-or-absent, de-client headline, pending progress. Capture action enriches selected files in place. |
+| `source-parity/<component-key>.json` | Capture-time only: schema-v2 pinned, hashed source facts, explicit accessibility/state dispositions, differences, implementation state, and reviews. One per selected executable capture. |
 | `orchestration-drafts.md` | Pipeline-shaped findings as paste-ready drafts for ai-orchestration. |
 | `specs-raw.json` / `specs.json` | Only when a `Specs` input was given: the model's raw Confluence capture, and the structured, approved-only spec pack (`normalize-specs.cjs`) that feeds `resolve.cjs --specs`. |
 | `retrospectives-raw.json` | Audited page/space capture: explicit and discovered candidates, source versions, converted Markdown, and every exclusion reason. |
@@ -219,25 +230,27 @@ Written to `Output`, never into this skill's repository:
 
 **The client wiki (Step 6).** When `Data` is the `ui-design-evidence` checkout, an analyze run also feeds that repo's client wiki: it creates/updates `<Data>/wiki/clients/<client-slug>.md` (durable client knowledge) and appends `<Data>/wiki/journal/<date>-<project-slug>.md` (what happened this run), so the evidence repo answers "who is this client and what have we run for them." It also preserves the project's engineering memory near-raw at `<Data>/wiki/memory/<client-slug>/<project-slug>/` (a byte-copied `source/` plus an `index.md` digest), so a wrapped project's learnings outlive it. Retrospective runs additionally preserve reviewed source Markdown under `<Data>/wiki/retrospectives/` and merge actions into living registers under `<Data>/wiki/actions/`. Skipped when the run lands in the home fallback. See [`references/wiki-feed.md`](references/wiki-feed.md).
 
-**Two modes.** A project that went through the build pipeline has normalized evidence (build packs, component index, fingerprints, project memory) — that is `artifacts` mode. A project without it degrades to `code-scan`: directory walking only, which yields names but no contract, so verdicts cap at Watch. The report says which mode ran, in the Run and Gaps sections.
+**Two modes, one source-first flow.** Both scan the root manifest plus nested manifests admitted by `workspaces` or `pnpm-workspace.yaml`, framework/platform markers, conventional roots, source/imports, tests/stories/styles/tokens/consumers, and delivery configuration. Unrelated nested examples are excluded from workspace platform/root evidence. `artifacts` adds normalized build/index/fingerprint/design/memory corroboration. `code-scan` lacks that set, so one implementation family alone caps at Watch. Exact competing platform markers remain `null` unless `Platform` resolves them.
 
 ## Scripts
 
 Runnable directly, which is useful for debugging a run:
 
 ```bash
-node scripts/inventory.cjs --project <path> --out inventory.json --pretty
+node scripts/inventory.cjs --project <path> [--platform <canonical-key>] --out inventory.json --pretty
+node scripts/prior-evidence.cjs --project <project-slug> [--data <Data>] [--prior-reports <report.md paths>] --pretty
 node scripts/archive-memory.cjs --project <path> --out memory-archive.json --pretty
 node scripts/normalize-retrospectives.cjs --raw retrospectives-raw.json --findings retrospective-findings.json --project-slug <slug> --out retrospectives.json --actions-out retrospective-actions.json --pretty
 node scripts/resolve.cjs --inventory inventory.json --brain <brain-path> --retrospectives retrospectives.json --out resolution.json --pretty
 node scripts/update-retrospective-register.cjs --actions retrospective-actions.json --register <Data>/wiki/actions/<client>/<project>.md
 node scripts/validate-report.cjs --output <output-dir> --scope full
-node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <library-path> --brain <brain-path> --pretty
+node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <library-path> --brain <brain-path> [--capture-keys <keys>] [--project <path>] --figma-writer figma-use --figma-live-validated --pretty
 ```
 
 | Script | Exit codes |
 |---|---|
 | `inventory.cjs` | 0 success (including degraded) · 1 unexpected · 2 bad invocation · 3 `--project` is not a directory |
+| `prior-evidence.cjs` | 0 selected eligible cross-project recurrence · 1 unexpected · 2 bad invocation or neither evidence input supplied · 3 supplied `--data` invalid |
 | `archive-memory.cjs` | 0 success (including degraded) · 1 unexpected · 2 bad invocation · 3 `--project` is not a directory |
 | `resolve.cjs` | 0 · 1 · 2 · 3 inventory missing/unreadable/wrong schema · 4 manifest missing/unreadable/invalid |
 | `normalize-retrospectives.cjs` | 0 success (including recorded warnings) · 1 unexpected · 2 bad invocation · 3 named input missing/unreadable |
@@ -278,7 +291,9 @@ Brain: /Users/you/Projects/ui-design-brain
 
 **Batch input, serial execution.** `capture-preflight.cjs` checks every capture in one pass — exact structural key, source-parity v2 interaction states, catalog identity, runtime architecture, realization, Storybook/Figma/evidence state, and governed promotion surfaces. Its schema-v6 envelope writes nothing. Components resume at the first incomplete boundary and execute one at a time.
 
-**Tracking is automatic and conditional.** `tracking-targets.cjs` routes exact work sets. Analyze creates the evidence hub and a brain issue only when proposals exist; it never creates shared branches. Capture creates/reuses a client-agnostic library issue only for actionable preflight work, then creates `feat/<issue-number>-library-capture` only after exact issue, labels, clean aligned main, non-empty writes, and capabilities pass. Label reconciliation, issue creation/linking, and local branch creation do not pause for approval; commits, pushes, PRs, closure, publication, merge, and release still require separate authority.
+Analyze-time files are intentionally not executable yet. The action gates current writer/live-registry capability before branching, verifies the sibling inventory and pinned source, then enriches selected intents on the evidence branch before the schema-v6 gate. Use `CaptureKeys` for a subset and `Project` only when the recorded checkout moved. Missing source accessibility is recorded as remediation work, not treated as proof or a reason to drop the intent.
+
+**Tracking is automatic and conditional.** `tracking-targets.cjs` routes exact work sets. Analyze creates the evidence hub and a brain issue only when proposals exist; it never creates shared branches. Capture may create/resume the evidence run branch for enrichment, then creates/reuses a client-agnostic library issue and issue-keyed branch only for capable `ready` work. A restored mid-run writer resumes that exact branch rather than creating it again. Label/issue/link/branch operations do not pause for approval; commits, pushes, PRs, closure, publication, merge, and release still require separate authority.
 
 **Server first, not directive first.** Each architecture chooses `server`, `hybrid`, or `client` from concrete hydration needs. Server mode emits full HTML and has no client modules. Hybrid mode keeps a server facade plus a real server tree/branch/leaf implementation—the facade alone is not server output—and isolates state, handlers, effects, context, portals, timers, observers, browser APIs, or client-only dependencies in `.client.ts`/`.client.tsx` leaves. Client mode uses a client `index.ts` facade only when the public component itself cannot stay server-backed. Every `'use client'` file is at most 120 physical lines and remains SSR-safe; the directive does not disable React/Next server rendering.
 
@@ -292,7 +307,7 @@ Then you commit in the library repo (`pnpm commit`), one per component, and PR.
 
 ## Across projects
 
-One project's retrospective is a snapshot; the signal gets much stronger with history. Keep each `report.md` and pass the relevant ones as `PriorReports` on the next run. A label two independent projects both had to invent is the strongest promotion evidence available — it is the same reasoning the catalog's own growth has used.
+One project's retrospective is a snapshot; the signal gets much stronger with history. Keep runs under `Data`: the next analyze uses `prior-evidence.cjs` to select the latest eligible run for each other project automatically. `PriorReports` can add an eligible explicit run from elsewhere, including without `Data`, but it joins the same latest-per-project merge. Watch and Promote can recur; Reject, impossible calendar dates, invalid identity/resolution, and stale superseded runs cannot. One project contributes one occurrence even when code, tests, and stories all mention the label.
 
 ## Troubleshooting
 
@@ -312,7 +327,7 @@ One project's retrospective is a snapshot; the signal gets much stronger with hi
 | Promote refuses to start | A precondition failed — unreadable proposal, no manifest at the `Brain` path, or the change is already applied. The message names which. |
 | Validator fails on `capture-parity` | A `### <Canonical>` entry under `## Captures` has no `captures/<kebab-canonical>.md`, or a capture file has no entry. Both directions fail — a capture the report does not list is how a component reaches the library with no evidence. |
 | Validator fails on `capture-canonical` | The capture's bolded canonical, its backticked slug, and its filename disagree. Name the file after the canonical (`Badge` → `captures/badge.md`), never after the project's label. |
-| Validator fails on `source-parity` | Add/fix the exact `source-parity/<component-key>.json` companion. Every governed source category and normalized surface must be reviewed, every difference classified, each decision needs an honest implementation/review phase, and pinned source hashes plus cited line ranges must match. |
+| Validator fails on `source-parity` | During capture enrichment, add/fix the selected `source-parity/<component-key>.json`. Every governed source category (including accessibility) and normalized surface must be reviewed, every difference classified, each decision needs an honest implementation/review phase, and pinned source hashes/ranges must match. Analyze-time intents intentionally have no companion. |
 | Preflight blocks on `canonical-unknown` | The catalog has no such canonical and no `new-pattern` proposal in the run establishes it. Promote it into ui-design-brain first — the library keys on names the catalog resolves to. (If the run *does* propose it, preflight reports `deferred` — exit 6 — instead: promote that proposal, then re-run.) |
 | Preflight blocks on `architecture-*` | The capture is missing its Runtime architecture or its mode, hydration, server output, module roles/runtimes, paths, facade/types, or TSX split is inconsistent. Fix the capture; architecture is a hard gate, never inferred during application. |
 | Preflight blocks on `library-partial` | `components/<slug>/` exists but its recursive module set, contents, reachability, client boundary, or root story is incomplete or inconsistent. Finish or remove it by hand; the skill will not write into a half-built directory. |

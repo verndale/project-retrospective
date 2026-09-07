@@ -113,7 +113,7 @@ function isFile(p) {
 }
 
 /**
- * Directory entries as { name, path, dir } records. Returns [] when unreadable.
+ * Directory entries as { name, path, dir, symlink } records. Returns [] when unreadable.
  *
  * Dirent.isDirectory() does not follow symlinks, but monorepos and shared
  * component libraries routinely symlink directories — treating those as files
@@ -129,6 +129,7 @@ function listEntries(dirPath) {
           name: entry.name,
           path: full,
           dir: entry.isDirectory() || (entry.isSymbolicLink() && isDir(full)),
+          symlink: entry.isSymbolicLink(),
         };
       })
       .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
@@ -138,20 +139,56 @@ function listEntries(dirPath) {
 }
 
 /**
+ * True only for one normalized repository-relative path.
+ *
+ * This is deliberately stricter than `path.relative`: paths are persisted as
+ * evidence and later passed to Git, so alternate spellings, Windows absolute
+ * paths on POSIX, control bytes, and traversal must all fail before a child
+ * process sees them.
+ */
+function isSafeRepositoryRelativePath(value) {
+  if (typeof value !== 'string' || !value || value !== value.trim()) return false;
+  // eslint-disable-next-line no-control-regex -- repository evidence paths reject every ASCII control byte
+  if (value.includes('\\') || /[\u0000-\u001f\u007f]/.test(value)) return false;
+  if (path.posix.isAbsolute(value) || path.isAbsolute(value) || /^[A-Za-z]:/.test(value)) return false;
+  if (path.posix.normalize(value) !== value) return false;
+  return value !== '.' && !value.startsWith('../') && !value.includes('/../');
+}
+
+/**
+ * Read exactly one `- Label: `value`` declaration from a Markdown section.
+ *
+ * Every line that starts a declaration counts, even when malformed. This keeps
+ * a valid first line plus an unquoted duplicate from masquerading as one field.
+ */
+function singleBacktickedBullet(body, label) {
+  const escaped = String(label).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const declaration = new RegExp(`^\\s*(?:[-*+]\\s*)?(?:\\*\\*)?${escaped}(?:\\*\\*)?\\s*:`, 'i');
+  const lines = String(body || '').split(/\r?\n/).filter((line) => declaration.test(line));
+  if (lines.length !== 1) return { count: lines.length, value: null };
+  const exact = new RegExp(`^- ${escaped}:\\s*` + '`([^`\\r\\n]+)`' + '\\s*$').exec(lines[0].trim());
+  return { count: 1, value: exact?.[1] ?? null };
+}
+
+/**
  * Every file under `dir`, recursively, as forward-slash paths relative to `dir`.
  *
  * Returns [] when `dir` is unreadable, so a caller archiving project memory
- * records "nothing to copy" instead of crashing. Symlinked directories are
- * followed (via listEntries, which resolves them), matching how these scripts
- * treat monorepo symlinks; `maxDepth` bounds a pathological or cyclic tree so
- * the walk always terminates.
+ * records "nothing to copy" instead of crashing. Symlinked entries are followed
+ * by default for backward compatibility; evidence-boundary callers can disable
+ * that behavior and receive each skipped entry through `onSymlink`.
+ * `maxDepth` bounds a pathological or cyclic tree so the walk always terminates.
  */
-function listFilesRecursive(dir, { maxDepth = 32 } = {}) {
+function listFilesRecursive(dir, { maxDepth = 32, followSymlinks = true, onSymlink = null } = {}) {
   const out = [];
   const walk = (current, rel, depth) => {
     if (depth > maxDepth) return;
     for (const entry of listEntries(current)) {
       const childRel = rel ? `${rel}/${entry.name}` : entry.name;
+      if (entry.symlink && !followSymlinks) {
+        if (typeof onSymlink === 'function') onSymlink(childRel, entry.path);
+        continue;
+      }
       if (entry.dir) walk(entry.path, childRel, depth + 1);
       else out.push(childRel);
     }
@@ -345,12 +382,25 @@ function copyFileTo(src, dest) {
  * pipeline evidence (inventory, the memory archive) MUST agree on where it is —
  * so the read and the "artifacts" default live here, once, rather than being
  * copied per script where they could drift. Emits no warnings: the caller maps
- * `status` ("ok" | "absent" | "unreadable") to its own contextual message.
+ * `status` ("ok" | "absent" | "unreadable" | "unsafe") to its own contextual message.
  * `config` is the parsed object (null unless "ok"), so a caller that needs more
  * fields reads the file only once.
  */
 function resolveArtifactsRoot(projectDir) {
   const configPath = path.join(projectDir, 'build.config.json');
+  try {
+    if (fs.lstatSync(configPath).isSymbolicLink()) {
+      return {
+        status: 'unsafe',
+        path: configPath,
+        artifactsRoot: 'artifacts',
+        config: null,
+        error: 'build.config.json is a symlink',
+      };
+    }
+  } catch {
+    // The ordinary absent/unreadable branches below own the diagnostic.
+  }
   if (!isFile(configPath)) {
     return { status: 'absent', path: null, artifactsRoot: 'artifacts', config: null, error: null };
   }
@@ -359,10 +409,13 @@ function resolveArtifactsRoot(projectDir) {
     return { status: 'unreadable', path: configPath, artifactsRoot: 'artifacts', config: null, error: read.error };
   }
   const config = read.value || {};
+  const configuredArtifactsRoot = typeof config.artifactsRoot === 'string' ? config.artifactsRoot : 'artifacts';
+  const artifactsRootSafe = isSafeRepositoryRelativePath(configuredArtifactsRoot);
   return {
     status: 'ok',
     path: configPath,
-    artifactsRoot: typeof config.artifactsRoot === 'string' ? config.artifactsRoot : 'artifacts',
+    artifactsRoot: artifactsRootSafe ? configuredArtifactsRoot : 'artifacts',
+    unsafeArtifactsRoot: artifactsRootSafe ? null : configuredArtifactsRoot,
     config,
     error: null,
   };
@@ -393,6 +446,8 @@ module.exports = {
   isFile,
   listEntries,
   listFilesRecursive,
+  isSafeRepositoryRelativePath,
+  singleBacktickedBullet,
   normalizeLabel,
   kebab,
   sections,

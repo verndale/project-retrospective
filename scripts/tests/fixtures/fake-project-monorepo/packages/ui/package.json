@@ -1,0 +1,6 @@
+{
+  "name": "synthetic-ui",
+  "dependencies": {
+    "react": "1.0.0"
+  }
+}
