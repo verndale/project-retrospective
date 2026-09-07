@@ -27,6 +27,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-09-07 — feat(capture): require reviewed ready-for-dev evidence ([verndale/project-retrospective PR #94](https://github.com/verndale/project-retrospective/pull/94))
 - 2026-09-07 — feat(retrospective): Make knowledge loop source-first ([verndale/project-retrospective PR #91](https://github.com/verndale/project-retrospective/pull/91))
 - 2026-09-06 — Made source the universal analyze input and moved architecture/realization/Figma claims to selected capture-time enrichment; automatic valid prior-run selection closes the normal loop, while a validated explicit `PriorReports` path remains usable under the same latest-per-project safety rule ([issue #90](https://github.com/verndale/project-retrospective/issues/90), [plan](../plans/2026-09-06-source-first-knowledge-loop.md), [journal](../journal/2026-09-06-source-first-knowledge-loop.md)).
 - 2026-08-27 — chore(pr): codex/87-cms-taxonomy ([verndale/project-retrospective PR #88](https://github.com/verndale/project-retrospective/pull/88))
