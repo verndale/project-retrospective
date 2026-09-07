@@ -1,3 +1,38 @@
+# v2.1.0 — 2026-09-07
+
+## Summary (AI, bounded)
+- Introduced a new feature making the knowledge loop source-first (12183f1)
+- Updated wiki documentation to reconcile changes from merged PR #88 (920f87b)
+- Merged pull request #91 enabling the source-first knowledge loop approach (f82a4fc)
+- Merged pull request #89 to synchronize bot wiki updates (36b96a1)
+- No breaking changes in this release
+
+## Highlights
+- commit: Merge pull request #91 from verndale/codex/90-source-first-knowledge-loop (f82a4fc)
+- feat(retrospective): Make knowledge loop source-first (12183f1)
+- commit: Merge pull request #89 from verndale/bot/wiki-sync/88 (36b96a1)
+- docs(wiki): reconcile merged PR #88 (920f87b)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(retrospective): Make knowledge loop source-first (12183f1)
+
+### Docs
+- docs(wiki): reconcile merged PR #88 (920f87b)
+
+### Other (unknown)
+- commit: Merge pull request #89 from verndale/bot/wiki-sync/88 (36b96a1)
+- commit: Merge pull request #91 from verndale/codex/90-source-first-knowledge-loop (f82a4fc)
+
+## Full commit list
+- f82a4fc commit: Merge pull request #91 from verndale/codex/90-source-first-knowledge-loop
+- 12183f1 feat(retrospective): Make knowledge loop source-first
+- 36b96a1 commit: Merge pull request #89 from verndale/bot/wiki-sync/88
+- 920f87b docs(wiki): reconcile merged PR #88
+
 # v2.0.0 — 2026-08-27
 
 ## Summary (AI, bounded)
