@@ -2,7 +2,7 @@
 date: 2026-09-06
 topics: [retrospective-workflow, library-capture]
 plan: plans/2026-09-06-source-first-knowledge-loop.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/91
 issue: https://github.com/verndale/project-retrospective/issues/90
 issues: [https://github.com/verndale/project-retrospective/issues/90]
 ---
