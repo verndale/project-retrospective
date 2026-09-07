@@ -42,6 +42,8 @@ const {
   sections,
   fencedBlock,
   parseCanonicalLine,
+  isSafeRepositoryRelativePath,
+  singleBacktickedBullet,
   usage,
 } = require('./lib/util.cjs');
 const { cmsForKey } = require('./lib/cms-taxonomy.cjs');
@@ -64,12 +66,14 @@ const PROPOSAL_TYPES = ['new-pattern', 'new-alias', 'guidance-edit'];
 // their own directory and pair with the report's "## Captures" entries rather than
 // with a Promote candidate.
 const CAPTURE_TYPE = 'component-capture';
+const CAPTURE_INTENT_TYPE = 'component-capture-intent';
 
 const REQUIRED_SECTIONS = {
   'new-pattern': ['## Pattern draft', '## Manifest entry', '## Evidence', '## Integrity checklist delta', '## Suggested commit'],
   'new-alias': ['## Target', '## Alias', '## Consumer evidence', '## Edits', '## Suggested commit'],
   'guidance-edit': ['## Target file(s)', '## Edit', '## Incident evidence', '## Suggested commit'],
   'component-capture': ['## Canonical', '## Structural implementation', '## Source', '## Reuse evidence', '## De-client work', '## Runtime architecture', '## Proposed library entry', '## Progress', '## Suggested commit'],
+  'component-capture-intent': ['## Capture intent', '## Canonical', '## Structural identity', '## Source', '## Why', '## Evidence', '## De-client headline', '## Progress'],
 };
 
 // Categories the rubric never promotes. Matching here is advisory: the model may
@@ -125,14 +129,19 @@ function checkInventory(dir, result) {
     result.fail('inventory-counts', `inventory.json counts.components (${inv.counts?.components}) does not match components.length (${inv.components.length})`);
   }
   const stackAdapter = inv.config?.stackAdapter ?? null;
-  const catalogEntry = cmsForKey(stackAdapter);
-  const expectedKey = catalogEntry?.key ?? null;
-  const expectedLabel = catalogEntry?.label ?? null;
-  if (inv.config?.cmsKey !== expectedKey || inv.config?.cmsLabel !== expectedLabel) {
+  const cmsKey = inv.config?.cmsKey ?? null;
+  const cmsLabel = inv.config?.cmsLabel ?? null;
+  const catalogEntry = cmsForKey(cmsKey);
+  if ((cmsKey === null) !== (cmsLabel === null) || (cmsKey !== null && catalogEntry?.label !== cmsLabel)) {
     result.fail(
       'inventory-cms',
-      `inventory.json config CMS metadata must be ${JSON.stringify({ cmsKey: expectedKey, cmsLabel: expectedLabel })} for stackAdapter ${JSON.stringify(stackAdapter)}`,
+      `inventory.json config CMS metadata must be an exact canonical key/label pair; got ${JSON.stringify({ cmsKey, cmsLabel })}`,
     );
+  }
+  const adapterEntry = cmsForKey(stackAdapter);
+  if (adapterEntry && inv.config?.platformSource === 'build-config' &&
+    (cmsKey !== adapterEntry.key || cmsLabel !== adapterEntry.label)) {
+    result.fail('inventory-cms', 'build-config platform metadata must agree with its exact canonical stackAdapter marker');
   }
   if (inv.sourceSnapshot === undefined) {
     result.warn('inventory-source-snapshot', 'inventory.json predates pinned source revisions; any capture must use legacy-untracked source parity.');
@@ -295,6 +304,7 @@ function checkTriage(dir, scope, result) {
 
   const VERDICTS = ['Promote', 'Watch', 'Reject'];
   const arrays = { promote: triage.promote, watch: triage.watch, reject: triage.reject };
+  const expectedVerdicts = { promote: 'Promote', watch: 'Watch', reject: 'Reject' };
   for (const [key, value] of Object.entries(arrays)) {
     if (!Array.isArray(value)) {
       result.fail('triage-shape', `triage.json ${key} must be an array`);
@@ -306,8 +316,8 @@ function checkTriage(dir, scope, result) {
         result.fail('triage-entry', `a ${key} entry has no non-empty string "label"`);
         continue;
       }
-      if (!VERDICTS.includes(entry.verdict)) {
-        result.fail('triage-entry', `${key} entry "${label}" has verdict "${entry.verdict}", expected one of: ${VERDICTS.join(', ')}`);
+      if (entry.verdict !== expectedVerdicts[key]) {
+        result.fail('triage-entry', `${key} entry "${label}" has verdict "${entry.verdict}", expected "${expectedVerdicts[key]}"`);
       }
     }
   }
@@ -333,8 +343,10 @@ function checkTriage(dir, scope, result) {
     result.fail('triage-counts', 'triage.json has no counts object');
   } else {
     for (const key of VERDICTS) {
-      if (counts[key] !== undefined && typeof counts[key] !== 'number') {
-        result.fail('triage-counts', `triage.json counts.${key} must be a number`);
+      const arrayKey = key.toLowerCase();
+      const expected = Array.isArray(arrays[arrayKey]) ? arrays[arrayKey].length : 0;
+      if (!Number.isInteger(counts[key]) || counts[key] !== expected) {
+        result.fail('triage-counts', `triage.json counts.${key} must equal the ${arrayKey} array length (${expected})`);
       }
     }
   }
@@ -667,7 +679,7 @@ function checkProposalFile(file, manifestEntries, result, allowedTypes = PROPOSA
     result.warn('proposal-exclusion', `${name} matches an excluded category — confirm it is reusable UI vocabulary, not a page or flow`);
   }
 
-  if (type === CAPTURE_TYPE) {
+  if (type === CAPTURE_TYPE || type === CAPTURE_INTENT_TYPE) {
     // The required-heading loop above is a substring test, so "## Canonical name"
     // satisfies it. Say which of the two is actually wrong rather than reporting a
     // missing bolded line when the heading itself is the defect.
@@ -683,7 +695,8 @@ function checkProposalFile(file, manifestEntries, result, allowedTypes = PROPOSA
     } else {
       const expected = kebab(parsed.canonical);
       const stem = path.basename(file, '.md');
-      const structuralSection = sections(text, 2).find((s) => s.heading === 'Structural implementation');
+      const structuralHeading = type === CAPTURE_INTENT_TYPE ? 'Structural identity' : 'Structural implementation';
+      const structuralSection = sections(text, 2).find((s) => s.heading === structuralHeading);
       const structuralJson = structuralSection ? fencedBlock(structuralSection.body, 'json') : null;
       let structural;
       try {
@@ -695,8 +708,93 @@ function checkProposalFile(file, manifestEntries, result, allowedTypes = PROPOSA
       if (parsed.slug !== expected || componentKey !== stem || structural?.canonical !== parsed.canonical) {
         result.fail(
           'capture-canonical',
-          `${name} must declare base slug "${expected}" and Structural implementation componentKey "${stem}" for canonical "${parsed.canonical}"`,
+          `${name} must declare base slug "${expected}" and ${structuralHeading} componentKey "${stem}" for canonical "${parsed.canonical}"`,
         );
+      }
+    }
+
+    if (type === CAPTURE_INTENT_TYPE) {
+      const top = sections(text, 2);
+      const allowedHeadings = new Set([
+        'Proposal type',
+        ...REQUIRED_SECTIONS[CAPTURE_INTENT_TYPE].map((heading) => heading.slice(3)),
+      ]);
+      for (const heading of allowedHeadings) {
+        if (top.filter((section) => section.heading === heading).length !== 1) {
+          result.fail('capture-intent', `${name} analyze intent must contain exactly one ${heading} section`);
+        }
+      }
+      for (const unexpected of top.filter((section) => !allowedHeadings.has(section.heading))) {
+        result.fail('capture-intent', `${name} analyze intent cannot claim an extra ${unexpected.heading} section`);
+      }
+      const captureIntent = fencedBlock(top.find((section) => section.heading === 'Capture intent')?.body || '', 'json');
+      const structuralIdentity = fencedBlock(top.find((section) => section.heading === 'Structural identity')?.body || '', 'json');
+      const progress = fencedBlock(top.find((section) => section.heading === 'Progress')?.body || '', 'json');
+      let intentValue;
+      let structuralValue;
+      let progressValue;
+      try { intentValue = captureIntent ? JSON.parse(captureIntent) : null; } catch { intentValue = null; }
+      try { structuralValue = structuralIdentity ? JSON.parse(structuralIdentity) : null; } catch { structuralValue = null; }
+      try { progressValue = progress ? JSON.parse(progress) : null; } catch { progressValue = null; }
+      if (!exactKeys(intentValue, ['schemaVersion', 'status']) || intentValue.schemaVersion !== 1 || intentValue.status !== 'pending') {
+        result.fail('capture-intent', `${name} Capture intent must be {"schemaVersion":1,"status":"pending"}`);
+      }
+      if (!exactKeys(structuralValue, ['canonical', 'componentKey', 'default', 'variant', 'variantLabel'])) {
+        result.fail('capture-intent', `${name} Structural identity must contain only canonical, componentKey, default, variant, and variantLabel`);
+      } else {
+        const variant = structuralValue.variant;
+        const variantLabel = structuralValue.variantLabel;
+        const validVariant = variant === null || (
+          typeof variant === 'string' && variant.trim() === variant && variant.length > 0 && kebab(variant) === variant
+        );
+        const validVariantLabel = variant === null
+          ? variantLabel === null
+          : typeof variantLabel === 'string' && variantLabel.trim().length > 0 && kebab(variantLabel) === variant;
+        if (typeof structuralValue.default !== 'boolean') {
+          result.fail('capture-intent', `${name} Structural identity default must be a boolean`);
+        }
+        if (!validVariant) {
+          result.fail('capture-intent', `${name} Structural identity variant must be null or non-empty kebab-case`);
+        }
+        if (!validVariantLabel) {
+          result.fail('capture-intent', `${name} Structural identity variantLabel must be null exactly when variant is null, otherwise it must kebab to variant`);
+        }
+        if (structuralValue.default === false && variant === null) {
+          result.fail('capture-intent', `${name} a non-default Structural identity requires a variant`);
+        }
+        if (parsed) {
+          const baseSlug = kebab(parsed.canonical);
+          const expectedKey = structuralValue.default === true
+            ? baseSlug
+            : validVariant && variant !== null
+              ? `${baseSlug}--${variant}`
+              : null;
+          const stem = path.basename(file, '.md');
+          if (structuralValue.canonical !== parsed.canonical || !expectedKey ||
+            structuralValue.componentKey !== expectedKey || stem !== expectedKey) {
+            result.fail(
+              'capture-intent',
+              `${name} Structural identity and filename must resolve exactly to ${expectedKey || 'a valid canonical component key'}`,
+            );
+          }
+        }
+      }
+      if (!progressValue || progressValue.status !== 'pending' || Object.keys(progressValue).length !== 1) {
+        result.fail('capture-intent', `${name} Progress must contain only status pending during analyze`);
+      }
+      const source = top.find((section) => section.heading === 'Source')?.body || '';
+      const sourceEntry = singleBacktickedBullet(source, 'Entry');
+      if (sourceEntry.count !== 1 || !isSafeRepositoryRelativePath(sourceEntry.value)) {
+        result.fail('capture-intent', `${name} Source must name exactly one safe repository-relative Entry path`);
+      }
+      const evidence = top.find((section) => section.heading === 'Evidence')?.body || '';
+      if (!/^- Present:\s+\S/m.test(evidence) || !/^- Absent:\s+\S/m.test(evidence)) {
+        result.fail('capture-intent', `${name} Evidence must state both Present and Absent source evidence`);
+      }
+      for (const heading of ['Why', 'De-client headline']) {
+        if (!/^-\s+\S/m.test(top.find((section) => section.heading === heading)?.body || '')) {
+          result.fail('capture-intent', `${name} ${heading} must contain a non-empty bullet`);
+        }
       }
     }
   }
@@ -839,6 +937,80 @@ function checkProposals(dir, promoted, manifestEntries, result) {
   }
 }
 
+function exactKeys(value, keys) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const actual = Object.keys(value).sort();
+  const expected = [...keys].sort();
+  return actual.length === expected.length && actual.every((key, index) => key === expected[index]);
+}
+
+function checkAppliedFigma(file, text, artifact, result) {
+  if (artifact?.schemaVersion !== 2) return;
+  const appliedSection = sections(text, 2).find((section) => section.heading === 'Applied');
+  if (!appliedSection) return;
+  const name = path.basename(file);
+  const block = fencedBlock(appliedSection.body, 'json');
+  let applied;
+  try { applied = block ? JSON.parse(block) : null; } catch { applied = null; }
+  const componentPath = `components/${artifact.componentKey}`;
+  if (!exactKeys(applied, ['componentPath', 'figma', 'status']) ||
+    applied?.status !== 'landed' || applied?.componentPath !== componentPath) {
+    result.fail('capture-applied', `${name} Applied must be landed at ${componentPath} with only status, componentPath, and figma`);
+    return;
+  }
+  const figma = applied.figma;
+  if (!exactKeys(figma, ['nodeId', 'nodeKey', 'publicationStatus', 'review', 'stateCoverage']) ||
+    typeof figma?.nodeId !== 'string' || !figma.nodeId.trim() ||
+    typeof figma?.nodeKey !== 'string' || !figma.nodeKey.trim() ||
+    figma?.publicationStatus !== 'unpublished') {
+    result.fail('capture-applied-figma', `${name} Applied figma requires stable nodeId/nodeKey, unpublished status, review, and stateCoverage`);
+    return;
+  }
+  const passes = figma.review?.passes;
+  if (!exactKeys(figma.review, ['passes', 'status']) || figma.review.status !== 'passed' ||
+    !Array.isArray(passes) || passes.length !== 3 ||
+    !['source-parity', 'adversarial', 'design'].every((pass) => passes.includes(pass))) {
+    result.fail('capture-applied-figma', `${name} Applied figma review must pass exactly source-parity, adversarial, and design`);
+  }
+  const expected = artifact.interactionStates;
+  const coverage = figma.stateCoverage;
+  if (!expected || coverage?.status !== expected.status) {
+    result.fail('capture-applied-figma', `${name} Applied stateCoverage status must match source parity`);
+    return;
+  }
+  if (expected.status === 'not-applicable') {
+    if (!exactKeys(coverage, ['reason', 'states', 'status']) || coverage.reason !== expected.reason ||
+      !Array.isArray(coverage.states) || coverage.states.length !== 0) {
+      result.fail('capture-applied-figma', `${name} not-applicable stateCoverage must copy the source-parity reason and states: [] exactly`);
+    }
+    return;
+  }
+  if (!exactKeys(coverage, ['states', 'status', 'storyExport']) || coverage.storyExport !== expected.storyExport ||
+    !Array.isArray(coverage.states) || coverage.states.length !== expected.states.length) {
+    result.fail('capture-applied-figma', `${name} covered stateCoverage must copy the source-parity story export and state inventory exactly`);
+    return;
+  }
+  const byId = new Map(coverage.states.map((state) => [state?.id, state]));
+  for (const state of expected.states) {
+    const actual = byId.get(state.id);
+    const semanticMatch = actual?.label === state.label && actual?.target === state.target &&
+      actual?.classification === state.classification &&
+      actual?.source?.trigger === state.source?.trigger && actual?.source?.value === state.source?.value;
+    if (!semanticMatch || !exactKeys(actual?.source, ['trigger', 'value'])) {
+      result.fail('capture-applied-figma', `${name} Applied state ${state.id} must semantically match source parity`);
+      continue;
+    }
+    if (state.classification === 'runtime-only') {
+      if (!exactKeys(actual, ['classification', 'id', 'label', 'reason', 'source', 'target']) || actual.reason !== state.reason) {
+        result.fail('capture-applied-figma', `${name} runtime-only state ${state.id} must copy its reason and claim no visual IDs`);
+      }
+    } else if (!exactKeys(actual, ['classification', 'componentNodeId', 'frameNodeId', 'id', 'instanceNodeId', 'label', 'source', 'target']) ||
+      ['frameNodeId', 'instanceNodeId', 'componentNodeId'].some((key) => typeof actual[key] !== 'string' || !actual[key].trim())) {
+      result.fail('capture-applied-figma', `${name} visual state ${state.id} requires non-empty frame, instance, and component node IDs`);
+    }
+  }
+}
+
 /**
  * Two-way parity between the report's "## Captures" entries and `captures/`, plus
  * the per-file shape check.
@@ -905,21 +1077,35 @@ function checkCaptures(dir, captured, capturesSectionPresent, inventory, result)
     result.fail('capture-parity', `captures/${orphan} has no matching entry under "## Captures" in report.md`);
   }
 
+  const executableKeys = new Set();
   for (const file of files) {
-    checkProposalFile(file.path, null, result, [CAPTURE_TYPE]);
+    checkProposalFile(file.path, null, result, [CAPTURE_TYPE, CAPTURE_INTENT_TYPE]);
+    const text = readTextSafe(file.path) || '';
+    const typeBody = sections(text, 2).find((section) => section.heading === 'Proposal type')?.body || '';
+    if (!new RegExp(`\\b${CAPTURE_INTENT_TYPE}\\b`).test(typeBody)) {
+      executableKeys.add(path.basename(file.name, '.md'));
+    }
   }
 
+  const sourceParityDir = path.join(dir, 'source-parity');
+  if (executableKeys.size === 0 && !isDir(sourceParityDir)) return;
   const parity = validateSourceParityDirectory({
-    sourceParityDir: path.join(dir, 'source-parity'),
+    sourceParityDir,
     capturesDir,
     projectDir: typeof inventory?.project === 'string' ? inventory.project : null,
     verifySource: true,
+    expectedComponentKeys: executableKeys,
   });
   for (const failure of parity.issues) {
     result.fail('source-parity', `${failure.componentKey ? `${failure.componentKey}: ` : ''}[${failure.code}] ${failure.message}`);
   }
   for (const warning of parity.warnings) {
     result.warn('source-parity', `${warning.componentKey ? `${warning.componentKey}: ` : ''}[${warning.code}] ${warning.message}`);
+  }
+  const parityByKey = new Map(parity.records.map((record) => [record.componentKey, record.artifact]));
+  for (const file of files) {
+    const key = path.basename(file.name, '.md');
+    checkAppliedFigma(file.path, readTextSafe(file.path) || '', parityByKey.get(key), result);
   }
 }
 
@@ -1015,7 +1201,7 @@ function checkPriorArt(dir, dataRoot, result) {
       if (priorProposals.has(slug)) {
         result.warn(
           'proposal-duplicate',
-          `proposals/${f.name} proposes "${slug}", already proposed in ${priorProposals.get(slug)} — promote the existing proposal rather than filing a second (cross-run recurrence still elevates it via PriorReports)`,
+          `proposals/${f.name} proposes "${slug}", already proposed in ${priorProposals.get(slug)} — promote the existing proposal rather than filing a second (cross-run recurrence is selected automatically from Data)`,
         );
       }
     }

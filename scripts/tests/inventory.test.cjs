@@ -14,6 +14,7 @@ const TOOLKIT = fixture('fake-project-toolkit');
 const CODESCAN = fixture('fake-project-codescan');
 const EMPTYINDEX = fixture('fake-project-emptyindex');
 const PARTOF = fixture('fake-project-partof');
+const MONOREPO = fixture('fake-project-monorepo');
 
 const EXPECTED_CMS_CATALOG = [
   { key: 'contentful', label: 'Contentful' },
@@ -27,8 +28,8 @@ const EXPECTED_CMS_CATALOG = [
 
 const DISCOVERY_SUPPORTED_CMS = new Set(['contentstack', 'optimizely-saas', 'sitecore-ai']);
 
-function inventory(project) {
-  const result = runJson('inventory.cjs', ['--project', project]);
+function inventory(project, args = []) {
+  const result = runJson('inventory.cjs', ['--project', project, ...args]);
   assert.equal(result.status, 0, `expected exit 0, got ${result.status}: ${result.stderr}`);
   assert.ok(result.json, 'expected JSON on stdout');
   return result.json;
@@ -219,14 +220,15 @@ test('an undeclared rendering domain is discovered and labeled from its path', (
   assert.equal(spacer.domain, 'utility');
 });
 
-test('Storybook is ignored on a stack whose profile opts out (React)', () => {
+test('a non-registry story enriches its source component without creating a phantom', () => {
   const inv = inventory(PROJECT);
-  // fake-project is `optimizely-saas` (storybook: false) and ships two story files. Neither the
-  // component-matching story nor the standalone one may influence the census.
+  // fake-project is `optimizely-saas` (storybook: false) and ships two story files. A matching
+  // story is source evidence, while a standalone documentation story is not a component.
   const folders = inv.components.map((c) => c.folder);
   assert.ok(!folders.includes('tokens'), 'a story with no component must not become a phantom on a non-Storybook stack');
   const modal = inv.components.find((c) => c.folder === 'modal');
-  assert.ok(!modal.sources.includes('storybook'), 'a matching story must not add a storybook source when the adapter opts out');
+  assert.ok(!modal.sources.includes('storybook'), 'a colocated story must not become an independent promotion source');
+  assert.ok(modal.sourceEvidence.stories.some((entry) => entry.endsWith('modal.stories.tsx')));
 });
 
 test('a project with no config or artifacts degrades to a code scan', () => {
@@ -243,6 +245,155 @@ test('a project with no config or artifacts degrades to a code scan', () => {
   assert.equal(widget.folder, 'foo-widget');
   assert.equal(widget.name, 'FooWidget', 'the PascalCase entry file names the component');
   assert.deepEqual(widget.sources, ['code-scan']);
+  assert.deepEqual(widget.sourceEvidence.entryPoints, ['src/components/foo-widget/FooWidget.tsx']);
+});
+
+test('a workspace discovers package roots and source evidence without pipeline artifacts', () => {
+  const inv = inventory(MONOREPO);
+  assert.equal(inv.schemaVersion, 1);
+  assert.equal(inv.mode, 'code-scan');
+  assert.deepEqual(inv.discovery.componentRoots, ['packages/ui/src/components']);
+  assert.deepEqual(inv.discovery.frameworks, ['next', 'react']);
+  assert.deepEqual(inv.discovery.deliveryConfig, ['.github/workflows/verify.yml', 'vercel.json']);
+
+  const notice = inv.components.find((component) => component.folder === 'notice');
+  assert.ok(notice, 'a conventional component root under a workspace package is discovered');
+  assert.equal(notice.entry, 'packages/ui/src/components/notice/Notice.tsx');
+  assert.deepEqual(notice.sourceEvidence.entryPoints, ['packages/ui/src/components/notice/Notice.tsx']);
+  assert.deepEqual(notice.sourceEvidence.tests, ['packages/ui/src/components/notice/Notice.test.tsx']);
+  assert.deepEqual(notice.sourceEvidence.stories, ['packages/ui/src/stories/Notice.stories.tsx']);
+  assert.deepEqual(notice.sourceEvidence.styles, ['packages/ui/src/components/notice/Notice.module.css']);
+  assert.deepEqual(notice.sourceEvidence.tokens, ['packages/ui/src/tokens/colors.css']);
+  assert.deepEqual(notice.sourceEvidence.consumers, ['apps/site/src/View.tsx']);
+  assert.deepEqual(notice.sourceEvidence.manifests, ['packages/ui/package.json']);
+  assert.deepEqual(notice.sourceEvidence.frameworks, ['react']);
+  assert.deepEqual(notice.sourceEvidence.deliveryConfig, ['.github/workflows/verify.yml', 'vercel.json']);
+});
+
+test('nested package manifests outside declared workspace membership cannot affect discovery or platform identity', () => {
+  const project = tempFixture('fake-project-monorepo');
+  const example = path.join(project, 'examples/demo');
+  fs.mkdirSync(path.join(example, 'src/components/rogue'), { recursive: true });
+  fs.writeFileSync(path.join(example, 'package.json'), JSON.stringify({
+    name: 'unrelated-example',
+    dependencies: { contentstack: '1.0.0' },
+  }));
+  fs.writeFileSync(
+    path.join(example, 'src/components/rogue/Rogue.tsx'),
+    'export function Rogue() { return <aside>not a workspace package</aside>; }\n',
+  );
+
+  const inv = inventory(project);
+  assert.equal(inv.config.cmsKey, 'contentful');
+  assert.equal(inv.config.platformSource, 'manifest');
+  assert.ok(!inv.discovery.manifests.some((manifest) => manifest.path === 'examples/demo/package.json'));
+  assert.ok(!inv.discovery.componentRoots.some((root) => root.startsWith('examples/demo/')));
+  assert.ok(!inv.components.some((component) => component.folder === 'rogue'));
+});
+
+test('workspace, component, cycle, and delivery symlinks never escape pinned source discovery', () => {
+  const project = tempFixture('fake-project-monorepo');
+  const outside = fs.mkdtempSync(path.join(path.dirname(project), 'retro-external-'));
+  fs.mkdirSync(path.join(outside, 'src/components/rogue'), { recursive: true });
+  fs.writeFileSync(path.join(outside, 'package.json'), JSON.stringify({
+    name: 'outside-workspace',
+    dependencies: { contentstack: '1.0.0' },
+  }));
+  fs.writeFileSync(
+    path.join(outside, 'src/components/rogue/Rogue.tsx'),
+    'export function Rogue() { return <aside>outside</aside>; }\n',
+  );
+  fs.writeFileSync(path.join(outside, 'netlify.toml'), '[build]\ncommand = "outside"\n');
+
+  fs.symlinkSync(outside, path.join(project, 'packages/outside-workspace'), 'dir');
+  fs.symlinkSync(
+    path.join(outside, 'src/components'),
+    path.join(project, 'packages/ui/src/components/outside-components'),
+    'dir',
+  );
+  fs.symlinkSync(
+    path.join(project, 'packages/ui/src/components'),
+    path.join(project, 'packages/ui/src/components/notice/cycle'),
+    'dir',
+  );
+  fs.symlinkSync(path.join(outside, 'netlify.toml'), path.join(project, 'netlify.toml'));
+
+  const inv = inventory(project);
+  assert.equal(inv.config.cmsKey, 'contentful', 'an external workspace manifest cannot change CMS identity');
+  assert.ok(!inv.discovery.manifests.some((manifest) => manifest.path.includes('outside-workspace')));
+  assert.ok(!inv.components.some((component) => component.folder === 'rogue'));
+  assert.ok(!inv.discovery.deliveryConfig.includes('netlify.toml'));
+  const skipped = inv.warnings
+    .filter((warning) => warning.code === 'source-symlink-skipped')
+    .map((warning) => warning.message);
+  for (const rel of [
+    'packages/outside-workspace',
+    'packages/ui/src/components/outside-components',
+    'packages/ui/src/components/notice/cycle',
+    'netlify.toml',
+  ]) {
+    assert.equal(skipped.filter((message) => message.includes(`"${rel}"`)).length, 1, `${rel} warns exactly once`);
+  }
+});
+
+test('configured artifact and component roots cannot traverse outside the project', () => {
+  const project = tempFixture('fake-project-bare');
+  const outside = fs.mkdtempSync(path.join(path.dirname(project), 'retro-config-outside-'));
+  fs.mkdirSync(path.join(outside, 'components/rogue'), { recursive: true });
+  fs.writeFileSync(path.join(outside, 'components/rogue/Rogue.tsx'), 'export const Rogue = () => null;\n');
+  fs.mkdirSync(path.join(outside, 'artifacts/build-packs/rogue'), { recursive: true });
+  fs.writeFileSync(path.join(outside, 'artifacts/build-packs/rogue/master.md'), '# Rogue\n');
+  fs.writeFileSync(path.join(project, 'build.config.json'), JSON.stringify({
+    artifactsRoot: `../${path.basename(outside)}/artifacts`,
+    componentBuckets: { ui: `../${path.basename(outside)}/components` },
+  }));
+
+  const inv = inventory(project);
+  assert.equal(inv.config.artifactsRoot, 'artifacts');
+  assert.ok(!inv.components.some((component) => component.folder === 'rogue'));
+  assert.ok(inv.components.some((component) => component.folder === 'foo-widget'), 'safe in-project heuristics still run');
+  assert.ok(inv.warnings.some((warning) =>
+    warning.code === 'path-outside-project' && warning.message.includes('artifactsRoot')));
+  assert.ok(inv.warnings.some((warning) =>
+    warning.code === 'path-outside-project' && warning.message.includes('Component root')));
+});
+
+test('pnpm-workspace.yaml admits the same declared package roots without root workspaces metadata', () => {
+  const project = tempFixture('fake-project-monorepo');
+  const manifestPath = path.join(project, 'package.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  delete manifest.workspaces;
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  fs.writeFileSync(path.join(project, 'pnpm-workspace.yaml'), "packages:\n  - 'apps/*'\n  - 'packages/*'\n");
+
+  const inv = inventory(project);
+  assert.ok(inv.discovery.manifests.some((entry) => entry.path === 'packages/ui/package.json'));
+  assert.ok(inv.discovery.componentRoots.includes('packages/ui/src/components'));
+  assert.ok(inv.components.some((component) => component.folder === 'notice'));
+});
+
+test('exact manifest markers resolve platform identity and ambiguity remains null', () => {
+  const inferred = inventory(MONOREPO);
+  assert.equal(inferred.config.cmsKey, 'contentful');
+  assert.equal(inferred.config.cmsLabel, 'Contentful');
+  assert.equal(inferred.config.platformSource, 'manifest');
+  assert.ok(inferred.config.platformMarkers.includes('package.json:dependency=@contentful/app-sdk'));
+
+  const project = tempFixture('fake-project-monorepo');
+  const manifestPath = path.join(project, 'package.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  manifest.dependencies.contentstack = '1.0.0';
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  const ambiguous = inventory(project);
+  assert.equal(ambiguous.config.cmsKey, null);
+  assert.equal(ambiguous.config.cmsLabel, null);
+  assert.equal(ambiguous.config.platformSource, 'ambiguous');
+  assert.ok(ambiguous.warnings.some((warning) => warning.code === 'ambiguous-platform'));
+
+  const overridden = inventory(project, ['--platform', 'contentstack']);
+  assert.equal(overridden.config.cmsKey, 'contentstack');
+  assert.equal(overridden.config.cmsLabel, 'Contentstack');
+  assert.equal(overridden.config.platformSource, 'override');
 });
 
 test('a toolkit (Handlebars + Storybook) project discovers markup and stories', () => {

@@ -45,11 +45,20 @@ const BRANCH_SUFFIX = {
 
 const TERMINAL_CAPTURE_STATES = new Set(['blocked', 'skipped', 'deferred', 'landed']);
 const CAPTURE_STATES = new Set([
+  'enrichment-pending',
   'ready',
   'figma-pending',
   'evidence-pending',
   ...TERMINAL_CAPTURE_STATES,
 ]);
+const COMPONENT_KEY_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:--[a-z0-9]+(?:-[a-z0-9]+)*)?$/;
+const PROJECT_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function isIsoCalendarDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return false;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
+}
 
 function fail(code, message) {
   process.stderr.write(`error: ${message}\n`);
@@ -115,6 +124,7 @@ function baseTarget(repository, artifacts = []) {
     existingIssue: null,
     plannedWriteBranch: null,
     requiredWriteBranch: null,
+    resumeExistingBranch: null,
     blockers: [],
   };
 }
@@ -151,9 +161,39 @@ function validate(snapshot) {
     throw new Error('stage must be prewrite or postvalidate when supplied');
   }
   const captures = Array.isArray(snapshot.captures) ? snapshot.captures : [];
+  const captureIds = new Set();
   for (const capture of captures) {
-    if (!capture || typeof capture.id !== 'string' || !CAPTURE_STATES.has(capture.status)) {
-      throw new Error('each capture requires a string id and governed status');
+    if (!capture || !COMPONENT_KEY_RE.test(String(capture.id || '')) || !CAPTURE_STATES.has(capture.status)) {
+      throw new Error('each capture requires a canonical component-key id and governed status');
+    }
+    if (captureIds.has(capture.id)) {
+      throw new Error(`capture id ${JSON.stringify(capture.id)} appears more than once`);
+    }
+    captureIds.add(capture.id);
+    if (capture.resumeExistingBranch !== undefined && typeof capture.resumeExistingBranch !== 'boolean') {
+      throw new Error('capture resumeExistingBranch must be boolean when supplied');
+    }
+  }
+  if (snapshot.project !== undefined && snapshot.project !== '' &&
+    (typeof snapshot.project !== 'string' || !PROJECT_SLUG_RE.test(snapshot.project))) {
+    throw new Error('project must be a lowercase kebab slug when supplied');
+  }
+  if (snapshot.date !== undefined && snapshot.date !== '' && !isIsoCalendarDate(snapshot.date)) {
+    throw new Error('date must be a real ISO calendar date when supplied');
+  }
+  if (snapshot.action === 'source-parity-audit') {
+    const remediations = Array.isArray(snapshot.sourceParity?.componentRemediations)
+      ? snapshot.sourceParity.componentRemediations
+      : [];
+    const remediationIds = new Set();
+    for (const remediation of remediations.filter((entry) => entry?.status === 'actionable')) {
+      if (!COMPONENT_KEY_RE.test(String(remediation.id || ''))) {
+        throw new Error('each actionable source-parity remediation requires a canonical component-key id');
+      }
+      if (remediationIds.has(remediation.id)) {
+        throw new Error(`actionable source-parity remediation id ${JSON.stringify(remediation.id)} appears more than once`);
+      }
+      remediationIds.add(remediation.id);
     }
   }
 }
@@ -295,39 +335,72 @@ function computeTargets(snapshot) {
     return { schemaVersion: 2, action: snapshot.action, targets, componentTargets: [] };
   }
 
-  const actionable = captures.filter((capture) => ['ready', 'figma-pending'].includes(capture.status));
+  const actionable = captures.filter((capture) => capture.status === 'ready');
+  const enrichment = captures.filter((capture) => capture.status === 'enrichment-pending');
+  const capabilityLost = captures.filter((capture) => capture.status === 'figma-pending');
   const reconciliation = captures.filter((capture) => capture.status === 'evidence-pending');
+  const capabilityReady = snapshot.figmaWriteAvailable === true && snapshot.figmaLiveValidated === true;
   if (actionable.length > 0) {
     const existing = issue(issues.library);
-    const needsFigma = actionable.some((capture) => capture.status === 'figma-pending');
-    const capabilityReady = !needsFigma || snapshot.figmaWriteAvailable === true;
+    const resumesExisting = actionable.some((capture) => capture.resumeExistingBranch === true);
     const branch = existing && snapshot.libraryWriteSetNonEmpty === true && capabilityReady
       ? `feat/${existing.number}-${BRANCH_SUFFIX.library}`
       : null;
-    targets.library = writeTarget(
-      'library',
-      actionable.map((capture) => capture.id),
-      existing,
-      branch,
-      repos.library,
-      capabilityReady ? 'actionable-library-write-set' : 'figma-writer-unavailable',
-    );
+    targets.library = resumesExisting
+      ? issueTarget(
+          'library',
+          actionable.map((capture) => capture.id),
+          existing,
+          capabilityReady ? 'resume-existing-library-branch' : 'figma-writer-unavailable',
+          repos.library,
+        )
+      : writeTarget(
+          'library',
+          actionable.map((capture) => capture.id),
+          existing,
+          branch,
+          repos.library,
+          capabilityReady ? 'actionable-library-write-set' : 'figma-writer-unavailable',
+        );
+    if (resumesExisting && existing && snapshot.libraryWriteSetNonEmpty === true && capabilityReady && repoReady(repos.library)) {
+      targets.library.state = 'write-ready';
+      targets.library.plannedWriteBranch = branch;
+      targets.library.resumeExistingBranch = branch;
+    }
     if (!existing) targets.library.blockers.unshift('tracking-issue');
     if (!capabilityReady) targets.library.blockers.unshift('figma-write-capability');
     if (!branch) targets.library.state = 'issue-pending';
   } else {
-    targets.library.reason = reconciliation.length > 0 ? 'evidence-only-reconciliation' : 'no-actionable-captures';
+    targets.library.reason = enrichment.length > 0
+      ? 'capture-enrichment-required'
+      : capabilityLost.length > 0
+        ? 'unexpected-figma-capability-loss'
+        : reconciliation.length > 0
+          ? 'evidence-only-reconciliation'
+          : 'no-actionable-captures';
   }
 
-  if (evidenceEnabled && reconciliation.length > 0) {
+  const evidenceCaptures = [...enrichment, ...actionable, ...reconciliation];
+  if (evidenceEnabled && snapshot.evidenceWriteSetNonEmpty === true && evidenceCaptures.length > 0) {
     targets.evidence = writeTarget(
       'evidence',
-      reconciliation.map((capture) => capture.id),
+      evidenceCaptures.map((capture) => capture.id),
       issues.evidence,
       project && date ? `feat/${project}-${date}-run` : null,
       repos.evidence,
-      'capture-evidence-reconciliation',
+      enrichment.length > 0 || actionable.length > 0
+        ? 'capture-enrichment-write-set'
+        : 'capture-evidence-reconciliation',
     );
+    // Enrichment reopens and hashes the pinned source before schema-v6 preflight.
+    // Require the same current writer/live proof as the eventual library write,
+    // but authorize only the evidence run branch at this lifecycle stage.
+    if (enrichment.length > 0 && !capabilityReady) {
+      targets.evidence.state = 'issue-pending';
+      targets.evidence.requiredWriteBranch = null;
+      targets.evidence.blockers.unshift('figma-write-capability');
+      targets.evidence.reason = 'figma-writer-unavailable';
+    }
   }
   return { schemaVersion: 2, action: snapshot.action, targets, componentTargets: [] };
 }

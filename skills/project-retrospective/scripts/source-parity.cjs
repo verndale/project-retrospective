@@ -27,6 +27,7 @@ const {
   readTextSafe,
   isDir,
   listEntries,
+  isSafeRepositoryRelativePath,
   sections,
   fencedBlock,
   writeOut,
@@ -53,7 +54,7 @@ const COVERAGE_KEYS = [
   'figma',
   'aiRegistry',
 ];
-const INSPECTION_KEYS = ['entryPoints', 'tests', 'styles', 'buildPacks', 'directImporters', 'composedConsumers'];
+const INSPECTION_KEYS = ['entryPoints', 'tests', 'styles', 'buildPacks', 'directImporters', 'composedConsumers', 'accessibility'];
 const INSPECTION_STATUSES = new Set(['reviewed', 'not-present']);
 const NORMALIZED_KEYS = ['code', 'storybook', 'figma', 'aiRegistry'];
 const CLASSIFICATIONS = new Set([
@@ -83,8 +84,7 @@ function issue(componentKey, code, message) {
 }
 
 function safeRelative(value) {
-  return typeof value === 'string' && value.length > 0 && !path.isAbsolute(value) &&
-    !value.split(/[\\/]+/).includes('..') && !value.includes('\\');
+  return isSafeRepositoryRelativePath(value);
 }
 
 function expectedCapture(componentKey) {
@@ -304,6 +304,26 @@ function validateArtifact(value, options = {}) {
     }
   }
 
+  const accessibility = value.accessibilityDisposition;
+  if (!accessibility || typeof accessibility !== 'object' || Array.isArray(accessibility) ||
+    !['source-present', 'remediation-gap'].includes(accessibility.status)) {
+    fail('accessibility-disposition', 'accessibilityDisposition.status must be source-present or remediation-gap.');
+  } else {
+    const inspected = inspection?.accessibility;
+    if (accessibility.status === 'source-present') {
+      if (inspected?.status !== 'reviewed' || accessibility.gap !== null) {
+        fail('accessibility-disposition', 'source-present requires reviewed sourceInspection.accessibility and gap: null.');
+      }
+    } else {
+      if (inspected?.status !== 'not-present' || !isNonEmptyString(accessibility.gap)) {
+        fail('accessibility-disposition', 'remediation-gap requires not-present sourceInspection.accessibility and a non-empty gap.');
+      }
+      if (value.remediationStatus === 'not-required') {
+        fail('accessibility-disposition', 'missing source accessibility is remediation work; remediationStatus cannot be not-required.');
+      }
+    }
+  }
+
   for (const key of COVERAGE_KEYS) {
     if (value.coverage?.[key] !== 'reviewed') fail('coverage', `coverage.${key} must equal reviewed.`);
   }
@@ -445,9 +465,13 @@ function validateArtifact(value, options = {}) {
       fail('source-project', 'pinned source verification requires a readable Project checkout.');
     } else {
       const pinned = new Map();
+      const prefixRead = spawnSync('git', ['-C', projectDir, 'rev-parse', '--show-prefix'], { encoding: 'utf8' });
+      const gitPrefix = prefixRead.status === 0 ? prefixRead.stdout.trim() : null;
+      if (gitPrefix === null) fail('source-project', 'Project is not a readable Git worktree.');
       const readPinned = (relativePath) => {
         if (pinned.has(relativePath)) return pinned.get(relativePath);
-        const shown = spawnSync('git', ['-C', projectDir, 'show', `${snapshot.revision.commit}:${relativePath}`], {
+        const gitPath = gitPrefix === null ? relativePath : `${gitPrefix}${relativePath}`;
+        const shown = spawnSync('git', ['-C', projectDir, 'show', `${snapshot.revision.commit}:${gitPath}`], {
           encoding: null,
           maxBuffer: 20 * 1024 * 1024,
         });
@@ -503,7 +527,10 @@ function validateSourceParityDirectory(options) {
     return { sourceParityDir, records, issues, warnings, counts: { artifacts: 0, actionable: 0, cleared: 0 } };
   }
 
-  const files = listEntries(sourceParityDir).filter((entry) => !entry.dir && entry.name.endsWith('.json'));
+  const selectedKeys = options.componentKeys instanceof Set ? options.componentKeys : null;
+  const files = listEntries(sourceParityDir).filter((entry) =>
+    !entry.dir && entry.name.endsWith('.json') &&
+    (!selectedKeys || selectedKeys.has(path.basename(entry.name, '.json'))));
   const byName = new Map();
   for (const file of files) {
     const fileKey = path.basename(file.name, '.json');
@@ -524,12 +551,16 @@ function validateSourceParityDirectory(options) {
     byName.set(`${fileKey}.json`, file.path);
   }
 
-  if (options.capturesDir) {
-    const capturesDir = path.resolve(options.capturesDir);
-    const captureFiles = isDir(capturesDir)
-      ? listEntries(capturesDir).filter((entry) => !entry.dir && entry.name.endsWith('.md'))
-      : [];
-    const expected = new Set(captureFiles.map((entry) => `${path.basename(entry.name, '.md')}.json`));
+  if (options.capturesDir || options.expectedComponentKeys instanceof Set) {
+    const capturesDir = options.capturesDir ? path.resolve(options.capturesDir) : null;
+    const captureFiles = options.expectedComponentKeys instanceof Set
+      ? []
+      : isDir(capturesDir)
+        ? listEntries(capturesDir).filter((entry) => !entry.dir && entry.name.endsWith('.md'))
+        : [];
+    const expected = options.expectedComponentKeys instanceof Set
+      ? new Set([...options.expectedComponentKeys].map((key) => `${key}.json`))
+      : new Set(captureFiles.map((entry) => `${path.basename(entry.name, '.md')}.json`));
     for (const name of expected) {
       if (!byName.has(name)) issues.push(issue(path.basename(name, '.json'), 'source-parity-cardinality', `captures/${name.replace(/\.json$/, '.md')} has no source-parity/${name}.`));
     }

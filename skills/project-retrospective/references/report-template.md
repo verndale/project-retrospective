@@ -28,7 +28,7 @@ The run's human-readable output. The `##` headings inside the template are **fro
 | Mode | `artifacts` or `code-scan` |
 | Catalog | `<brain path>` (<N> canonical entries) |
 | Scope | `full` |
-| Prior reports | `<paths>` or none |
+| Prior evidence | `<automatically selected eligible run paths>` or none |
 
 ## Summary
 
@@ -71,7 +71,7 @@ Verdict: Promote
 
 - <Evidence bullet citing a path.>
 - <Evidence bullet citing a path.>
-- <Which rubric test it passes, or which prior report it recurs in.>
+- <Which rubric test it passes, or which other project's eligible run it recurs in.>
 
 ### <Label>
 
@@ -88,7 +88,7 @@ Verdict: Reject
 
 ## Captures
 
-Implementations the next project should start from rather than rebuild. Drafted in `captures/`, executed into ui-design-library by `Action: capture`. A capture whose canonical is established by a `new-pattern` proposal in this run is a **deferred** capture — note that on its entry and link the proposal; `capture-preflight.cjs` holds it `deferred` until the pattern is promoted.
+Source implementations worth inspecting for shared reuse. Analyze drafts lightweight pending intents in `captures/`; `Action: capture` reopens the pinned source, enriches selected intents, and only then plans ui-design-library work. A canonical established by a new-pattern proposal remains deferred until promotion.
 
 ### <Canonical Name> [/ <Structural variant label>]
 
@@ -138,7 +138,7 @@ What this run could not see. Script warnings verbatim, then anything the mode it
 3. Review the captures in `captures/`, then apply the set:
    `/project-retrospective` with `Action: capture`, `Captures: <path>`, `Library: <path>`, `Brain: <path>`
 4. Carry the drafts in `orchestration-drafts.md` into ai-orchestration through its own contribution flow.
-5. Keep this report — pass it as `PriorReports:` on the next project so Watch candidates can be elevated.
+5. Keep this run under `Data`; the next project selects eligible recurrence automatically.
 ```
 
 ## Rules
@@ -149,6 +149,7 @@ What this run could not see. Script warnings verbatim, then anything the mode it
 - **Promote candidates need a matching proposal file** at `proposals/<kebab-label>.md`.
 - **Every capture heading needs an exact file.** Default `### <Canonical Name>` maps to `captures/<kebab-canonical>.md`; alternate `### <Canonical Name> / <Variant label>` maps to `captures/<kebab-canonical>--<kebab-variant-label>.md`. Every file needs an entry.
 - **Capture entries carry no `Verdict:` line.** There is no triage axis: the entry's presence is the assertion. *Verdict* stays reserved for Candidates.
+- **Analyze capture files stay lightweight.** They identify the canonical/structure/source, why, present and absent evidence, de-client headline, and pending progress only. Architecture, realization, Storybook/Figma targets, reviews, and node identity belong to capture-time enrichment.
 - **`## Captures` is required at `full` scope even when nothing qualified.** Keep the heading and say so in a sentence, with no `### ` entries under it.
 - **`### Gotchas` / `### Tips` under `## Learnings` are optional.** Use them to separate a pitfall the next project should avoid from a practice it should adopt from the start; a finding that is neither, or both, stays a bare bullet under `## Learnings`. Never force the split. These H3s carry no `Verdict:` line and need no proposal or capture file — the downstream start pack surfaces them verbatim.
 - **`## Team retrospectives` is required when retrospective artifacts exist.** Keep source titles/content client-safe in the report; page ids and URLs stay in the private JSON/archive. A retrospectives-only run uses only Run, Summary, Team retrospectives, Gaps, and Next steps.

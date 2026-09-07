@@ -21,10 +21,10 @@ completed project  (read-only — the retrospective never writes here)
         │  /project-retrospective  Action: analyze
         ▼
 a run in the `ui-design-evidence` repo:
-report.md · inventory.json · resolution.json · memory-archive.json · retrospective artifacts · proposals/ · captures/ · orchestration-drafts.md
+report.md · source-first inventory.json · resolution.json · memory-archive.json · retrospective artifacts · proposals/ · lightweight captures/ · orchestration-drafts.md
         │  human review
         ├── proposals/  → Action: promote → ui-design-brain working tree → verify → stop
-        ├── captures/   → Action: capture → code + Storybook/Figma state coverage → verify → stop
+        ├── captures/   → Action: capture → pinned-source enrichment → code + Storybook/Figma state coverage → verify → stop
         └── orchestration-drafts.md → ai-orchestration, via its own contribution flow
                             │
                             ▼
@@ -44,7 +44,7 @@ The skill plugs into the **front** of the existing delivery chain and replaces n
 
 The library and the evidence store are **separate repos on purpose.** The library is pulled into client projects; the evidence store aggregates across clients. Keeping them apart means one client's build can never contain another client's retrospective data.
 
-The library is keyed by the catalog's canonical slug, which is what makes it deterministically usable: `ui-design-brain` resolves a design label to `card`, and the library answers `components/card/`. Each new capture also carries a validated server-first runtime plan and source-parity v2 interaction-state inventory, so application produces a public facade over a private tree/branch/leaf module graph plus aligned Storybook/Figma state evidence instead of a single client-heavy TSX file. The catalog defines the concept; the library implements it.
+The library is keyed by the catalog's canonical slug, which is what makes it deterministically usable: `ui-design-brain` resolves a design label to `card`, and the library answers `components/card/`. Analyze records only source identity and evidence. Capture re-verifies the pinned source and enriches selected intents with source-parity v2, accessibility/state disposition, and a validated server-first runtime plan before any library write. The catalog defines the concept; the library implements it.
 
 ---
 
@@ -88,21 +88,23 @@ Brain: /path/to/ui-design-brain
 
 | Parameter | Required | Meaning |
 |---|---|---|
-| `Project:` | yes | Absolute path to the completed project repository. |
+| `Project:` | analyze: yes; capture: optional | Absolute path to the read-only project; capture may override a moved checkout without changing the pinned revision. |
 | `Brain:` | for resolution, promote, and capture | Absolute path to a local `ui-design-brain` checkout. Without it, resolution is skipped and the report says so. |
 | `Data:` | no | Absolute path to the private `ui-design-evidence` repo. When given, runs land under `<Data>/runs/`. |
 | `Output:` | no | Where run output is written. Never inside `Project`. |
 | `Scope:` | no | `full` (default), `inventory`, `candidates`, or append-only `retrospectives`. |
-| `PriorReports:` | no | Comma-separated paths to earlier `report.md` files. A candidate that recurs across projects is elevated from Watch to Promote. |
+| `Platform:` | no | Exact canonical CMS key override when repository markers are missing or ambiguous. |
+| `PriorReports:` | no | Legacy escape hatch for eligible explicit run reports. They join automatic `Data` selection, but only the latest run per project contributes. |
 | `Specs:` | no | Confluence source for the project's functional specs (a space + label(s), or an approvals-page URL). Captures approved specs as a `spec` evidence source. |
 | `Retrospectives:` | no | Confluence page and space URLs. Discovery is restricted to seeded project spaces and every candidate is included or excluded with a reason. |
 | `ProjectSlug:` | for retrospective ingestion | Existing evidence project used to derive client, platform, and prior run. |
 | `Action:` | no | `analyze` (default), `ingest-retrospectives`, `promote`, or `capture`. |
 | `Proposal:` | for promote | Path to the approved proposal file to apply. |
 | `Captures:` | for capture | Path to a run's `captures/` directory. Applied as a set. |
+| `CaptureKeys:` | no | Exact comma-separated capture keys to enrich/apply; defaults to all pending. |
 | `Library:` | for capture | Absolute path to a local `ui-design-library` checkout. |
 
-Output per run: `report.md` (human-readable), `inventory.json`, `resolution.json`, `memory-archive.json`, `proposals/<slug>.md` per Promote candidate, `captures/<slug>.md` per library candidate, and `orchestration-drafts.md` — plus `specs-raw.json` and `specs.json` when a `Specs:` input was given, or the four retrospective capture/normalization/action artifacts when `Retrospectives:` was given. Full parameter and output detail: [`skills/project-retrospective/README.md`](skills/project-retrospective/README.md).
+Output per analyze run: `report.md`, schema-v1 source-first `inventory.json`, `resolution.json`, `memory-archive.json`, catalog proposals, lightweight pending capture intents, and orchestration drafts. Analyze emits no source-parity artifacts; capture creates them only for selected intents after pinned-source verification. Optional specs/retrospectives add their documented artifacts. Full detail: [`skills/project-retrospective/README.md`](skills/project-retrospective/README.md).
 
 **Client data stays with the client.** The analyzed project is read-only — a retrospective never leaves artifacts in the repository it analyzed. Run output goes to `Data:` or `Output:`, and is never committed to this public repo.
 

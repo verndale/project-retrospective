@@ -3,12 +3,13 @@
  * inventory.cjs — what did this project actually build?
  *
  * Reads a completed frontend project and emits one JSON record per component,
- * with the evidence sources that back it. Pipeline projects carry normalized
- * evidence under the artifacts root (component index, build packs, fingerprints,
- * project memory); projects that predate the pipeline degrade to a code scan.
+ * with the evidence sources that back it. Source is always the primary census:
+ * package manifests, framework markers, imports, tests, stories, styles, tokens,
+ * consumers, and delivery configuration enrich conventional component roots.
+ * Pipeline artifacts remain optional corroboration.
  *
  * Usage:
- *   node inventory.cjs --project <path> [--out <file>] [--pretty]
+ *   node inventory.cjs --project <path> [--platform <canonical-key>] [--out <file>] [--pretty]
  *
  * Exit codes:
  *   0  success — including a degraded run (see the `warnings` array)
@@ -22,6 +23,7 @@
 
 'use strict';
 
+const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const {
@@ -32,6 +34,7 @@ const {
   isDir,
   isFile,
   listEntries,
+  isSafeRepositoryRelativePath,
   normalizeLabel,
   resolveArtifactsRoot,
   Warnings,
@@ -41,9 +44,10 @@ const {
 const { cmsForKey } = require('./lib/cms-taxonomy.cjs');
 
 const USAGE = [
-  'Usage: node inventory.cjs --project <path> [--out <file>] [--pretty]',
+  'Usage: node inventory.cjs --project <path> [--platform <canonical-key>] [--out <file>] [--pretty]',
   '',
   '  --project  Absolute or relative path to the completed project repository (required)',
+  '  --platform Exact canonical CMS key; overrides deterministic marker inference',
   '  --out      Write JSON here instead of stdout',
   '  --pretty   Indent the JSON output',
 ];
@@ -65,7 +69,61 @@ const STORY_SKIP_DIRS = new Set([...HEAVY_DIRS, '__tests__', '__snapshots__', '_
 const HEURISTIC_ROOTS = [
   'src/components', 'components', 'src/ui', 'app/components',
   'frontend/src/html/components', 'frontend/src/html/modules', 'src/modules',
+  'src/widgets', 'src/layouts', 'src/features', 'lib/components',
 ];
+
+// Every package root in a workspace receives the same conventional probes. Paths
+// are exact; no package-name or directory-name fuzzing is used.
+const PACKAGE_COMPONENT_ROOTS = [
+  ['src/components', 'ui'],
+  ['components', 'ui'],
+  ['src/ui', 'ui'],
+  ['app/components', 'ui'],
+  ['src/modules', 'rendering'],
+  ['src/widgets', 'ui'],
+  ['src/layouts', 'layout'],
+  ['src/features', 'rendering'],
+  ['lib/components', 'ui'],
+];
+
+const MANIFEST_SCAN_DEPTH = 5;
+const SOURCE_SIGNAL_DEPTH = 12;
+const SOURCE_FILE_RE = /\.(?:tsx?|jsx?|vue|svelte|astro|hbs|handlebars|twig|liquid|css|scss|sass|less)$/i;
+const TEST_FILE_RE = /\.(?:test|spec|cy)\.[cm]?[jt]sx?$/i;
+const STYLE_FILE_RE = /(?:\.module)?\.(?:css|scss|sass|less)$/i;
+const TOKEN_PATH_RE = /(?:^|\/)(?:tokens?|theme|themes|design-tokens?)(?:\/|\.|$)/i;
+
+// Platform inference is deliberately conservative. Only exact dependency names or
+// an exact canonical build-config key count; overlapping SDKs make the result null.
+const PLATFORM_DEPENDENCIES = new Map([
+  ['contentful', 'contentful'],
+  ['@contentful/app-sdk', 'contentful'],
+  ['@contentful/rich-text-react-renderer', 'contentful'],
+  ['contentstack', 'contentstack'],
+  ['@contentstack/delivery-sdk', 'contentstack'],
+  ['@contentstack/management', 'contentstack'],
+  ['@optimizely/cms-sdk', 'optimizely-saas'],
+  ['@optimizely/cms-cli', 'optimizely-saas'],
+  ['@sitecore-content-sdk/nextjs', 'sitecore-ai'],
+  ['@sitecore-content-sdk/react', 'sitecore-ai'],
+  ['@wordpress/api-fetch', 'wordpress'],
+  ['@wordpress/element', 'wordpress'],
+]);
+
+const FRAMEWORK_DEPENDENCIES = new Map([
+  ['next', 'next'],
+  ['react', 'react'],
+  ['vue', 'vue'],
+  ['nuxt', 'nuxt'],
+  ['svelte', 'svelte'],
+  ['@sveltejs/kit', 'sveltekit'],
+  ['astro', 'astro'],
+]);
+
+const DELIVERY_FILES = new Set([
+  'vercel.json', 'netlify.toml', 'azure-pipelines.yml', 'azure-pipelines.yaml',
+  'Dockerfile', 'docker-compose.yml', 'docker-compose.yaml',
+]);
 
 // Depth guard for the recursive component walk: bucket root -> [domain] -> component -> files.
 const MAX_SCAN_DEPTH = 4;
@@ -163,6 +221,388 @@ function makeFileRe(exts) {
   return new RegExp(`\\.(?:${alt})$`);
 }
 
+function relativePath(projectDir, absolutePath) {
+  return path.relative(projectDir, absolutePath).split(path.sep).join('/');
+}
+
+// A filesystem symlink is not proof of the target bytes at the pinned Git
+// revision. Source discovery therefore records the link as skipped instead of
+// following it into another checkout (or around a cycle).
+const WARNED_SOURCE_SYMLINKS = new WeakMap();
+
+function warnSourceSymlink(projectDir, linkPath, warnings) {
+  const rel = relativePath(projectDir, linkPath);
+  const warned = WARNED_SOURCE_SYMLINKS.get(warnings) || new Set();
+  if (warned.has(rel)) return;
+  warned.add(rel);
+  WARNED_SOURCE_SYMLINKS.set(warnings, warned);
+  warnings.add(
+    'source-symlink-skipped',
+    `Skipped source symlink "${rel}" because its target bytes are not proven by the pinned Git revision.`,
+  );
+}
+
+function sourceEntries(projectDir, directory, warnings) {
+  const directoryRel = relativePath(projectDir, directory);
+  if (directoryRel && sourcePathHasSymlink(projectDir, directoryRel, warnings)) return [];
+  return listEntries(directory).filter((entry) => {
+    if (!entry.symlink) return true;
+    warnSourceSymlink(projectDir, entry.path, warnings);
+    return false;
+  });
+}
+
+function sourcePathHasSymlink(projectDir, relative, warnings) {
+  let current = projectDir;
+  for (const segment of relative.split('/')) {
+    current = path.join(current, segment);
+    try {
+      if (fs.lstatSync(current).isSymbolicLink()) {
+        warnSourceSymlink(projectDir, current, warnings);
+        return true;
+      }
+    } catch {
+      return false; // A missing path is handled by the caller, not a symlink escape.
+    }
+  }
+  return false;
+}
+
+/** Reject a configured/discovered root when any descendant segment is a symlink. */
+function sourceDirectory(projectDir, rootRel, warnings) {
+  return isSafeRepositoryRelativePath(rootRel) &&
+    !sourcePathHasSymlink(projectDir, rootRel, warnings) &&
+    isDir(path.join(projectDir, rootRel));
+}
+
+function sourceFile(projectDir, fileRel, warnings) {
+  return isSafeRepositoryRelativePath(fileRel) &&
+    !sourcePathHasSymlink(projectDir, fileRel, warnings) &&
+    isFile(path.join(projectDir, fileRel));
+}
+
+function indexedSourcePath(projectDir, value, field, warnings) {
+  if (typeof value !== 'string') return null;
+  if (!isSafeRepositoryRelativePath(value)) {
+    warnings.add(
+      'path-outside-project',
+      `component-index ${field} ${JSON.stringify(value)} is not a safe repository-relative path and was skipped.`,
+    );
+    return null;
+  }
+  return sourcePathHasSymlink(projectDir, value, warnings) ? null : value;
+}
+
+/** Bounded repository walk shared by manifest, source-signal, and delivery discovery. */
+function walkFiles(projectDir, maxDepth, include, warnings) {
+  const files = [];
+  const walk = (directory, depth) => {
+    if (depth > maxDepth) return;
+    for (const entry of sourceEntries(projectDir, directory, warnings)) {
+      if (entry.dir) {
+        if (HEAVY_DIRS.includes(entry.name)) continue;
+        walk(entry.path, depth + 1);
+      } else {
+        const rel = relativePath(projectDir, entry.path);
+        if (include(entry.name, rel)) files.push(rel);
+      }
+    }
+  };
+  walk(projectDir, 0);
+  return files.sort();
+}
+
+function expandWorkspacePattern(pattern) {
+  const match = /\{([^{}]+)\}/.exec(pattern);
+  if (!match) return [pattern];
+  return match[1].split(',').flatMap((choice) =>
+    expandWorkspacePattern(`${pattern.slice(0, match.index)}${choice}${pattern.slice(match.index + match[0].length)}`));
+}
+
+function normalizeWorkspacePattern(value, source, warnings) {
+  if (typeof value !== 'string' || !value.trim()) {
+    warnings.add('workspace-manifest-invalid', `${source} contains a non-string or empty workspace pattern; it was ignored.`);
+    return [];
+  }
+  const negative = value.trim().startsWith('!');
+  let pattern = value.trim().replace(/^!/, '').replace(/^\.\//, '').replace(/\/+$/, '');
+  pattern = pattern.replace(/\/package\.json$/, '');
+  if (!pattern || pattern === '.' || path.posix.isAbsolute(pattern) || /^[A-Za-z]:/.test(pattern) ||
+    pattern.includes('\\') || pattern.split('/').includes('..')) {
+    warnings.add('workspace-manifest-invalid', `${source} contains unsafe workspace pattern ${JSON.stringify(value)}; it was ignored.`);
+    return [];
+  }
+  return expandWorkspacePattern(pattern).map((expanded) => `${negative ? '!' : ''}${expanded}`);
+}
+
+function packageWorkspacePatterns(manifest, warnings) {
+  const workspaces = manifest?.workspaces;
+  if (workspaces === undefined) return [];
+  const values = Array.isArray(workspaces)
+    ? workspaces
+    : workspaces && typeof workspaces === 'object' && !Array.isArray(workspaces) && Array.isArray(workspaces.packages)
+      ? workspaces.packages
+      : null;
+  if (!values) {
+    warnings.add('workspace-manifest-invalid', 'package.json workspaces must be an array or an object with a packages array; nested manifests were ignored.');
+    return [];
+  }
+  return values.flatMap((value) => normalizeWorkspacePattern(value, 'package.json workspaces', warnings));
+}
+
+function pnpmWorkspacePatterns(projectDir, warnings) {
+  const file = path.join(projectDir, 'pnpm-workspace.yaml');
+  if (!sourceFile(projectDir, 'pnpm-workspace.yaml', warnings)) return [];
+  const text = readTextSafe(file, 256 * 1024, warnings);
+  if (text === null) {
+    warnings.add('workspace-manifest-invalid', 'pnpm-workspace.yaml could not be read; nested manifests were ignored.');
+    return [];
+  }
+  const lines = text.split(/\r?\n/);
+  const start = lines.findIndex((line) => /^packages:\s*(?:#.*)?$/.test(line));
+  if (start === -1) {
+    warnings.add('workspace-manifest-invalid', 'pnpm-workspace.yaml has no block-style packages list; nested manifests were ignored.');
+    return [];
+  }
+  const values = [];
+  for (const line of lines.slice(start + 1)) {
+    if (!line.trim() || /^\s*#/.test(line)) continue;
+    if (!/^\s/.test(line)) break;
+    const match = /^\s+-\s+(.+?)\s*(?:#.*)?$/.exec(line);
+    if (!match) continue;
+    let value = match[1].trim();
+    if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith('"') && value.endsWith('"'))) {
+      value = value.slice(1, -1);
+    }
+    values.push(value);
+  }
+  return values.flatMap((value) => normalizeWorkspacePattern(value, 'pnpm-workspace.yaml packages', warnings));
+}
+
+function workspacePatternRegex(pattern) {
+  let source = '^';
+  for (let index = 0; index < pattern.length; index += 1) {
+    const char = pattern[index];
+    if (char === '*' && pattern[index + 1] === '*') {
+      if (pattern[index + 2] === '/') {
+        source += '(?:[^/]+/)*';
+        index += 2;
+      } else {
+        source += '.*';
+        index += 1;
+      }
+    } else if (char === '*') {
+      source += '[^/]*';
+    } else if (char === '?') {
+      source += '[^/]';
+    } else {
+      source += char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+  }
+  return new RegExp(`${source}$`);
+}
+
+function matchesWorkspace(directory, patterns) {
+  const positives = patterns.filter((pattern) => !pattern.startsWith('!'));
+  const negatives = patterns.filter((pattern) => pattern.startsWith('!')).map((pattern) => pattern.slice(1));
+  return positives.some((pattern) => workspacePatternRegex(pattern).test(directory)) &&
+    !negatives.some((pattern) => workspacePatternRegex(pattern).test(directory));
+}
+
+/** Read the root and only manifests admitted by declared workspace membership. */
+function discoverManifests(projectDir, warnings) {
+  const paths = walkFiles(projectDir, MANIFEST_SCAN_DEPTH, (name) => name === 'package.json', warnings);
+  const rootRead = paths.includes('package.json') ? readJsonSafe(path.join(projectDir, 'package.json')) : null;
+  const rootManifest = rootRead?.ok && rootRead.value && typeof rootRead.value === 'object' && !Array.isArray(rootRead.value)
+    ? rootRead.value
+    : null;
+  if (rootRead && !rootManifest) {
+    warnings.add('manifest-unreadable', 'package.json is not a readable package.json object — root manifest evidence was skipped.');
+  }
+  const patterns = [...new Set([
+    ...packageWorkspacePatterns(rootManifest, warnings),
+    ...pnpmWorkspacePatterns(projectDir, warnings),
+  ])];
+  const accepted = paths.filter((rel) => {
+    if (rel === 'package.json') return Boolean(rootManifest);
+    const dir = path.posix.dirname(rel);
+    return patterns.length > 0 && matchesWorkspace(dir, patterns);
+  });
+  const manifests = [];
+  for (const rel of accepted) {
+    const read = rel === 'package.json' ? rootRead : readJsonSafe(path.join(projectDir, rel));
+    if (!read.ok || !read.value || typeof read.value !== 'object' || Array.isArray(read.value)) {
+      warnings.add('manifest-unreadable', `${rel} is not a readable package.json object — workspace evidence from it was skipped.`);
+      continue;
+    }
+    const value = read.value;
+    const dependencies = new Set();
+    for (const field of ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']) {
+      if (!value[field] || typeof value[field] !== 'object' || Array.isArray(value[field])) continue;
+      for (const dependency of Object.keys(value[field])) dependencies.add(dependency);
+    }
+    const frameworks = [...new Set(
+      [...dependencies].map((dependency) => FRAMEWORK_DEPENDENCIES.get(dependency)).filter(Boolean),
+    )].sort();
+    const dir = path.posix.dirname(rel) === '.' ? '' : path.posix.dirname(rel);
+    manifests.push({
+      path: rel,
+      dir,
+      name: typeof value.name === 'string' && value.name.trim() ? value.name.trim() : null,
+      dependencies: [...dependencies].sort(),
+      frameworks,
+    });
+  }
+  return manifests;
+}
+
+/** Existing conventional component roots under every package in a workspace. */
+function manifestComponentRoots(projectDir, manifests, warnings) {
+  const roots = [];
+  const seen = new Set();
+  for (const manifest of manifests) {
+    for (const [suffix, bucketKey] of PACKAGE_COMPONENT_ROOTS) {
+      const rel = manifest.dir ? `${manifest.dir}/${suffix}` : suffix;
+      if (seen.has(rel) || !sourceDirectory(projectDir, rel, warnings)) continue;
+      seen.add(rel);
+      roots.push({ rootRel: rel, bucketKey, speculative: true });
+    }
+  }
+  return roots.sort((a, b) => a.rootRel.localeCompare(b.rootRel));
+}
+
+function discoverDeliveryConfig(projectDir, manifests, warnings) {
+  const packageDirs = new Set(manifests.map((manifest) => manifest.dir));
+  packageDirs.add('');
+  const paths = new Set();
+  for (const dir of packageDirs) {
+    for (const name of DELIVERY_FILES) {
+      const rel = dir ? `${dir}/${name}` : name;
+      if (sourceFile(projectDir, rel, warnings)) paths.add(rel);
+    }
+  }
+  const workflows = path.join(projectDir, '.github/workflows');
+  for (const entry of sourceEntries(projectDir, workflows, warnings)) {
+    if (!entry.dir && /\.ya?ml$/i.test(entry.name)) paths.add(`.github/workflows/${entry.name}`);
+  }
+  return [...paths].sort();
+}
+
+/** Resolve exact CMS markers, preferring an explicit canonical override. */
+function resolvePlatform(config, manifests, override, warnings) {
+  if (override) {
+    const cms = cmsForKey(override);
+    if (!cms) usage(`--platform must be one of the canonical CMS keys; got ${JSON.stringify(override)}`, USAGE);
+    return { cms, source: 'override', markers: [`override:${cms.key}`] };
+  }
+
+  const markers = [];
+  const configured = cmsForKey(config.stackAdapter);
+  if (configured) markers.push({ key: configured.key, marker: `build.config.json:stackAdapter=${configured.key}` });
+  for (const manifest of manifests) {
+    for (const dependency of manifest.dependencies) {
+      const key = PLATFORM_DEPENDENCIES.get(dependency);
+      if (key) markers.push({ key, marker: `${manifest.path}:dependency=${dependency}` });
+    }
+  }
+  const keys = [...new Set(markers.map((marker) => marker.key))].sort();
+  if (keys.length > 1) {
+    warnings.add(
+      'ambiguous-platform',
+      `Exact platform markers disagree (${keys.join(', ')}) — CMS identity remains null; pass --platform to resolve it.`,
+    );
+    return { cms: null, source: 'ambiguous', markers: markers.map((marker) => marker.marker).sort() };
+  }
+  const cms = keys.length === 1 ? cmsForKey(keys[0]) : null;
+  return {
+    cms,
+    source: configured ? 'build-config' : cms ? 'manifest' : null,
+    markers: markers.map((marker) => marker.marker).sort(),
+  };
+}
+
+function importedSpecifiers(source) {
+  const values = new Set();
+  const patterns = [
+    /(?:import|export)\s+(?:[^'";]*?\s+from\s+)?['"]([^'"]+)['"]/g,
+    /require\(\s*['"]([^'"]+)['"]\s*\)/g,
+    /import\(\s*['"]([^'"]+)['"]\s*\)/g,
+  ];
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(source)) !== null) values.add(match[1]);
+  }
+  return [...values].sort();
+}
+
+function nearestManifest(componentPath, manifests) {
+  const candidates = manifests.filter((manifest) =>
+    !manifest.dir || componentPath === manifest.dir || componentPath.startsWith(`${manifest.dir}/`));
+  return candidates.sort((a, b) => b.dir.length - a.dir.length)[0] || null;
+}
+
+/** Gather concrete, path-citable evidence around one source component. */
+function inspectSourceEvidence(projectDir, component, repositoryFiles, manifests, deliveryConfig, readRepositoryText) {
+  const entry = typeof component.entry === 'string' ? component.entry : null;
+  const componentDir = typeof component.path === 'string' ? component.path.replace(/\/+$/, '') : null;
+  const key = normalizeLabel(component.folder || component.name);
+  const entryStem = entry ? normalizeLabel(path.posix.basename(entry).replace(/\.[^.]+$/, '')) : key;
+  const ownPrefix = componentDir ? `${componentDir}/` : null;
+  const ownFiles = repositoryFiles.filter((file) => file === entry || (ownPrefix && file.startsWith(ownPrefix)));
+  const sourceFiles = ownFiles.filter((file) => SOURCE_FILE_RE.test(file) && !TEST_FILE_RE.test(file) && !STORY_FILE_RE.test(file));
+  const tests = repositoryFiles.filter((file) => {
+    if (!TEST_FILE_RE.test(file)) return false;
+    return (ownPrefix && file.startsWith(ownPrefix)) || normalizeLabel(path.posix.basename(file).replace(TEST_FILE_RE, '')) === entryStem;
+  });
+
+  const imports = new Set();
+  for (const file of sourceFiles) {
+    const text = readRepositoryText(file);
+    if (text !== null) for (const specifier of importedSpecifiers(text)) imports.add(specifier);
+  }
+  const stories = repositoryFiles.filter((file) => {
+    if (!STORY_FILE_RE.test(file)) return false;
+    const storyStem = normalizeLabel(path.posix.basename(file).replace(STORY_FILE_RE, ''));
+    if (storyStem === key || storyStem === entryStem) return true;
+    const text = readRepositoryText(file);
+    return text !== null && importedSpecifiers(text).some((specifier) => normalizeLabel(specifier).endsWith(key));
+  });
+  const styles = ownFiles.filter((file) => STYLE_FILE_RE.test(file));
+  const tokenFiles = repositoryFiles.filter((file) => {
+    if (!TOKEN_PATH_RE.test(file)) return false;
+    return [...imports].some((specifier) => {
+      const normalized = specifier.replace(/^\.\//, '');
+      return file.includes(normalized.replace(/\.[^.]+$/, '')) || TOKEN_PATH_RE.test(specifier);
+    });
+  });
+  const consumers = repositoryFiles.filter((file) => {
+    if (ownFiles.includes(file) || TEST_FILE_RE.test(file) || STORY_FILE_RE.test(file) || !/\.[cm]?[jt]sx?$/.test(file)) return false;
+    const text = readRepositoryText(file);
+    if (text === null) return false;
+    return importedSpecifiers(text).some((specifier) => {
+      const normalized = normalizeLabel(specifier);
+      return normalized === key || normalized.endsWith(`-${key}`) || normalized.endsWith(entryStem);
+    });
+  });
+  const manifest = nearestManifest(componentDir || entry || '', manifests);
+  const packagePrefix = manifest?.dir ? `${manifest.dir}/` : '';
+  const packageDelivery = deliveryConfig.filter((file) =>
+    !manifest || !manifest.dir || !file.includes('/') || file.startsWith('.github/workflows/') || file.startsWith(packagePrefix));
+
+  return {
+    entryPoints: entry ? [entry] : [],
+    tests: [...new Set(tests)].sort(),
+    stories: [...new Set(stories)].sort(),
+    styles: [...new Set(styles)].sort(),
+    tokens: [...new Set(tokenFiles)].sort(),
+    imports: [...imports],
+    consumers: [...new Set(consumers)].sort(),
+    manifests: manifest ? [manifest.path] : [],
+    frameworks: manifest ? [...manifest.frameworks] : [],
+    deliveryConfig: [...new Set(packageDelivery)].sort(),
+  };
+}
+
 function loadConfig(projectDir, warnings) {
   // The artifacts-root read + "artifacts" default are shared with archive-memory.cjs
   // via resolveArtifactsRoot so the two scripts can never disagree on where pipeline
@@ -193,7 +633,27 @@ function loadConfig(projectDir, warnings) {
       cmsLabel: null,
     };
   }
+  if (resolved.status === 'unsafe') {
+    warnings.add(
+      'source-symlink-skipped',
+      'Skipped source symlink "build.config.json" because its target bytes are not proven by the pinned Git revision; using the default artifacts root and heuristic component discovery.',
+    );
+    return {
+      present: false,
+      path: resolved.path,
+      artifactsRoot: resolved.artifactsRoot,
+      stackAdapter: null,
+      cmsKey: null,
+      cmsLabel: null,
+    };
+  }
   const cfg = resolved.config;
+  if (resolved.unsafeArtifactsRoot !== null) {
+    warnings.add(
+      'path-outside-project',
+      `build.config.json artifactsRoot ${JSON.stringify(resolved.unsafeArtifactsRoot)} is not a safe repository-relative path — using "artifacts".`,
+    );
+  }
   const stackAdapter = cfg.stackAdapter ?? null;
   const cms = cmsForKey(stackAdapter);
   return {
@@ -211,9 +671,9 @@ function loadConfig(projectDir, warnings) {
   };
 }
 
-function loadComponentIndex(artifactsDir, warnings) {
+function loadComponentIndex(projectDir, artifactsDir, warnings) {
   const indexPath = path.join(artifactsDir, 'component-index.json');
-  if (!isFile(indexPath)) {
+  if (!sourceFile(projectDir, relativePath(projectDir, indexPath), warnings)) {
     warnings.add('no-component-index', `No component-index.json under ${artifactsDir} — component list falls back to build packs or a code scan.`);
     return null;
   }
@@ -238,7 +698,7 @@ function loadComponentIndex(artifactsDir, warnings) {
   return usable;
 }
 
-function loadBuildPacks(artifactsDir, warnings) {
+function loadBuildPacks(projectDir, artifactsDir, warnings) {
   const packsDir = path.join(artifactsDir, 'build-packs');
   const packs = new Map();
   let dirStyle = 0;
@@ -262,11 +722,11 @@ function loadBuildPacks(artifactsDir, warnings) {
     return { packs, dirStyle, flatStyle };
   }
 
-  for (const entry of listEntries(packsDir)) {
+  for (const entry of sourceEntries(projectDir, packsDir, warnings)) {
     if (entry.name.startsWith('.')) continue;
 
     if (entry.dir) {
-      const files = listEntries(entry.path)
+      const files = sourceEntries(projectDir, entry.path, warnings)
         .filter((f) => !f.dir && f.name.endsWith('.md'))
         .map((f) => f.name);
       if (!files.includes('master.md')) {
@@ -287,23 +747,23 @@ function loadBuildPacks(artifactsDir, warnings) {
   return { packs, dirStyle, flatStyle };
 }
 
-function loadMemory(artifactsDir, warnings) {
+function loadMemory(projectDir, artifactsDir, warnings) {
   const memoryDir = path.join(artifactsDir, 'memory');
   const shards = [];
   let text = '';
 
-  for (const entry of listEntries(memoryDir)) {
+  for (const entry of sourceEntries(projectDir, memoryDir, warnings)) {
     if (entry.dir || !entry.name.endsWith('.md')) continue;
     shards.push(entry.name);
     text += `\n${readTextSafe(entry.path, undefined, warnings) || ''}`;
   }
 
   const indexPath = path.join(artifactsDir, 'MEMORY.md');
-  const hasIndex = isFile(indexPath);
+  const hasIndex = sourceFile(projectDir, relativePath(projectDir, indexPath), warnings);
   if (hasIndex) text += `\n${readTextSafe(indexPath, undefined, warnings) || ''}`;
 
   // Component-scoped memory shards are named per component slug.
-  const componentShards = listEntries(path.join(memoryDir, 'components'))
+  const componentShards = sourceEntries(projectDir, path.join(memoryDir, 'components'), warnings)
     .filter((e) => !e.dir && e.name.endsWith('.md'))
     .map((e) => normalizeLabel(e.name.slice(0, -3)));
 
@@ -316,18 +776,18 @@ function loadMemory(artifactsDir, warnings) {
   return { shards, hasIndex, componentShards, blob };
 }
 
-function loadDesignFacts(artifactsDir) {
+function loadDesignFacts(projectDir, artifactsDir, warnings) {
   const factsDir = path.join(artifactsDir, 'design-facts');
   // Directory names are slugs, but a stray run can append a suffix (e.g. a
   // timestamp), so match on the leading slug rather than requiring equality.
-  return listEntries(factsDir)
+  return sourceEntries(projectDir, factsDir, warnings)
     .filter((e) => e.dir)
     .map((e) => normalizeLabel(e.name));
 }
 
-function loadShipLog(artifactsDir, warnings) {
+function loadShipLog(projectDir, artifactsDir, warnings) {
   const logPath = path.join(artifactsDir, 'ship-log.jsonl');
-  if (!isFile(logPath)) return { present: false, lines: 0 };
+  if (!sourceFile(projectDir, relativePath(projectDir, logPath), warnings)) return { present: false, lines: 0 };
   const text = readTextSafe(logPath, undefined, warnings);
   if (text === null) return { present: true, lines: null };
   return { present: true, lines: text.split('\n').filter((l) => l.trim()).length };
@@ -347,7 +807,7 @@ function readFingerprint(projectDir, componentPath, warnings) {
     return null;
   }
   const fpPath = path.join(componentDir, 'fingerprint.json');
-  if (!isFile(fpPath)) return null;
+  if (!sourceFile(projectDir, relativePath(projectDir, fpPath), warnings)) return null;
   const read = readJsonSafe(fpPath);
   if (!read.ok) {
     warnings.add('unreadable-json', `fingerprint.json for "${componentPath}" could not be parsed: ${read.error}`);
@@ -452,7 +912,7 @@ function classifyComponentDir(folderName, compFiles, fileRe) {
 /** Walk a bucket root collecting directories that directly hold a component file. */
 function scanBucket(projectDir, rootRel, bucketKey, fileRe, opts, warnings) {
   const rootAbs = path.join(projectDir, rootRel);
-  if (!isDir(rootAbs)) {
+  if (!sourceDirectory(projectDir, rootRel, warnings)) {
     if (!opts.silentEmpty) warnings.add('empty-bucket', `Component bucket "${rootRel}" does not exist in the project.`);
     return [];
   }
@@ -462,9 +922,9 @@ function scanBucket(projectDir, rootRel, bucketKey, fileRe, opts, warnings) {
   /** Does this directory, or anything below it, hold a component file? */
   const holdsComponentBelow = (absDir, depth) => {
     if (depth > MAX_SCAN_DEPTH) return false;
-    for (const entry of listEntries(absDir)) {
+    for (const entry of sourceEntries(projectDir, absDir, warnings)) {
       if (!entry.dir || SKIP_DIRS.has(entry.name) || entry.name.startsWith('.')) continue;
-      const entries = listEntries(entry.path);
+      const entries = sourceEntries(projectDir, entry.path, warnings);
       if (entries.some((e) => !e.dir && fileRe.test(e.name) && !NON_COMPONENT_RE.test(e.name))) return true;
       if (holdsComponentBelow(entry.path, depth + 1)) return true;
     }
@@ -475,7 +935,7 @@ function scanBucket(projectDir, rootRel, bucketKey, fileRe, opts, warnings) {
 
   const walk = (absDir, relDir, depth) => {
     if (depth > MAX_SCAN_DEPTH) return;
-    const entries = listEntries(absDir);
+    const entries = sourceEntries(projectDir, absDir, warnings);
     const compFiles = entries.filter(
       (e) => !e.dir && !e.name.startsWith('.') && fileRe.test(e.name) && !NON_COMPONENT_RE.test(e.name),
     );
@@ -544,17 +1004,17 @@ function scanBucket(projectDir, rootRel, bucketKey, fileRe, opts, warnings) {
  */
 function scanBucketShallow(projectDir, rootRel, bucketKey, fileRe, opts, warnings) {
   const rootAbs = path.join(projectDir, rootRel);
-  if (!isDir(rootAbs)) {
+  if (!sourceDirectory(projectDir, rootRel, warnings)) {
     if (!opts.silentEmpty) warnings.add('empty-bucket', `Component bucket "${rootRel}" does not exist in the project.`);
     return [];
   }
 
   const found = [];
-  for (const entry of listEntries(rootAbs)) {
+  for (const entry of sourceEntries(projectDir, rootAbs, warnings)) {
     if (entry.name.startsWith('.')) continue;
     if (entry.dir) {
       if (SKIP_DIRS.has(entry.name)) continue;
-      const inner = listEntries(entry.path).filter(
+      const inner = sourceEntries(projectDir, entry.path, warnings).filter(
         (e) => !e.dir && fileRe.test(e.name) && !NON_COMPONENT_RE.test(e.name),
       );
       if (inner.length === 0) continue; // a folder with no component file is not a component
@@ -608,7 +1068,7 @@ function scanBucketShallow(projectDir, rootRel, bucketKey, fileRe, opts, warning
  * profile's conventional roots, a deprecated reusableComponentsBase pointer, and a layouts
  * root derived from the buckets. Heuristic roots are added later, only when nothing declared.
  */
-function resolveRoots(config, profile, warnings) {
+function resolveRoots(config, profile, packageRoots, warnings) {
   const roots = [];
   const seen = new Set();
   // `speculative` roots (adapter conventions, reusableComponentsBase, the derived layouts
@@ -616,6 +1076,13 @@ function resolveRoots(config, profile, warnings) {
   const add = (rel, bucketKey, speculative) => {
     if (typeof rel !== 'string' || !rel) return;
     const norm = rel.replace(/\/+$/, '');
+    if (!isSafeRepositoryRelativePath(norm)) {
+      warnings.add(
+        'path-outside-project',
+        `Component root ${JSON.stringify(rel)} is not a safe repository-relative path and was skipped.`,
+      );
+      return;
+    }
     if (seen.has(norm)) return;
     seen.add(norm);
     roots.push({ rootRel: norm, bucketKey, speculative });
@@ -632,6 +1099,7 @@ function resolveRoots(config, profile, warnings) {
   }
   for (const [rel, bucketKey] of profile.roots) add(rel, bucketKey, true);
   if (config.reusableComponentsBase) add(config.reusableComponentsBase, 'ui', true);
+  for (const root of packageRoots) add(root.rootRel, root.bucketKey, true);
 
   // Census breadth: a layouts root alongside the declared buckets (e.g. src/components/layouts).
   const uiBucket = config.componentBuckets && typeof config.componentBuckets.ui === 'string'
@@ -671,7 +1139,7 @@ function dedupeScan(comps, warnings) {
  * are allowed (code-scan mode).
  */
 function discoverComponents(projectDir, config, profile, fileRe, opts, warnings) {
-  const roots = resolveRoots(config, profile, warnings);
+  const roots = resolveRoots(config, profile, opts.packageRoots || [], warnings);
   const scan = profile.granularity === 'shallow' ? scanBucketShallow : scanBucket;
 
   const out = [];
@@ -683,7 +1151,7 @@ function discoverComponents(projectDir, config, profile, fileRe, opts, warnings)
       out.push(...scan(projectDir, r.rootRel, r.bucketKey, fileRe, { silentEmpty }, warnings));
     }
   } else if (opts.allowHeuristic) {
-    const probed = HEURISTIC_ROOTS.filter((rel) => isDir(path.join(projectDir, rel)));
+    const probed = HEURISTIC_ROOTS.filter((rel) => sourceDirectory(projectDir, rel, warnings));
     if (probed.length > 0) {
       warnings.add('heuristic-buckets', `No componentBuckets or adapter roots — probed conventional roots: ${probed.join(', ')}.`);
       for (const rel of probed) out.push(...scanBucket(projectDir, rel, null, fileRe, { silentEmpty: false }, warnings));
@@ -697,11 +1165,11 @@ function discoverComponents(projectDir, config, profile, fileRe, opts, warnings)
  * for the toolkit stack Storybook is the registry, so stories contribute to the census. Each
  * `<slug>.stories.<ext>` yields one component keyed by its slug, bucketed by its story path.
  */
-function discoverStories(projectDir) {
+function discoverStories(projectDir, warnings) {
   const found = [];
   const walk = (absDir, relDir, depth) => {
     if (depth > MAX_STORY_DEPTH) return;
-    for (const entry of listEntries(absDir)) {
+    for (const entry of sourceEntries(projectDir, absDir, warnings)) {
       if (entry.name.startsWith('.')) continue;
       if (entry.dir) {
         if (STORY_SKIP_DIRS.has(entry.name)) continue;
@@ -746,7 +1214,7 @@ function warnRenderingDomainDrift(projectDir, config, warnings) {
   for (const [key, sub] of Object.entries(rd)) {
     if (typeof sub !== 'string' || !sub) continue;
     const domRel = `${renderingRoot}/${sub.replace(/^\/+|\/+$/g, '')}`;
-    if (!isDir(path.join(projectDir, domRel))) {
+    if (!isSafeRepositoryRelativePath(domRel) || !sourceDirectory(projectDir, domRel, warnings)) {
       warnings.add('rendering-domain-missing', `renderingDomains.${key} → "${domRel}" does not exist on disk (stale declaration).`);
     }
   }
@@ -784,7 +1252,7 @@ function foldSignals(byKey, comps, defaultSource) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2), {
-    keys: ['project', 'out'],
+    keys: ['project', 'platform', 'out'],
     flags: ['pretty'],
   });
   const { values } = args;
@@ -801,23 +1269,41 @@ function main() {
   const warnings = new Warnings();
   const snapshot = sourceSnapshot(projectDir, warnings);
   const config = loadConfig(projectDir, warnings);
-  const profile = profileFor(config.stackAdapter, warnings);
+  const manifests = discoverManifests(projectDir, warnings);
+  const platform = resolvePlatform(config, manifests, values.platform, warnings);
+  config.cmsKey = platform.cms?.key ?? null;
+  config.cmsLabel = platform.cms?.label ?? null;
+  config.platformSource = platform.source;
+  config.platformMarkers = platform.markers;
+  const profile = profileFor(config.stackAdapter ?? config.cmsKey, warnings);
   const fileRe = makeFileRe(profile.exts);
   const artifactsDir = path.join(projectDir, config.artifactsRoot);
+  const artifactsAvailable = sourceDirectory(projectDir, config.artifactsRoot, warnings);
+  const packageRoots = manifestComponentRoots(projectDir, manifests, warnings);
+  const deliveryConfig = discoverDeliveryConfig(projectDir, manifests, warnings);
+  const repositoryFiles = walkFiles(projectDir, SOURCE_SIGNAL_DEPTH, (name, rel) =>
+    SOURCE_FILE_RE.test(name) || (TOKEN_PATH_RE.test(rel) && /\.(?:json|ya?ml)$/i.test(name)), warnings);
+  const sourceTextCache = new Map();
+  const readRepositoryText = (rel) => {
+    if (!sourceTextCache.has(rel)) {
+      sourceTextCache.set(rel, readTextSafe(path.join(projectDir, rel), 2 * 1024 * 1024, warnings));
+    }
+    return sourceTextCache.get(rel);
+  };
 
-  if (!isDir(artifactsDir)) {
+  if (!artifactsAvailable) {
     warnings.add('no-artifacts-root', `No artifacts root at ${config.artifactsRoot}/ — pipeline evidence is unavailable.`);
   }
 
-  const componentIndex = isDir(artifactsDir) ? loadComponentIndex(artifactsDir, warnings) : null;
-  const { packs, dirStyle, flatStyle } = isDir(artifactsDir)
-    ? loadBuildPacks(artifactsDir, warnings)
+  const componentIndex = artifactsAvailable ? loadComponentIndex(projectDir, artifactsDir, warnings) : null;
+  const { packs, dirStyle, flatStyle } = artifactsAvailable
+    ? loadBuildPacks(projectDir, artifactsDir, warnings)
     : { packs: new Map(), dirStyle: 0, flatStyle: 0 };
-  const memory = isDir(artifactsDir)
-    ? loadMemory(artifactsDir, warnings)
+  const memory = artifactsAvailable
+    ? loadMemory(projectDir, artifactsDir, warnings)
     : { shards: [], hasIndex: false, componentShards: [], blob: '' };
-  const designFacts = isDir(artifactsDir) ? loadDesignFacts(artifactsDir) : [];
-  const shipLog = isDir(artifactsDir) ? loadShipLog(artifactsDir, warnings) : { present: false, lines: 0 };
+  const designFacts = artifactsAvailable ? loadDesignFacts(projectDir, artifactsDir, warnings) : [];
+  const shipLog = artifactsAvailable ? loadShipLog(projectDir, artifactsDir, warnings) : { present: false, lines: 0 };
 
   // An empty component-index.json ([]) is not artifacts evidence — fall through to a code scan so
   // the heuristic roots are still probed rather than the run yielding zero components.
@@ -833,16 +1319,22 @@ function main() {
         folder: typeof c.folder === 'string' ? c.folder : normalizeLabel(typeof c.name === 'string' ? c.name : ''),
         bucket: typeof c.bucket === 'string' ? c.bucket : null,
         domain: typeof c.domain === 'string' ? c.domain : null,
-        path: typeof c.path === 'string' ? c.path : null,
-        entry: typeof c.entry === 'string' ? c.entry : null,
+        path: indexedSourcePath(projectDir, c.path, 'path', warnings),
+        entry: indexedSourcePath(projectDir, c.entry, 'entry', warnings),
         sources: ['component-index'],
       }))
     : [];
-  const scanComps = discoverComponents(projectDir, config, profile, fileRe, { allowHeuristic: mode === 'code-scan' }, warnings);
-  // Storybook is a supplementary signal, honored only for stacks whose profile marks it the
-  // registry (toolkit, and the broad default for unknown adapters). React stacks that merely
-  // happen to ship stories are a no-op — the story tree is not even walked.
-  const storyComps = profile.storybook ? discoverStories(projectDir) : [];
+  const scanComps = discoverComponents(
+    projectDir,
+    config,
+    profile,
+    fileRe,
+    { allowHeuristic: mode === 'code-scan', packageRoots },
+    warnings,
+  );
+  // Story files are always inspected as source evidence. Only profiles that use
+  // Storybook as their registry may introduce a story-only component.
+  const storyComps = discoverStories(projectDir, warnings);
   warnRenderingDomainDrift(projectDir, config, warnings);
 
   // The index is authoritative on conflict; a duplicate-component warning is kept for genuine
@@ -860,7 +1352,7 @@ function main() {
     byKey.set(key, component);
   }
   foldSignals(byKey, scanComps, 'code-scan');
-  foldSignals(byKey, storyComps, 'storybook');
+  if (profile.storybook) foldSignals(byKey, storyComps, 'storybook');
 
   // Build packs with no matching component still count as evidence of something built.
   for (const [key, pack] of packs) {
@@ -881,7 +1373,14 @@ function main() {
   const components = [...byKey.entries()]
     .map(([key, component]) => {
       const sources = new Set(component.sources);
-
+      const sourceEvidence = inspectSourceEvidence(
+        projectDir,
+        component,
+        repositoryFiles,
+        manifests,
+        deliveryConfig,
+        readRepositoryText,
+      );
       const pack = packs.get(key) || null;
       if (pack) sources.add('build-pack');
 
@@ -925,6 +1424,7 @@ function main() {
         path: component.path,
         entry: component.entry,
         sources: [...sources].sort(),
+        sourceEvidence,
         facets: liftFacets(fingerprint),
         partOf,
         buildPack: pack ? { style: pack.style, files: pack.files, facets: buildPackFacets(pack) } : null,
@@ -934,7 +1434,7 @@ function main() {
     .sort((a, b) => (a.folder < b.folder ? -1 : a.folder > b.folder ? 1 : 0));
 
   if (components.length === 0) {
-    warnings.add('no-components-found', 'No components were discovered from artifacts or a code scan — check the project path and build.config.json.');
+    warnings.add('no-components-found', 'No components were discovered from source roots or optional build artifacts — check the project path and package manifests.');
   }
 
   writeOut(
@@ -945,6 +1445,13 @@ function main() {
       sourceSnapshot: snapshot,
       mode,
       config,
+      discovery: {
+        manifests: manifests.map(({ path: manifestPath, dir, name, frameworks }) => ({ path: manifestPath, dir, name, frameworks })),
+        componentRoots: packageRoots.map((root) => root.rootRel),
+        frameworks: [...new Set(manifests.flatMap((manifest) => manifest.frameworks))].sort(),
+        deliveryConfig,
+        sourceFiles: repositoryFiles.length,
+      },
       components,
       evidence: {
         componentIndex: hasIndex,

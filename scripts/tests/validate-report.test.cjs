@@ -408,6 +408,96 @@ function captureFile(canonical, slug) {
   ].join('\n');
 }
 
+/** Analyze-time capture intent: identity and source evidence, no target claims. */
+function captureIntentFile(canonical, slug) {
+  return [
+    `# Capture intent: ${canonical}`,
+    '',
+    '## Proposal type',
+    '',
+    'component-capture-intent',
+    '',
+    '## Capture intent',
+    '',
+    '```json',
+    '{ "schemaVersion": 1, "status": "pending" }',
+    '```',
+    '',
+    '## Canonical',
+    '',
+    `**${canonical}** (\`${slug}\`) — resolved via name.`,
+    '',
+    '## Structural identity',
+    '',
+    '```json',
+    `{ "componentKey": "${slug}", "canonical": "${canonical}", "variant": null, "variantLabel": null, "default": true }`,
+    '```',
+    '',
+    '## Source',
+    '',
+    `- Entry: \`src/components/ui/${slug}/${canonical}.tsx\``,
+    '',
+    '## Why',
+    '',
+    '- A reusable source implementation resolves to the canonical.',
+    '',
+    '## Evidence',
+    '',
+    '- Present: source entry, colocated test, and consumer.',
+    '- Absent: build pack, fingerprint, and project memory.',
+    '',
+    '## De-client headline',
+    '',
+    '- Remove the project import and replace project tokens.',
+    '',
+    '## Progress',
+    '',
+    '```json',
+    '{ "status": "pending" }',
+    '```',
+    '',
+  ].join('\n');
+}
+
+function appliedFigmaBlock(overrides = {}) {
+  const applied = {
+    status: 'landed',
+    componentPath: 'components/modal',
+    figma: {
+      nodeId: '100:200',
+      nodeKey: 'stable-modal-key',
+      publicationStatus: 'unpublished',
+      review: { status: 'passed', passes: ['source-parity', 'adversarial', 'design'] },
+      stateCoverage: {
+        status: 'covered',
+        storyExport: 'InteractionStates',
+        states: [
+          {
+            id: 'dialog.open',
+            label: 'Open',
+            source: { trigger: 'derived-state', value: 'open=true' },
+            target: 'Dialog surface',
+            classification: 'rendered',
+            frameNodeId: '100:300',
+            instanceNodeId: '100:301',
+            componentNodeId: '99:1',
+          },
+          {
+            id: 'dialog.focus-containment',
+            label: 'Focus containment and restoration',
+            source: { trigger: 'behavior', value: 'Tab containment while open and focus restoration on close' },
+            target: 'Dialog focus lifecycle',
+            classification: 'runtime-only',
+            reason: 'Focus movement across time cannot be represented honestly in a static Figma frame.',
+          },
+        ],
+      },
+    },
+    ...overrides,
+  };
+  return `\n## Applied\n\n\`\`\`json\n${JSON.stringify(applied, null, 2)}\n\`\`\`\n`;
+}
+
 /** Append a "### <Canonical>" entry to the report's Captures section. */
 function addCaptureEntry(dir, canonical) {
   const report = readFile(dir, 'report.md').replace(
@@ -433,6 +523,117 @@ test('a well-formed component capture passes', () => {
   addCaptureEntry(dir, 'Link');
   const result = validate(dir);
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
+test('modern Applied carries client-neutral Figma review and exact semantic state coverage', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'captures/modal.md', readFile(dir, 'captures/modal.md') + appliedFigmaBlock());
+  const result = validate(dir);
+  assert.equal(result.status, 0, result.stdout);
+});
+
+test('modern Applied cannot omit unpublished status or governed state coverage', () => {
+  const dir = tempOutput();
+  const bad = appliedFigmaBlock({
+    figma: { nodeId: '100:200', nodeKey: 'stable-modal-key' },
+  });
+  writeFile(dir, 'captures/modal.md', readFile(dir, 'captures/modal.md') + bad);
+  assertFails(dir, 'capture-applied-figma');
+});
+
+test('a lightweight analyze capture intent passes without source parity', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'captures/modal.md', captureIntentFile('Modal', 'modal'));
+  fs.rmSync(path.join(dir, 'source-parity'), { recursive: true });
+  const result = validate(dir);
+  assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
+test('a lightweight capture intent enforces exact structural identity types and relationships', () => {
+  const invalidIdentities = [
+    '{ "componentKey": "modal", "canonical": "Modal", "variant": null, "variantLabel": null, "default": "true" }',
+    '{ "componentKey": "modal", "canonical": "Modal", "variant": null, "variantLabel": "Compact", "default": true }',
+    '{ "componentKey": "modal", "canonical": "Modal", "variant": null, "variantLabel": null, "default": false }',
+    '{ "componentKey": "modal--compact", "canonical": "Modal", "variant": "compact", "variantLabel": "Dense", "default": false }',
+  ];
+  const validIdentity = '{ "componentKey": "modal", "canonical": "Modal", "variant": null, "variantLabel": null, "default": true }';
+  for (const identity of invalidIdentities) {
+    const dir = tempOutput();
+    writeFile(dir, 'captures/modal.md', captureIntentFile('Modal', 'modal').replace(validIdentity, identity));
+    fs.rmSync(path.join(dir, 'source-parity'), { recursive: true });
+    assertFails(dir, 'capture-intent');
+  }
+});
+
+test('a lightweight structural alternate keeps report, filename, and identity in exact parity', () => {
+  const dir = tempOutput();
+  const validIdentity = '{ "componentKey": "modal", "canonical": "Modal", "variant": null, "variantLabel": null, "default": true }';
+  const alternateIdentity = '{ "componentKey": "modal--compact", "canonical": "Modal", "variant": "compact", "variantLabel": "Compact", "default": false }';
+  fs.rmSync(path.join(dir, 'captures/modal.md'));
+  writeFile(
+    dir,
+    'captures/modal--compact.md',
+    captureIntentFile('Modal', 'modal').replace(validIdentity, alternateIdentity),
+  );
+  writeFile(
+    dir,
+    'report.md',
+    readFile(dir, 'report.md')
+      .replace('### Modal\n', '### Modal / Compact\n')
+      .replace('`captures/modal.md`', '`captures/modal--compact.md`'),
+  );
+  fs.rmSync(path.join(dir, 'source-parity'), { recursive: true });
+  const result = validate(dir);
+  assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
+test('an analyze capture intent cannot claim target architecture', () => {
+  const dir = tempOutput();
+  writeFile(
+    dir,
+    'captures/modal.md',
+    `${captureIntentFile('Modal', 'modal')}\n## Runtime architecture\n\n\`\`\`json\n{}\n\`\`\`\n`,
+  );
+  fs.rmSync(path.join(dir, 'source-parity'), { recursive: true });
+  assertFails(dir, 'capture-intent');
+});
+
+test('an analyze capture intent must record present and absent evidence', () => {
+  const dir = tempOutput();
+  writeFile(
+    dir,
+    'captures/modal.md',
+    captureIntentFile('Modal', 'modal').replace('- Absent: build pack, fingerprint, and project memory.\n', ''),
+  );
+  fs.rmSync(path.join(dir, 'source-parity'), { recursive: true });
+  assertFails(dir, 'capture-intent');
+});
+
+test('an analyze capture intent rejects absolute source paths and extra target sections', () => {
+  const dir = tempOutput();
+  const capture = captureIntentFile('Modal', 'modal')
+    .replace('`src/components/ui/modal/Modal.tsx`', '`/private/client/Modal.tsx`')
+    .concat('\n## Figma\n\n- Target master.\n');
+  writeFile(dir, 'captures/modal.md', capture);
+  fs.rmSync(path.join(dir, 'source-parity'), { recursive: true });
+  assertFails(dir, 'capture-intent');
+});
+
+test('an analyze capture intent rejects exact and malformed duplicate Source entries', () => {
+  for (const duplicate of [
+    '- Entry: `src/components/ui/modal/Modal.types.ts`',
+    '- Entry: src/components/ui/modal/Modal.types.ts',
+    '* Entry: `src/components/ui/modal/Modal.types.ts`',
+  ]) {
+    const dir = tempOutput();
+    const capture = captureIntentFile('Modal', 'modal').replace(
+      '- Entry: `src/components/ui/modal/Modal.tsx`',
+      `- Entry: \`src/components/ui/modal/Modal.tsx\`\n${duplicate}`,
+    );
+    writeFile(dir, 'captures/modal.md', capture);
+    fs.rmSync(path.join(dir, 'source-parity'), { recursive: true });
+    assertFails(dir, 'capture-intent');
+  }
 });
 
 test('a "## Captures" entry with no capture file fails parity', () => {
@@ -652,6 +853,31 @@ test('meta.json with a null platform is accepted', () => {
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
 });
 
+test('manifest-inferred canonical CMS metadata validates without a stackAdapter', () => {
+  const dir = tempOutput();
+  const inventory = JSON.parse(readFile(dir, 'inventory.json'));
+  inventory.config.stackAdapter = null;
+  inventory.config.cmsKey = 'contentful';
+  inventory.config.cmsLabel = 'Contentful';
+  inventory.config.platformSource = 'manifest';
+  inventory.config.platformMarkers = ['package.json:dependency=@contentful/app-sdk'];
+  writeFile(dir, 'inventory.json', JSON.stringify(inventory, null, 2));
+  const meta = JSON.parse(readFile(dir, 'meta.json'));
+  meta.platform = 'contentful';
+  meta.platformDisplay = 'Contentful';
+  writeFile(dir, 'meta.json', JSON.stringify(meta, null, 2));
+  writeFile(
+    dir,
+    'report.md',
+    readFile(dir, 'report.md').replace(
+      '| Platform | `Optimizely SaaS` (`optimizely-saas`) |',
+      '| Platform | `Contentful` (`contentful`) |',
+    ),
+  );
+  const result = validate(dir);
+  assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
+});
+
 test('meta.json accepts every exact canonical CMS key and label pair', () => {
   for (const [key, label] of CMS_CATALOG) {
     const dir = tempOutput();
@@ -781,6 +1007,14 @@ test('a triage entry with an invalid verdict fails', () => {
   assertFails(dir, 'triage-entry');
 });
 
+test('a triage entry in the wrong verdict array fails', () => {
+  const dir = tempOutput();
+  const triage = JSON.parse(readFile(dir, 'triage.json'));
+  triage.watch[0].verdict = 'Promote';
+  writeFile(dir, 'triage.json', JSON.stringify(triage, null, 2));
+  assertFails(dir, 'triage-entry');
+});
+
 test('a triage entry with no label fails', () => {
   const dir = tempOutput();
   const triage = JSON.parse(readFile(dir, 'triage.json'));
@@ -801,6 +1035,14 @@ test('a non-numeric count fails', () => {
   const dir = tempOutput();
   const triage = JSON.parse(readFile(dir, 'triage.json'));
   triage.counts.Watch = 'one';
+  writeFile(dir, 'triage.json', JSON.stringify(triage, null, 2));
+  assertFails(dir, 'triage-counts');
+});
+
+test('a stale numeric triage count fails', () => {
+  const dir = tempOutput();
+  const triage = JSON.parse(readFile(dir, 'triage.json'));
+  triage.counts.Watch = 2;
   writeFile(dir, 'triage.json', JSON.stringify(triage, null, 2));
   assertFails(dir, 'triage-counts');
 });

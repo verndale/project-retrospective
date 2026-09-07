@@ -2,12 +2,15 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 const { runJson, tempFixture, readFile, writeFile, fixture } = require('./helpers.cjs');
 
 const BRAIN = fixture('fake-brain');
 const MANIFEST = fixture('fake-brain/skills/ui-design-brain/patterns-manifest.json');
+const SIBLING_LIBRARY = path.resolve(__dirname, '..', '..', '..', 'ui-design-library');
 
 /** A captures/ directory holding just the golden modal capture. */
 function tempCaptures() {
@@ -20,24 +23,103 @@ function syncSourceParity(captures) {
   const templatePath = path.join(parityDir, 'modal.json');
   const template = fs.existsSync(templatePath) ? JSON.parse(fs.readFileSync(templatePath, 'utf8')) : null;
   if (!template) return;
+  const sourceProject = fixture('fake-project');
+  const commit = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout.trim();
+  const inventoryPath = path.resolve(captures, '..', 'inventory.json');
+  const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+  const meta = JSON.parse(fs.readFileSync(path.resolve(captures, '..', 'meta.json'), 'utf8'));
+  const resolutionPath = path.resolve(captures, '..', 'resolution.json');
+  const resolution = JSON.parse(fs.readFileSync(resolutionPath, 'utf8'));
+  const catalogCanonicals = new Set(
+    JSON.parse(fs.readFileSync(MANIFEST, 'utf8')).map((entry) => entry.name),
+  );
+  inventory.project = sourceProject;
+  inventory.sourceSnapshot = { strategy: 'recorded', commit, dirty: false };
   fs.rmSync(parityDir, { recursive: true, force: true });
   fs.mkdirSync(parityDir, { recursive: true });
   for (const name of fs.readdirSync(captures).filter((entry) => entry.endsWith('.md'))) {
     const componentKey = path.basename(name, '.md');
     const source = fs.readFileSync(path.join(captures, name), 'utf8');
     const canonical = source.match(/\*\*([^*]+)\*\* \(`/)?.[1] || componentKey;
+    const baseSlug = source.match(/\*\*[^*]+\*\* \(`([^`]+)`\)/)?.[1] || componentKey.split('--')[0];
+    const sourceEntry = source.match(/^- Entry:\s*`([^`]+)`\s*$/m)?.[1] || template.sourceSnapshot.entry;
+    const existingSource = inventory.components.find((candidate) => candidate.entry === sourceEntry);
+    if (!existingSource) {
+      inventory.components.push({
+        name: canonical,
+        folder: baseSlug,
+        bucket: 'ui',
+        domain: null,
+        path: path.posix.dirname(sourceEntry),
+        entry: sourceEntry,
+        sources: ['code-scan'],
+        facets: null,
+        partOf: null,
+        buildPack: null,
+        fingerprint: null,
+      });
+    }
+    const sourceFolder = existingSource?.folder || baseSlug;
+    if (catalogCanonicals.has(canonical)) {
+      resolution.resolved = resolution.resolved.filter((row) =>
+        !(row.component === sourceFolder && row.canonical === canonical));
+      resolution.resolved.push({
+        label: canonical,
+        component: sourceFolder,
+        canonical,
+        slug: baseSlug,
+        via: 'name',
+        ambiguous: false,
+      });
+    } else if (!resolution.unresolved.some((row) =>
+      row.locations?.some((location) => location.component === sourceFolder) &&
+      [row.label, row.normalized].some((identity) => identity === canonical || identity === baseSlug))) {
+      resolution.unresolved.push({
+        label: canonical,
+        normalized: baseSlug,
+        occurrences: 1,
+        locations: [{ component: sourceFolder, path: path.posix.dirname(sourceEntry), bucket: 'ui', domain: null }],
+        sources: ['code-scan'],
+      });
+    }
     const artifact = structuredClone(template);
     artifact.componentKey = componentKey;
     artifact.canonical = canonical;
     artifact.capture = `captures/${name}`;
+    artifact.sourceSnapshot.project = meta.project.slug;
+    artifact.sourceSnapshot.run = `runs/${meta.project.slug}/${meta.date}/`;
     artifact.observations[0].id = `sp-${componentKey}-001`;
+    artifact.sourceSnapshot.revision = {
+      strategy: 'recorded',
+      commit,
+      inventoryGeneratedAt: inventory.generatedAt,
+    };
+    artifact.sourceSnapshot.entry = sourceEntry;
+    artifact.sourceSnapshot.citations[0].path = sourceEntry;
+    artifact.sourceInspection.entryPoints.paths = [sourceEntry];
+    artifact.sourceInspection.accessibility.paths = [sourceEntry];
+    artifact.sourceSnapshot.citations[0].startLine = 1;
+    artifact.sourceSnapshot.citations[0].endLine = 1;
+    artifact.sourceSnapshot.citations[0].sha256 = crypto
+      .createHash('sha256')
+      .update(fs.readFileSync(path.join(sourceProject, artifact.sourceSnapshot.citations[0].path)))
+      .digest('hex');
     fs.writeFileSync(path.join(parityDir, `${componentKey}.json`), `${JSON.stringify(artifact, null, 2)}\n`);
   }
+  fs.writeFileSync(inventoryPath, `${JSON.stringify(inventory, null, 2)}\n`);
+  fs.writeFileSync(resolutionPath, `${JSON.stringify(resolution, null, 2)}\n`);
 }
 
-function preflight(captures, library, args = ['--brain', BRAIN]) {
+function runPreparedPreflight(captures, library, args = ['--brain', BRAIN], withCapability = true) {
+  const capability = withCapability
+    ? ['--figma-writer', 'figma-use', '--figma-live-validated', '--project', fixture('fake-project')]
+    : ['--project', fixture('fake-project')];
+  return runJson('capture-preflight.cjs', ['--captures', captures, '--library', library, ...capability, ...args]);
+}
+
+function preflight(captures, library, args = ['--brain', BRAIN], withCapability = true) {
   syncSourceParity(captures);
-  return runJson('capture-preflight.cjs', ['--captures', captures, '--library', library, ...args]);
+  return runPreparedPreflight(captures, library, args, withCapability);
 }
 
 /** The single component record in a one-capture run. */
@@ -106,7 +188,7 @@ function registerReviewedFigma(library, canonical, componentPath, variant = null
             classification: 'rendered',
             frameNodeId: '200:1',
             instanceNodeId: '200:2',
-            componentNodeId: '100:200',
+            componentNodeId: '99:1',
           },
           {
             id: 'dialog.focus-containment',
@@ -114,13 +196,38 @@ function registerReviewedFigma(library, canonical, componentPath, variant = null
             source: { trigger: 'behavior', value: 'Tab containment while open and focus restoration on close' },
             target: 'Dialog focus lifecycle',
             classification: 'runtime-only',
-            reason: 'Focus movement across time requires executable browser evidence.',
+            reason: 'Focus movement across time cannot be represented honestly in a static Figma frame.',
           },
         ],
       },
     },
   });
   writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
+}
+
+function appliedBlock(library, canonical, componentPath) {
+  const registry = JSON.parse(readFile(library, 'figma/library.json'));
+  const registration = registry.components.find((entry) =>
+    entry.canonical === canonical && entry.componentPath === componentPath);
+  assert.ok(registration, `missing ${canonical} Figma registration`);
+  return [
+    '## Applied',
+    '',
+    '```json',
+    JSON.stringify({
+      status: 'landed',
+      componentPath,
+      figma: {
+        nodeId: registration.figma.nodeId,
+        nodeKey: registration.figma.nodeKey,
+        publicationStatus: registration.figma.publicationStatus,
+        review: registration.figma.review,
+        stateCoverage: registration.figma.stateCoverage,
+      },
+    }, null, 2),
+    '```',
+    '',
+  ].join('\n');
 }
 
 function retarget(text, canonical, slug) {
@@ -135,7 +242,13 @@ function retarget(text, canonical, slug) {
     .replaceAll('Modal.tsx', `${symbol}.tsx`)
     .replaceAll('ModalDialog.client.tsx', `${symbol}Dialog.client.tsx`)
     .replaceAll('ModalHeader.tsx', `${symbol}Header.tsx`)
-    .replaceAll('useModal.client.ts', `use${symbol}.client.ts`);
+    .replaceAll('useModal.client.ts', `use${symbol}.client.ts`)
+    // Retargeting exercises canonical/library mechanics; keep the capture's
+    // Source entry attached to the one exact inventoried source fixture.
+    .replace(
+      `- Entry: \`src/components/ui/modal/${symbol}.tsx\``,
+      '- Entry: `src/components/ui/modal/Modal.tsx`',
+    );
 }
 
 test('the golden captures pass preflight', () => {
@@ -154,8 +267,16 @@ test('the golden captures pass preflight', () => {
 
 test('a capture without its source-parity companion is blocked', () => {
   const captures = tempCaptures();
+  syncSourceParity(captures);
   fs.rmSync(path.resolve(captures, '..', 'source-parity/modal.json'));
-  const result = runJson('capture-preflight.cjs', ['--captures', captures, '--library', fixture('fake-library'), '--brain', BRAIN]);
+  const result = runJson('capture-preflight.cjs', [
+    '--captures', captures,
+    '--library', fixture('fake-library'),
+    '--brain', BRAIN,
+    '--figma-writer', 'figma-use',
+    '--figma-live-validated',
+    '--project', fixture('fake-project'),
+  ]);
   assertBlocked(result, 'source-parity');
 });
 
@@ -164,6 +285,8 @@ test('the envelope carries the documented key order', () => {
   assert.deepEqual(Object.keys(result.json), [
     'schemaVersion',
     'captures',
+    'selection',
+    'source',
     'sourceParity',
     'library',
     'figmaPromotion',
@@ -174,9 +297,13 @@ test('the envelope carries the documented key order', () => {
     'warnings',
   ]);
   assert.equal(result.json.schemaVersion, 6);
+  assert.equal(result.json.selection, null);
+  assert.equal(result.json.source.verified, true);
   assert.deepEqual(result.json.figmaPromotion, {
     required: true,
     ready: true,
+    contractReady: true,
+    capabilityReady: true,
     writeCapabilityRequired: true,
     publicationStatus: 'unpublished',
     reviewPasses: ['source-parity', 'adversarial', 'design'],
@@ -185,7 +312,10 @@ test('the envelope carries the documented key order', () => {
     codeContractsCommand: 'pnpm contracts:code',
     codeTestCommand: 'pnpm test:code',
     coverageCommand: 'pnpm figma:coverage',
+    liveValidationCommand: 'pnpm figma:live',
     validationCommand: 'pnpm figma:validate',
+    writer: 'figma-use',
+    liveValidated: true,
     issues: [],
   });
   assert.deepEqual(result.json.counts, {
@@ -198,6 +328,293 @@ test('the envelope carries the documented key order', () => {
     deferred: 0,
     orphanedByRun: 1,
   });
+});
+
+test('fresh and resumed captures require writer capability and current live validation', () => {
+  const fresh = preflight(tempCaptures(), fixture('fake-library'), ['--brain', BRAIN], false);
+  assertBlocked(fresh, 'figma-promotion-unavailable');
+
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  const resumed = preflight(captures, fixture('fake-library'), ['--brain', BRAIN], false);
+  assertBlocked(resumed, 'figma-promotion-unavailable');
+});
+
+test('a REST token or arbitrary capability label cannot impersonate the supported Figma writer', () => {
+  for (const writer of ['rest-token', 'read-only', 'true', 'some-tool']) {
+    const captures = tempCaptures();
+    syncSourceParity(captures);
+    const result = runJson('capture-preflight.cjs', [
+      '--captures', captures,
+      '--library', fixture('fake-library'),
+      '--brain', BRAIN,
+      '--figma-writer', writer,
+      '--figma-live-validated',
+      '--project', fixture('fake-project'),
+    ]);
+    assertBlocked(result, 'figma-promotion-unavailable');
+    assert.equal(result.json.figmaPromotion.writer, null);
+    assert.ok(result.json.figmaPromotion.issues.some((issue) => issue.includes('expected figma-use')));
+  }
+});
+
+test('the current library registry interaction-state schema satisfies preflight', () => {
+  const library = fixture('fake-library');
+  const registry = JSON.parse(readFile(library, 'figma/library.json'));
+  assert.deepEqual(registry.library.promotionPattern.interactionStates, {
+    presentationName: 'Interaction states',
+    storyExport: 'InteractionStates',
+    specimenRole: 'documentation',
+    masterProperties: 'unchanged',
+    instanceConnection: 'registered-master',
+    labelPlacement: 'outside-component-instance',
+    visualSource: 'semantic-variables',
+    rasterScreenshots: false,
+  });
+  const result = preflight(tempCaptures(), library);
+  assert.equal(result.json.figmaPromotion.contractReady, true, result.json.figmaPromotion.issues.join('; '));
+});
+
+test('the byte-current sibling library registry and checklist satisfy promotion preflight', {
+  skip: !fs.existsSync(path.join(SIBLING_LIBRARY, 'figma/library.json')) ||
+    !fs.existsSync(path.join(SIBLING_LIBRARY, 'figma/PROMOTION-CHECKLIST.md')),
+}, () => {
+  const result = preflight(tempCaptures(), SIBLING_LIBRARY);
+  assert.equal(
+    result.json.figmaPromotion.contractReady,
+    true,
+    result.json.figmaPromotion.issues.join('; '),
+  );
+});
+
+test('current Figma registry acceptance still fails closed when a required field is absent', () => {
+  const library = tempFixture('fake-library');
+  const registry = JSON.parse(readFile(library, 'figma/library.json'));
+  delete registry.library.promotionPattern.interactionStates.storyExport;
+  writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
+
+  const result = preflight(tempCaptures(), library);
+  assertBlocked(result, 'figma-promotion-unavailable');
+  assert.ok(result.json.figmaPromotion.issues.includes(
+    'figma/library.json does not expose the governed Interaction states presentation contract',
+  ));
+});
+
+test('CaptureKeys selects a deterministic subset without orphaning its siblings', () => {
+  const captures = tempCaptures();
+  writeFile(captures, 'badge.md', retarget(readFile(captures, 'modal.md'), 'Badge', 'badge'));
+  const result = preflight(captures, fixture('fake-library'), ['--brain', BRAIN, '--capture-keys', 'modal']);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.deepEqual(result.json.selection, ['modal']);
+  assert.deepEqual(result.json.components.map((component) => component.componentKey), ['modal']);
+});
+
+test('capture source hashes and sibling inventory revision must stay pinned', () => {
+  const captures = tempCaptures();
+  syncSourceParity(captures);
+  const parityPath = path.resolve(captures, '..', 'source-parity/modal.json');
+  const artifact = JSON.parse(fs.readFileSync(parityPath, 'utf8'));
+  artifact.sourceSnapshot.citations[0].sha256 = '0'.repeat(64);
+  fs.writeFileSync(parityPath, `${JSON.stringify(artifact, null, 2)}\n`);
+  const result = runJson('capture-preflight.cjs', [
+    '--captures', captures,
+    '--library', fixture('fake-library'),
+    '--brain', BRAIN,
+    '--figma-writer', 'figma-use',
+    '--figma-live-validated',
+    '--project', fixture('fake-project'),
+  ]);
+  assertBlocked(result, 'source-parity');
+});
+
+test('capture Source must match the exact inventoried entry verified by source parity', () => {
+  const captures = tempCaptures();
+  syncSourceParity(captures);
+  const parityPath = path.resolve(captures, '..', 'source-parity/modal.json');
+  const artifact = JSON.parse(fs.readFileSync(parityPath, 'utf8'));
+  const otherEntry = 'src/components/renderings/marketing/checkout-panel/CheckoutPanel.tsx';
+  writeFile(
+    captures,
+    'modal.md',
+    readFile(captures, 'modal.md').replace(
+      '- Entry: `src/components/ui/modal/Modal.tsx`',
+      `- Entry: \`${otherEntry}\``,
+    ),
+  );
+  artifact.sourceSnapshot.entry = otherEntry;
+  artifact.sourceSnapshot.citations[0].path = otherEntry;
+  artifact.sourceSnapshot.citations[0].startLine = 1;
+  artifact.sourceSnapshot.citations[0].endLine = 1;
+  artifact.sourceSnapshot.citations[0].sha256 = crypto
+    .createHash('sha256')
+    .update(fs.readFileSync(path.join(fixture('fake-project'), otherEntry)))
+    .digest('hex');
+  artifact.sourceInspection.entryPoints.paths = [otherEntry];
+  artifact.sourceInspection.accessibility.paths = [otherEntry];
+  fs.writeFileSync(parityPath, `${JSON.stringify(artifact, null, 2)}\n`);
+
+  const result = runJson('capture-preflight.cjs', [
+    '--captures', captures,
+    '--library', fixture('fake-library'),
+    '--brain', BRAIN,
+    '--figma-writer', 'figma-use',
+    '--figma-live-validated',
+    '--project', fixture('fake-project'),
+  ]);
+  assertBlocked(result, 'source-inventory');
+  assert.match(
+    only(result).blockers.find((blocker) => blocker.code === 'source-inventory').message,
+    /CheckoutPanel\.tsx belongs to inventory component .*checkout-panel.*does not resolve that component to capture canonical "Modal"/,
+  );
+});
+
+test('resolution identity allows a legitimate source label alias to its capture canonical', () => {
+  const captures = tempCaptures();
+  syncSourceParity(captures);
+  const inventoryPath = path.resolve(captures, '..', 'inventory.json');
+  const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+  const source = inventory.components.find((component) => component.folder === 'modal');
+  source.name = 'Dialog';
+  source.folder = 'dialog';
+  fs.writeFileSync(inventoryPath, `${JSON.stringify(inventory, null, 2)}\n`);
+  const resolutionPath = path.resolve(captures, '..', 'resolution.json');
+  const resolution = JSON.parse(fs.readFileSync(resolutionPath, 'utf8'));
+  resolution.resolved = [{
+    label: 'Dialog',
+    component: 'dialog',
+    canonical: 'Modal',
+    slug: 'modal',
+    via: 'alias',
+    ambiguous: false,
+  }];
+  fs.writeFileSync(resolutionPath, `${JSON.stringify(resolution, null, 2)}\n`);
+
+  const result = runJson('capture-preflight.cjs', [
+    '--captures', captures,
+    '--library', fixture('fake-library'),
+    '--brain', BRAIN,
+    '--figma-writer', 'figma-use',
+    '--figma-live-validated',
+    '--project', fixture('fake-project'),
+  ]);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(only(result).status, 'ready');
+});
+
+test('source-parity project and run identity must join the sibling run metadata', () => {
+  for (const mutate of [
+    (artifact) => { artifact.sourceSnapshot.project = 'another-project'; },
+    (artifact) => { artifact.sourceSnapshot.run = 'runs/fake-project/2025-12-31/'; },
+  ]) {
+    const captures = tempCaptures();
+    syncSourceParity(captures);
+    const parityPath = path.resolve(captures, '..', 'source-parity/modal.json');
+    const artifact = JSON.parse(fs.readFileSync(parityPath, 'utf8'));
+    mutate(artifact);
+    fs.writeFileSync(parityPath, `${JSON.stringify(artifact, null, 2)}\n`);
+
+    const result = runPreparedPreflight(captures, fixture('fake-library'));
+    assertBlocked(result, 'source-inventory');
+    assert.ok(only(result).blockers.some((blocker) =>
+      blocker.code === 'source-inventory' && blocker.message.includes('sibling meta.json')));
+  }
+});
+
+test('malformed sibling run metadata cannot become capture provenance', () => {
+  for (const patch of [
+    (meta) => { meta.project.slug = '../fake-project'; },
+    (meta) => { meta.date = '2026-02-30'; },
+  ]) {
+    const captures = tempCaptures();
+    syncSourceParity(captures);
+    const metaPath = path.resolve(captures, '..', 'meta.json');
+    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+    patch(meta);
+    fs.writeFileSync(metaPath, `${JSON.stringify(meta, null, 2)}\n`);
+    const result = runPreparedPreflight(captures, fixture('fake-library'));
+    assertBlocked(result, 'source-inventory');
+    assert.ok(only(result).blockers.some((blocker) =>
+      blocker.code === 'source-inventory' && blocker.message.includes('sibling meta.json')));
+  }
+});
+
+test('one source entry with multiple inventory owners is ambiguous and blocks capture', () => {
+  const captures = tempCaptures();
+  syncSourceParity(captures);
+  const inventoryPath = path.resolve(captures, '..', 'inventory.json');
+  const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+  const modal = inventory.components.find((component) => component.folder === 'modal');
+  inventory.components.push({
+    ...structuredClone(modal),
+    name: 'CheckoutPanel',
+    folder: 'checkout-panel',
+    path: 'src/components/renderings/marketing/checkout-panel',
+  });
+  fs.writeFileSync(inventoryPath, `${JSON.stringify(inventory, null, 2)}\n`);
+
+  const result = runPreparedPreflight(captures, fixture('fake-library'));
+  assertBlocked(result, 'source-inventory');
+  assert.ok(only(result).blockers.some((blocker) =>
+    blocker.code === 'source-inventory' && blocker.message.includes('ambiguous sibling inventory owners')));
+});
+
+test('capture Source requires exactly one safe repository-relative Entry', () => {
+  for (const replacement of [
+    '- Entry: `/private/client/Modal.tsx`',
+    '- Entry: `src/components/ui/modal/Modal.tsx`\n- Entry: `src/components/ui/modal/Modal.tsx`',
+    '- Entry: `src/components/ui/modal/Modal.tsx`\n- Entry: src/components/ui/modal/Modal.types.ts',
+    '- Entry: `src/components/ui/modal/Modal.tsx`\n* Entry: `src/components/ui/modal/Modal.types.ts`',
+  ]) {
+    const captures = tempCaptures();
+    syncSourceParity(captures);
+    writeFile(
+      captures,
+      'modal.md',
+      readFile(captures, 'modal.md').replace(
+        '- Entry: `src/components/ui/modal/Modal.tsx`',
+        replacement,
+      ),
+    );
+    const result = runJson('capture-preflight.cjs', [
+      '--captures', captures,
+      '--library', fixture('fake-library'),
+      '--brain', BRAIN,
+      '--figma-writer', 'figma-use',
+      '--figma-live-validated',
+      '--project', fixture('fake-project'),
+    ]);
+    assertBlocked(result, 'source-entry');
+  }
+});
+
+test('source parity must hash-cite its exact sourceSnapshot entry', () => {
+  const captures = tempCaptures();
+  syncSourceParity(captures);
+  const parityPath = path.resolve(captures, '..', 'source-parity/modal.json');
+  const artifact = JSON.parse(fs.readFileSync(parityPath, 'utf8'));
+  const otherEntry = 'src/components/renderings/marketing/checkout-panel/CheckoutPanel.tsx';
+  artifact.sourceSnapshot.citations[0].path = otherEntry;
+  artifact.sourceSnapshot.citations[0].startLine = 1;
+  artifact.sourceSnapshot.citations[0].endLine = 1;
+  artifact.sourceSnapshot.citations[0].sha256 = crypto
+    .createHash('sha256')
+    .update(fs.readFileSync(path.join(fixture('fake-project'), otherEntry)))
+    .digest('hex');
+  fs.writeFileSync(parityPath, `${JSON.stringify(artifact, null, 2)}\n`);
+
+  const result = runJson('capture-preflight.cjs', [
+    '--captures', captures,
+    '--library', fixture('fake-library'),
+    '--brain', BRAIN,
+    '--figma-writer', 'figma-use',
+    '--figma-live-validated',
+    '--project', fixture('fake-project'),
+  ]);
+  assertBlocked(result, 'source-inventory');
+  assert.ok(only(result).blockers.some((blocker) =>
+    blocker.code === 'source-inventory' && blocker.message.includes('whole-file hash')));
 });
 
 test('missing governed Figma promotion surfaces block capture', () => {
@@ -702,6 +1119,49 @@ test('an unknown canonical established by an in-run new-pattern proposal is defe
   assert.equal(result.json.counts.blocked, 0);
 });
 
+test('a new-pattern proposal alias can join its source-linked unresolved component', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Logo ribbon', 'logo-ribbon');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'logo-ribbon.md', text);
+  syncSourceParity(captures);
+  const resolutionPath = path.resolve(captures, '..', 'resolution.json');
+  const resolution = JSON.parse(fs.readFileSync(resolutionPath, 'utf8'));
+  const row = resolution.unresolved.find((entry) =>
+    entry.locations?.some((location) => location.component === 'modal') && entry.normalized === 'logo-ribbon');
+  row.label = 'Logo cloud';
+  row.normalized = 'logo-cloud';
+  fs.writeFileSync(resolutionPath, `${JSON.stringify(resolution, null, 2)}\n`);
+
+  const result = runPreparedPreflight(captures, fixture('fake-library'));
+  assert.equal(result.status, 6, result.stderr || result.stdout);
+  assert.equal(only(result).status, 'deferred');
+});
+
+test('a new-pattern proposal cannot pair a source-linked unrelated unresolved row with another component', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Logo ribbon', 'logo-ribbon');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'logo-ribbon.md', text);
+  syncSourceParity(captures);
+  const resolutionPath = path.resolve(captures, '..', 'resolution.json');
+  const resolution = JSON.parse(fs.readFileSync(resolutionPath, 'utf8'));
+  const sourceLinked = resolution.unresolved.find((entry) =>
+    entry.locations?.some((location) => location.component === 'modal') && entry.normalized === 'logo-ribbon');
+  sourceLinked.label = 'Unrelated panel';
+  sourceLinked.normalized = 'unrelated-panel';
+  const other = resolution.unresolved.find((entry) =>
+    entry.locations?.some((location) => location.component === 'checkout-panel'));
+  other.label = 'Logo ribbon';
+  other.normalized = 'logo-ribbon';
+  fs.writeFileSync(resolutionPath, `${JSON.stringify(resolution, null, 2)}\n`);
+
+  const result = runPreparedPreflight(captures, fixture('fake-library'));
+  assertBlocked(result, 'source-inventory');
+  assert.ok(only(result).blockers.some((blocker) =>
+    blocker.code === 'source-inventory' && blocker.message.includes('does not resolve')));
+});
+
 test('a deferred capture that also has a hard blocker stays blocked, not deferred', () => {
   // Blocked outranks deferred at the terminal gate: an empty slots array is a real
   // defect, so the pending-promotion flag must not launder it into a deferral.
@@ -923,7 +1383,7 @@ test('a half-written component directory is blocked, not overwritten', () => {
   assertBlocked(preflight(captures, fixture('fake-library')), 'library-partial');
 });
 
-test('existing code without reviewed Figma resumes as figma-pending', () => {
+test('existing code with capability resumes at Figma as ready', () => {
   const captures = tempCaptures();
   const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
   fs.rmSync(path.join(captures, 'modal.md'));
@@ -931,7 +1391,8 @@ test('existing code without reviewed Figma resumes as figma-pending', () => {
   const result = preflight(captures, fixture('fake-library'));
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}${result.stderr}`);
   const record = only(result);
-  assert.equal(record.status, 'figma-pending');
+  assert.equal(record.status, 'ready');
+  assert.equal(record.resumeAt, 'figma');
   assert.ok(record.library.files.includes('parts/BadgeDialog.client.tsx'));
   assert.deepEqual(record.library.missingModules, []);
 });
@@ -950,7 +1411,7 @@ test('covered state capture requires an InteractionStates story before Figma pro
   assertBlocked(preflight(captures, library), 'interaction-states-story');
 });
 
-test('incomplete registry state node IDs keep an otherwise reviewed capture figma-pending', () => {
+test('incomplete registry state node IDs keep an otherwise reviewed capture ready at Figma', () => {
   const captures = tempCaptures();
   const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
   fs.rmSync(path.join(captures, 'modal.md'));
@@ -964,7 +1425,8 @@ test('incomplete registry state node IDs keep an otherwise reviewed capture figm
   const result = preflight(captures, library);
   assert.equal(result.status, 0, result.stderr || result.stdout);
   const record = only(result);
-  assert.equal(record.status, 'figma-pending');
+  assert.equal(record.status, 'ready');
+  assert.equal(record.resumeAt, 'figma');
   assert.equal(record.figma.interactionStateCoverageComplete, false);
   assert.ok(record.figma.interactionStateCoverageIssues.some((entry) => entry.includes('frame, instance, and component node IDs')));
 });
@@ -1017,15 +1479,33 @@ test('reviewed Figma without an Applied marker resumes as evidence-pending', () 
 
 test('code, reviewed Figma, and an Applied marker reconcile as skipped', () => {
   const captures = tempCaptures();
-  const text = `${retarget(readFile(captures, 'modal.md'), 'Badge', 'badge')}\n## Applied\n\n\`\`\`json\n{\n  "status": "landed",\n  "componentPath": "components/badge",\n  "figma": { "nodeId": "100:200", "nodeKey": "stable-node-key" }\n}\n\`\`\`\n`;
-  fs.rmSync(path.join(captures, 'modal.md'));
-  writeFile(captures, 'badge.md', text);
   const library = tempFixture('fake-library');
   registerReviewedFigma(library, 'Badge', 'components/badge');
+  const text = `${retarget(readFile(captures, 'modal.md'), 'Badge', 'badge')}\n${appliedBlock(library, 'Badge', 'components/badge')}`;
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
 
   const result = preflight(captures, library);
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(only(result).status, 'skipped');
+  const applied = only(result).applied;
+  assert.notEqual(
+    applied.figma.nodeId,
+    applied.figma.stateCoverage.states[0].componentNodeId,
+    'a component-set master may own child variant component nodes',
+  );
+});
+
+test('modern Applied evidence must copy semantic state coverage from the registry', () => {
+  const captures = tempCaptures();
+  const library = tempFixture('fake-library');
+  registerReviewedFigma(library, 'Badge', 'components/badge');
+  const driftedApplied = appliedBlock(library, 'Badge', 'components/badge')
+    .replace('"classification": "rendered"', '"classification": "already-represented"');
+  const text = `${retarget(readFile(captures, 'modal.md'), 'Badge', 'badge')}\n${driftedApplied}`;
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  assertBlocked(preflight(captures, library), 'applied-figma-evidence');
 });
 
 test('legacy v1 source parity remains readable only for an already-landed capture', () => {
@@ -1044,11 +1524,11 @@ test('legacy v1 source parity remains readable only for an already-landed captur
   landedArtifact.schemaVersion = 1;
   delete landedArtifact.interactionStates;
   writeFile(landedRoot, 'source-parity/modal.json', `${JSON.stringify(landedArtifact, null, 2)}\n`);
-  const landedText = `${retarget(readFile(landedCaptures, 'modal.md'), 'Badge', 'badge')}\n## Applied\n\n\`\`\`json\n{\n  "status": "landed",\n  "componentPath": "components/badge",\n  "figma": { "nodeId": "100:200", "nodeKey": "stable-node-key" }\n}\n\`\`\`\n`;
-  fs.rmSync(path.join(landedCaptures, 'modal.md'));
-  writeFile(landedCaptures, 'badge.md', landedText);
   const library = tempFixture('fake-library');
   registerReviewedFigma(library, 'Badge', 'components/badge');
+  const landedText = `${retarget(readFile(landedCaptures, 'modal.md'), 'Badge', 'badge')}\n${appliedBlock(library, 'Badge', 'components/badge')}`;
+  fs.rmSync(path.join(landedCaptures, 'modal.md'));
+  writeFile(landedCaptures, 'badge.md', landedText);
   const landedResult = preflight(landedCaptures, library);
   assert.equal(landedResult.status, 0, landedResult.stderr || landedResult.stdout);
   assert.equal(only(landedResult).status, 'skipped');
@@ -1082,15 +1562,18 @@ test('authored lifecycle headings cannot silently degrade when their JSON fence 
 
 test('Applied node identity must match the reviewed governed Figma registration', () => {
   const captures = tempCaptures();
+  const library = tempFixture('fake-library');
+  registerReviewedFigma(library, 'Badge', 'components/badge');
   const source = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  const applied = appliedBlock(library, 'Badge', 'components/badge')
+    .replace('"nodeId": "100:200"', '"nodeId": "wrong:node"')
+    .replace('"nodeKey": "stable-node-key"', '"nodeKey": "wrong-key"');
   fs.rmSync(path.join(captures, 'modal.md'));
   writeFile(
     captures,
     'badge.md',
-    `${source}\n## Applied\n\n\`\`\`json\n{\n  "status": "landed",\n  "componentPath": "components/badge",\n  "figma": { "nodeId": "wrong:node", "nodeKey": "wrong-key" }\n}\n\`\`\`\n`,
+    `${source}\n${applied}`,
   );
-  const library = tempFixture('fake-library');
-  registerReviewedFigma(library, 'Badge', 'components/badge');
   const result = preflight(captures, library);
   assertBlocked(result, 'applied-figma-drift');
 });
@@ -1138,7 +1621,8 @@ test('applied inspection follows multiline imports and directives after comments
   );
   const result = preflight(captures, library);
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.equal(only(result).status, 'figma-pending');
+  assert.equal(only(result).status, 'ready');
+  assert.equal(only(result).resumeAt, 'figma');
 });
 
 test('planned filenames do not hide component manifest drift', () => {
@@ -1323,13 +1807,35 @@ test('a capture set declaring no provenance.run warns that the orphan check did 
   );
 });
 
+test('figma-pending reflects a current unexpected mid-run capability loss and restores to ready', () => {
+  const captures = tempCaptures();
+  patchJsonSection(captures, 'Progress', () => ({
+    status: 'code-complete',
+    componentPath: 'components/badge',
+    blockedOn: { code: 'figma-capability-lost' },
+  }));
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  const lost = preflight(captures, fixture('fake-library'), ['--brain', BRAIN], false);
+  assert.equal(lost.status, 0, lost.stderr || lost.stdout);
+  assert.equal(only(lost).status, 'figma-pending');
+  assert.equal(only(lost).resumeExistingBranch, true);
+
+  const restored = preflight(captures, fixture('fake-library'));
+  assert.equal(restored.status, 0, restored.stderr || restored.stdout);
+  assert.equal(only(restored).status, 'ready');
+  assert.equal(only(restored).resumeAt, 'figma');
+  assert.equal(only(restored).resumeExistingBranch, true);
+});
+
 test('a mixed set reports every status in one plan', () => {
   // The headline claim is "one plan covering all of them" — exercise ready,
-  // blocked, figma-pending, and deferred together, since that combination drives the exit rule.
+  // blocked and deferred together, with both code and Figma resume boundaries.
   const captures = tempCaptures();
   const base = readFile(captures, 'modal.md');
 
-  writeFile(captures, 'badge.md', retarget(base, 'Badge', 'badge')); //           code applied → figma-pending
+  writeFile(captures, 'badge.md', retarget(base, 'Badge', 'badge')); //           code applied → ready at Figma
   writeFile(captures, 'link.md', retarget(base, 'Link', 'link')); //                   partial dir      → blocked
   writeFile(captures, 'logo-ribbon.md', retarget(base, 'Logo ribbon', 'logo-ribbon')); // in-run proposal → deferred
   // modal.md stays as-is                                                        //                → ready
@@ -1338,15 +1844,15 @@ test('a mixed set reports every status in one plan', () => {
   assert.equal(result.status, 1, 'a set containing a blocked capture must exit 1 even with a deferred one present');
   const byFile = Object.fromEntries(result.json.components.map((c) => [c.file, c.status]));
   assert.deepEqual(byFile, {
-    'badge.md': 'figma-pending',
+    'badge.md': 'ready',
     'link.md': 'blocked',
     'logo-ribbon.md': 'deferred',
     'modal.md': 'ready',
   });
   assert.deepEqual(result.json.counts, {
     captures: 4,
-    ready: 1,
-    figmaPending: 1,
+    ready: 2,
+    figmaPending: 0,
     evidencePending: 0,
     blocked: 1,
     skipped: 0,

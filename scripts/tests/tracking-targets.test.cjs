@@ -27,6 +27,8 @@ function base(action) {
     project: 'synthetic-shop',
     date: '2026-08-19',
     evidenceCheckout: true,
+    figmaWriteAvailable: true,
+    figmaLiveValidated: true,
     repositories: READY_REPOS,
     existingIssues: {
       'project-retrospective': { number: 5, url: 'https://example.test/project-retrospective/5' },
@@ -160,6 +162,35 @@ test('capture creates a library branch only for actionable work with an issue an
   assert.equal(result.json.targets.library.requiredWriteBranch, 'feat/30-library-capture');
 });
 
+test('capture can branch evidence for enrichment before branching the library write', () => {
+  const result = resolve({
+    ...base('capture'),
+    captures: [{ id: 'modal', status: 'enrichment-pending' }],
+    evidenceWriteSetNonEmpty: true,
+    libraryWriteSetNonEmpty: true,
+  });
+  assert.equal(result.json.targets.evidence.state, 'write-ready');
+  assert.equal(result.json.targets.evidence.requiredWriteBranch, 'feat/synthetic-shop-2026-08-19-run');
+  assert.equal(result.json.targets.library.state, 'skip');
+  assert.equal(result.json.targets.library.reason, 'capture-enrichment-required');
+  assert.equal(result.json.targets.library.issueRequired, false);
+  assert.equal(result.json.targets.library.requiredWriteBranch, null);
+});
+
+test('capture enrichment waits before every branch when current Figma capability is unavailable', () => {
+  const result = resolve({
+    ...base('capture'),
+    captures: [{ id: 'modal', status: 'enrichment-pending' }],
+    evidenceWriteSetNonEmpty: true,
+    figmaWriteAvailable: false,
+  });
+  assert.equal(result.json.targets.evidence.state, 'issue-pending');
+  assert.equal(result.json.targets.evidence.requiredWriteBranch, null);
+  assert.ok(result.json.targets.evidence.blockers.includes('figma-write-capability'));
+  assert.equal(result.json.targets.library.state, 'skip');
+  assert.equal(result.json.targets.library.requiredWriteBranch, null);
+});
+
 test('state-aware captures preserve the existing issue-first clean-main branch lifecycle', () => {
   const interactionStates = {
     status: 'covered',
@@ -195,20 +226,56 @@ test('deferred, blocked, skipped, and landed captures create no issue or branch'
   }
 });
 
-test('Figma unavailable keeps the issue pending and creates no empty library branch', () => {
+test('Figma unavailable or not live-validated keeps the issue pending and creates no empty library branch', () => {
   const result = resolve({
     ...base('capture'),
-    captures: [{ id: 'modal', status: 'figma-pending' }],
+    captures: [{ id: 'modal', status: 'ready' }],
     libraryWriteSetNonEmpty: true,
     figmaWriteAvailable: false,
   });
   assert.equal(result.json.targets.library.state, 'issue-pending');
   assert.equal(result.json.targets.library.requiredWriteBranch, null);
   assert.ok(result.json.targets.library.blockers.includes('figma-write-capability'));
+
+  const stale = resolve({
+    ...base('capture'),
+    captures: [{ id: 'modal', status: 'ready' }],
+    libraryWriteSetNonEmpty: true,
+    figmaLiveValidated: false,
+  });
+  assert.equal(stale.json.targets.library.requiredWriteBranch, null);
+  assert.ok(stale.json.targets.library.blockers.includes('figma-write-capability'));
+});
+
+test('figma-pending records mid-run loss without creating a new library branch', () => {
+  const result = resolve({
+    ...base('capture'),
+    captures: [{ id: 'modal', status: 'figma-pending' }],
+    libraryWriteSetNonEmpty: true,
+  });
+  assert.equal(result.json.targets.library.state, 'skip');
+  assert.equal(result.json.targets.library.reason, 'unexpected-figma-capability-loss');
+  assert.equal(result.json.targets.library.requiredWriteBranch, null);
+});
+
+test('restored capability resumes the existing library branch instead of creating it again', () => {
+  const result = resolve({
+    ...base('capture'),
+    captures: [{ id: 'modal', status: 'ready', resumeExistingBranch: true }],
+    libraryWriteSetNonEmpty: true,
+  });
+  assert.equal(result.json.targets.library.state, 'write-ready');
+  assert.equal(result.json.targets.library.reason, 'resume-existing-library-branch');
+  assert.equal(result.json.targets.library.requiredWriteBranch, null);
+  assert.equal(result.json.targets.library.resumeExistingBranch, 'feat/30-library-capture');
 });
 
 test('evidence-only reconciliation creates no library branch', () => {
-  const result = resolve({ ...base('capture'), captures: [{ id: 'modal', status: 'evidence-pending' }] });
+  const result = resolve({
+    ...base('capture'),
+    captures: [{ id: 'modal', status: 'evidence-pending' }],
+    evidenceWriteSetNonEmpty: true,
+  });
   assert.equal(result.json.targets.library.state, 'skip');
   assert.equal(result.json.targets.library.reason, 'evidence-only-reconciliation');
   assert.equal(result.json.targets.evidence.state, 'write-ready');
@@ -269,4 +336,51 @@ test('issue matching keys are stable for an exact artifact set and change with t
   const changed = resolve({ ...base('analyze'), stage: 'postvalidate', proposals: ['proposal:banner'] });
   assert.equal(first.json.targets.brain.issueMatchKey, reordered.json.targets.brain.issueMatchKey);
   assert.notEqual(first.json.targets.brain.issueMatchKey, changed.json.targets.brain.issueMatchKey);
+});
+
+test('duplicate or unsafe capture identities cannot authorize a branch', () => {
+  for (const captures of [
+    [{ id: 'modal', status: 'blocked' }, { id: 'modal', status: 'ready' }],
+    [{ id: '../../modal', status: 'ready' }],
+  ]) {
+    const result = resolve({
+      ...base('capture'),
+      captures,
+      libraryWriteSetNonEmpty: true,
+    });
+    assert.equal(result.status, 3);
+    assert.equal(result.json, null);
+    assert.match(result.stderr, /capture/);
+  }
+});
+
+test('unsafe project slugs and impossible dates cannot become evidence branches', () => {
+  for (const patch of [
+    { project: '../../outside' },
+    { project: 'Synthetic Shop' },
+    { date: '2026-02-30' },
+  ]) {
+    const result = resolve({ ...base('analyze'), ...patch });
+    assert.equal(result.status, 3);
+    assert.equal(result.json, null);
+    assert.match(result.stderr, /project|date/);
+  }
+});
+
+test('actionable source-parity remediation ids are safe and unique before branch routing', () => {
+  for (const componentRemediations of [
+    [{ id: '../modal', status: 'actionable', writeSetNonEmpty: true }],
+    [
+      { id: 'modal', status: 'actionable', writeSetNonEmpty: true },
+      { id: 'modal', status: 'actionable', writeSetNonEmpty: true },
+    ],
+  ]) {
+    const result = resolve({
+      ...base('source-parity-audit'),
+      sourceParity: { componentRemediations },
+    });
+    assert.equal(result.status, 3);
+    assert.equal(result.json, null);
+    assert.match(result.stderr, /remediation/);
+  }
 });

@@ -1,0 +1,8 @@
+{
+  "name": "synthetic-workspace",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "dependencies": {
+    "@contentful/app-sdk": "1.0.0"
+  }
+}

@@ -15,11 +15,14 @@
         "mobile": 390
       },
       "interactionStates": {
-        "presentation": "Interaction states",
-        "masterPolicy": "documentation-specimens-only",
-        "instancePolicy": "connected-to-registered-master",
-        "labels": "outside-instance",
-        "visualSource": "semantic-variables"
+        "presentationName": "Interaction states",
+        "storyExport": "InteractionStates",
+        "specimenRole": "documentation",
+        "masterProperties": "unchanged",
+        "instanceConnection": "registered-master",
+        "labelPlacement": "outside-component-instance",
+        "visualSource": "semantic-variables",
+        "rasterScreenshots": false
       }
     }
   },

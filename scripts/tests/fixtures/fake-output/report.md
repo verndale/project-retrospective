@@ -98,4 +98,4 @@ Pipeline-shaped findings that belong in ai-orchestration rather than the catalog
 3. Review the captures in `captures/`, then apply the set:
    `/project-retrospective` with `Action: capture`, `Captures: captures/`, `Library: /tmp/fake-library`, `Brain: /tmp/fake-brain`
 4. Carry the drafts in `orchestration-drafts.md` into ai-orchestration through its own contribution flow.
-5. Keep this report — pass it as `PriorReports:` on the next project so Watch candidates can be elevated.
+5. Keep this run under `Data`; the next project selects eligible recurrence automatically.

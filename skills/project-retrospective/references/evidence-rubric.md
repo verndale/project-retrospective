@@ -49,7 +49,7 @@ An inventory component carries `sources[]`. These count as **independent** evide
 | `team-retrospective` | A captured team retrospective names it and the normalizer confirms model-recorded agreement against a matching component with a cited path and strong as-built evidence. Context-only retro prose never receives this source. |
 | `code-scan` | It was found by directory heuristics only. **Weak** — see below. |
 
-`code-scan` is a single weak source: it proves a directory exists, nothing about reuse or contract. A candidate evidenced only by `code-scan` caps at **Watch** unless a prior report supplies a second source. See `code-scan-mode.md`.
+`code-scan` is a single weak source: it proves a directory exists, nothing about reuse or contract. The component source, its colocated tests, its stories, its styles, and evidence from importers/consumers are one **project implementation family**, not two, three, or more independent sources. Those files make the family easier to understand, but they cannot manufacture recurrence inside one project. A candidate backed only by that family caps at **Watch** unless another project or a genuinely independent source from the table corroborates it. See `code-scan-mode.md`.
 
 `team-retrospective` is independent authored reflection, but it is admitted only after corroboration: the finding must name the component, agree semantically with its implementation, cite a project path, and join to at least one of `component-index`, `build-pack`, `fingerprint`, `design-facts`, or `memory`. It can then satisfy one of the two sources; it never replaces the as-built source that made it eligible.
 
@@ -60,7 +60,7 @@ An inventory component carries `sources[]`. These count as **independent** evide
 ### Promote — all four must hold
 
 1. **Reusable UI vocabulary.** A named interface pattern another project would plausibly build, not a page, flow, or one-off composition.
-2. **Two independent evidence sources**, either within this project (two entries from the table above) or one here plus recurrence in a `PriorReports` report.
+2. **Two independent evidence sources**, either within this project (two genuinely independent entries from the table above) or one here plus recurrence in another eligible project's prior evidence. Code, colocated tests, stories, styles, and local consumers still count as one implementation family.
 3. **Describable client-neutrally.** You can write the one-sentence definition and the Best practices bullets without naming the client, their brand, or their content model. If the definition needs the client to make sense, it is project knowledge.
 4. **Not already covered.** It is not an existing canonical under another name (that is an alias), not a visual variant of one, and not a child part.
 
@@ -74,11 +74,12 @@ A hard exclusion, a child part, a thin wrapper, a one-off composition of existin
 
 ## Recurrence elevation
 
-When `PriorReports` are supplied, compare normalized labels:
+Run `prior-evidence.cjs` with `Data` and/or `PriorReports`, then compare normalized labels from the latest eligible run per other project. Eligibility requires real non-symlink run surfaces, a real ISO calendar-date directory, matching run identity, exact canonical-or-null inventory/meta/report platform parity, and joined triage/resolution artifacts; retrospective-only runs and lexically date-shaped but impossible dates are ignored. `PriorReports` is the explicit compatibility escape hatch for eligible run reports outside `Data`, and can be used without `Data`. Explicit and automatic runs enter one latest-per-project merge: a stale explicit path warns and cannot displace newer evidence.
 
-- A label that was **Watch** in a prior report and is a candidate again here is elevated to **Promote**, provided it still passes the exclusion and coverage tests. Cite both reports in the evidence.
+- A label that was **Watch or Promote** in eligible prior evidence and is a candidate again here is elevated to **Promote**, provided it still passes the exclusion and coverage tests. Cite the selected run and current evidence.
 - A label **Rejected** in a prior report stays Rejected unless this project supplies evidence that contradicts the original reason. Say what changed.
-- Recurrence across two projects is the strongest signal available: it is the same evidence the catalog's own growth has used — count the projects that could not name a thing, then name it.
+- Invalid-calendar, identity-mismatched, or unresolved runs cannot drive recurrence. Only the latest eligible run for each other project counts, and each project contributes at most one occurrence regardless of how many code/test/story paths support it.
+- Recurrence across two projects is the strongest signal available: count the projects that could not name a thing, then name it.
 
 ## Alias rules
 

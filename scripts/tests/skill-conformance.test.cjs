@@ -25,6 +25,10 @@ const TOC_THRESHOLD = 100;
 
 const SKILL_MD = path.join(SKILL_DIR, 'SKILL.md');
 const raw = fs.readFileSync(SKILL_MD, 'utf8');
+const libraryChecklist = fs.readFileSync(
+  path.join(SKILL_DIR, 'references', 'library-integrity-checklist.md'),
+  'utf8',
+);
 
 function parseFrontmatter(text) {
   const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -165,15 +169,30 @@ test('capture completion requires governed unpublished Figma review and forbids 
   assert.match(capture, /writeCapabilityRequired: true/);
   assert.match(capture, /codeTestCommand/);
   assert.match(capture, /pnpm test:code/);
+  assert.match(capture, /pnpm figma:live/);
   assert.match(capture, /publicationStatus: "unpublished"/);
   assert.match(capture, /adversarial pass/);
   assert.match(capture, /design pass/);
-  assert.match(capture, /persist `## Progress` as `code-complete`/);
-  assert.match(capture, /report `figma-pending`/);
+  assert.match(capture, /persist `Progress` as `code-complete`/);
+  assert.match(capture, /report current `figma-pending`/);
+  assert.match(capture, /resumeExistingBranch/);
   assert.match(capture, /do not create a Code Connect template/);
   assert.match(capture, /pnpm figma:coverage/);
   assert.match(capture, /pnpm figma:validate/);
   assert.match(capture, /REST token is read-only validation and does not satisfy this requirement/);
+});
+
+test('capture preserves the live Figma reference and section grammar', () => {
+  for (const source of [body, libraryChecklist]) {
+    assert.match(source, /Button for compact component matrices/);
+    assert.match(source, /Section header and Alert for responsive specimens/);
+    assert.match(source, /Tabs for same-page structural alternates/);
+    assert.match(source, /01 • Documentation/);
+    assert.match(source, /02 • Main components/);
+    assert.match(source, /structural alternate/i);
+    assert.match(source, /Interaction states[^.]*final numbered Ready for Dev section/);
+    assert.match(source, /separate[^.]*unnumbered `Publish source/);
+  }
 });
 
 test('validation loops state a numeric retry cap', () => {
