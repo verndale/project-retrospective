@@ -174,7 +174,23 @@ function registerReviewedFigma(library, canonical, componentPath, variant = null
     figma: {
       nodeId: '100:200',
       nodeKey: 'stable-node-key',
+      status: 'ready-for-dev',
       publicationStatus: 'unpublished',
+      presentationEvidence: {
+        contractVersion: 1,
+        referencePageId: '10:1',
+        referencePageName: 'Button — Light',
+        sections: {
+          documentation: { nodeId: '10:2', order: 1 },
+          main: { nodeId: '10:3', order: 2 },
+          interactionStates: { nodeId: '10:4', order: 3 },
+          publishSource: { nodeId: '10:5', order: null },
+        },
+      },
+      tokenBindingAudit: {
+        contractVersion: 1,
+        stateRequirements: { 'dialog.open': ['color/border/focus'] },
+      },
       review: { status: 'passed', passes: ['source-parity', 'adversarial', 'design'] },
       stateCoverage: {
         status: 'covered',
@@ -220,7 +236,10 @@ function appliedBlock(library, canonical, componentPath) {
       figma: {
         nodeId: registration.figma.nodeId,
         nodeKey: registration.figma.nodeKey,
+        status: registration.figma.status,
         publicationStatus: registration.figma.publicationStatus,
+        presentationEvidence: registration.figma.presentationEvidence,
+        tokenBindingAudit: registration.figma.tokenBindingAudit,
         review: registration.figma.review,
         stateCoverage: registration.figma.stateCoverage,
       },
@@ -305,6 +324,7 @@ test('the envelope carries the documented key order', () => {
     contractReady: true,
     capabilityReady: true,
     writeCapabilityRequired: true,
+    status: 'ready-for-dev',
     publicationStatus: 'unpublished',
     reviewPasses: ['source-parity', 'adversarial', 'design'],
     registry: 'figma/library.json',
@@ -379,7 +399,9 @@ test('the current library registry interaction-state schema satisfies preflight'
 
 test('the byte-current sibling library registry and checklist satisfy promotion preflight', {
   skip: !fs.existsSync(path.join(SIBLING_LIBRARY, 'figma/library.json')) ||
-    !fs.existsSync(path.join(SIBLING_LIBRARY, 'figma/PROMOTION-CHECKLIST.md')),
+    !fs.existsSync(path.join(SIBLING_LIBRARY, 'figma/PROMOTION-CHECKLIST.md')) ||
+    !fs.readFileSync(path.join(SIBLING_LIBRARY, 'figma/PROMOTION-CHECKLIST.md'), 'utf8').includes('figma.presentationEvidence') ||
+    !JSON.parse(fs.readFileSync(path.join(SIBLING_LIBRARY, 'figma/library.json'), 'utf8')).library?.tokenPolicy?.componentVariableIds,
 }, () => {
   const result = preflight(tempCaptures(), SIBLING_LIBRARY);
   assert.equal(
@@ -427,6 +449,43 @@ test('capture source hashes and sibling inventory revision must stay pinned', ()
     '--project', fixture('fake-project'),
   ]);
   assertBlocked(result, 'source-parity');
+});
+
+test('capture preflight accepts explicitly unversioned source after exact current-tree verification', () => {
+  const captures = tempCaptures();
+  syncSourceParity(captures);
+  const inventoryPath = path.resolve(captures, '..', 'inventory.json');
+  const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+  inventory.sourceSnapshot = { strategy: 'unavailable', commit: null, dirty: null };
+  fs.writeFileSync(inventoryPath, `${JSON.stringify(inventory, null, 2)}\n`);
+
+  const parityPath = path.resolve(captures, '..', 'source-parity/modal.json');
+  const artifact = JSON.parse(fs.readFileSync(parityPath, 'utf8'));
+  artifact.sourceSnapshot.revision = {
+    strategy: 'legacy-untracked',
+    commit: null,
+    inventoryGeneratedAt: inventory.generatedAt,
+  };
+  fs.writeFileSync(parityPath, `${JSON.stringify(artifact, null, 2)}\n`);
+
+  const result = runPreparedPreflight(captures, fixture('fake-library'));
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(only(result).status, 'ready');
+  assert.ok(result.json.warnings.some((entry) => entry.code === 'source-unversioned-current-tree'));
+});
+
+test('unavailable inventory cannot claim recorded source parity', () => {
+  const captures = tempCaptures();
+  syncSourceParity(captures);
+  const inventoryPath = path.resolve(captures, '..', 'inventory.json');
+  const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+  inventory.sourceSnapshot = { strategy: 'unavailable', commit: null, dirty: null };
+  fs.writeFileSync(inventoryPath, `${JSON.stringify(inventory, null, 2)}\n`);
+
+  const result = runPreparedPreflight(captures, fixture('fake-library'));
+  assertBlocked(result, 'source-inventory');
+  assert.ok(only(result).blockers.some((blocker) =>
+    blocker.code === 'source-inventory' && blocker.message.includes('legacy-untracked')));
 });
 
 test('capture Source must match the exact inventoried entry verified by source parity', () => {
@@ -1431,6 +1490,36 @@ test('incomplete registry state node IDs keep an otherwise reviewed capture read
   assert.ok(record.figma.interactionStateCoverageIssues.some((entry) => entry.includes('frame, instance, and component node IDs')));
 });
 
+test('reviewed Figma without structural presentation evidence resumes at Figma', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  const library = tempFixture('fake-library');
+  registerReviewedFigma(library, 'Badge', 'components/badge');
+  const registry = JSON.parse(readFile(library, 'figma/library.json'));
+  delete registry.components[0].figma.presentationEvidence;
+  writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
+  const result = preflight(captures, library);
+  assert.equal(only(result).resumeAt, 'figma');
+  assert.ok(only(result).figma.presentationEvidenceIssues.some((issue) => issue.includes('missing')));
+});
+
+test('reviewed Figma without a code-parity token binding audit resumes at Figma', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  const library = tempFixture('fake-library');
+  registerReviewedFigma(library, 'Badge', 'components/badge');
+  const registry = JSON.parse(readFile(library, 'figma/library.json'));
+  delete registry.components[0].figma.tokenBindingAudit;
+  writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
+  const result = preflight(captures, library);
+  assert.equal(only(result).resumeAt, 'figma');
+  assert.ok(only(result).figma.tokenBindingAuditIssues.some((issue) => issue.includes('missing')));
+});
+
 test('an explicit not-applicable state result needs no InteractionStates story or Figma matrix', () => {
   const captures = tempCaptures();
   const root = path.resolve(captures, '..');
@@ -1457,6 +1546,7 @@ test('an explicit not-applicable state result needs no InteractionStates story o
     reason: 'The normalized component is static and exposes no interactive state.',
     states: [],
   };
+  registry.components[0].figma.tokenBindingAudit.stateRequirements = {};
   writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
 
   const result = preflight(captures, library);
@@ -1475,6 +1565,24 @@ test('reviewed Figma without an Applied marker resumes as evidence-pending', () 
   const result = preflight(captures, library);
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(only(result).status, 'evidence-pending');
+});
+
+test('reviewed Figma must resolve to ready-for-dev before evidence can land', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+  const library = tempFixture('fake-library');
+  registerReviewedFigma(library, 'Badge', 'components/badge');
+  const registry = JSON.parse(readFile(library, 'figma/library.json'));
+  registry.components.find((entry) => entry.canonical === 'Badge').figma.status = 'reviewed';
+  writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
+
+  const result = preflight(captures, library);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(only(result).status, 'ready');
+  assert.equal(only(result).resumeAt, 'figma');
+  assert.equal(only(result).figma.status, 'reviewed');
 });
 
 test('code, reviewed Figma, and an Applied marker reconcile as skipped', () => {
@@ -1623,6 +1731,24 @@ test('applied inspection follows multiline imports and directives after comments
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(only(result).status, 'ready');
   assert.equal(only(result).resumeAt, 'figma');
+});
+
+test('applied inspection resolves ESM .js specifiers to TypeScript source modules', () => {
+  const captures = tempCaptures();
+  const text = retarget(readFile(captures, 'modal.md'), 'Badge', 'badge');
+  fs.rmSync(path.join(captures, 'modal.md'));
+  writeFile(captures, 'badge.md', text);
+
+  const library = tempFixture('fake-library');
+  const component = path.join(library, 'components/badge');
+  for (const file of ['index.ts', 'Badge.tsx', 'parts/BadgeDialog.client.tsx']) {
+    const target = path.join(component, file);
+    const source = fs.readFileSync(target, 'utf8').replace(/(from\s+['"][^'"]+)(?=['"])/g, '$1.js');
+    fs.writeFileSync(target, source);
+  }
+  const result = preflight(captures, library);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(only(result).status, 'ready');
 });
 
 test('planned filenames do not hide component manifest drift', () => {

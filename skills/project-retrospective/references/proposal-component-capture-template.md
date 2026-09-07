@@ -261,7 +261,25 @@ Add only after code, reviewed Figma, and private evidence reconcile. Copy the cl
   "figma": {
     "nodeId": "<stable master or component-set node id>",
     "nodeKey": "<stable node key>",
+    "status": "ready-for-dev",
     "publicationStatus": "unpublished",
+    "presentationEvidence": {
+      "contractVersion": 1,
+      "referencePageId": "<inspected live precedent page id>",
+      "referencePageName": "<Button, Section header, Alert, or Tabs>",
+      "sections": {
+        "documentation": { "nodeId": "<01 section id>", "order": 1 },
+        "main": { "nodeId": "<02 section id>", "order": 2 },
+        "interactionStates": { "nodeId": "<final numbered section id>", "order": 3 },
+        "publishSource": { "nodeId": "<unnumbered section id>", "order": null }
+      }
+    },
+    "tokenBindingAudit": {
+      "contractVersion": 1,
+      "stateRequirements": {
+        "<source-parity state id>": ["color/<authoritative code-parity token>"]
+      }
+    },
     "review": { "status": "passed", "passes": ["source-parity", "adversarial", "design"] },
     "stateCoverage": {
       "status": "covered",
@@ -281,7 +299,7 @@ Add only after code, reviewed Figma, and private evidence reconcile. Copy the cl
 }
 ```
 
-Runtime-only state entries instead contain the same `id`, `label`, `source`, `target`, `classification: "runtime-only"`, and `reason`, with no visual IDs. Not-applicable coverage is exactly `{ "status": "not-applicable", "reason": "<same source-parity reason>", "states": [] }` with no `storyExport`.
+Runtime-only state entries instead contain the same `id`, `label`, `source`, `target`, `classification: "runtime-only"`, and `reason`, with no visual IDs. Not-applicable coverage is exactly `{ "status": "not-applicable", "reason": "<same source-parity reason>", "states": [] }` with no `storyExport`; its token-binding `stateRequirements` may be empty. Select variables through the authoritative collection/ID map, never by display name alone, and copy `presentationEvidence` plus `tokenBindingAudit` exactly from the reviewed registry.
 
 ## Suggested commit
 

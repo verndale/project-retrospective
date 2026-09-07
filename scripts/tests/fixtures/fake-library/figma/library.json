@@ -1,6 +1,13 @@
 {
   "schemaVersion": 1,
   "library": {
+    "tokenPolicy": {
+      "componentVariableCollectionId": "38:3",
+      "componentVariableIds": {
+        "color/tone/critical": "VariableID:65:8",
+        "color/border/focus": "VariableID:191:3"
+      }
+    },
     "publishing": {
       "figmaLibrary": "explicit-maintainer-action",
       "ci": "read-only-validation"
