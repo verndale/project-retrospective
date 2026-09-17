@@ -161,10 +161,10 @@ test('every script named in SKILL.md exists', () => {
   }
 });
 
-test('guardrails require explicit publication authority, prohibit merge, and forbid guessing', () => {
+test('guardrails require matching publication authority, gate merge, and forbid guessing', () => {
   const guardrails = body.split('## Guardrails')[1] || '';
-  assert.match(guardrails, /MUST NOT run `git commit`, `push`, or open a pull request without explicit authority/);
-  assert.match(guardrails, /MUST NOT merge, tag, release, close issues, publish Figma/);
+  assert.match(guardrails, /MUST NOT run `git commit`, `push`, open a pull request, or merge without the matching explicit authority/);
+  assert.match(guardrails, /MUST NOT force\/bypass protection, manually tag\/release/);
   assert.match(guardrails, /MUST NOT fuzzy-match/);
 });
 
@@ -173,6 +173,11 @@ test('every action uses the exact publication handoff contract', () => {
   assert.match(body, /Continue or hand back/);
   assert.match(publicationHandoff, /Human decision/);
   assert.match(publicationHandoff, /draft pull request/);
+  assert.match(publicationHandoff, /Publication: merge/);
+  assert.match(publicationHandoff, /mark the PR ready/);
+  assert.match(publicationHandoff, /Verify the PR is merged/);
+  assert.match(publicationHandoff, /Every candidate carrying `Verdict: Promote`/);
+  assert.match(publicationHandoff, /Do not ask a person to approve it again/);
   assert.match(publicationHandoff, /Do not ask again for authority already present/);
 });
 

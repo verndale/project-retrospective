@@ -86,7 +86,7 @@ Merge `retrospective-actions.json` with `update-retrospective-register.cjs` into
 
 ## Guardrails
 
-- MUST NOT publish a partial wiki/run state. Step 6 itself does not commit; after the complete run validates, `publication-handoff.md` may authorize commit, push, and a draft PR for the combined action-owned write set. Merge, tag, release, and issue closure remain prohibited.
+- MUST NOT publish a partial wiki/run state. Step 6 itself does not commit; after the complete run validates, `publication-handoff.md` may authorize a verified draft PR or full green merge for the combined action-owned write set. Manual tags/releases, protection bypass, and unrelated issue closure remain prohibited.
 - MUST write client wiki content only under `<Data>/wiki/`, never into this (public) skill repository.
 - MUST be append-only: one journal file per run, additive client pages. Supersede a stale fact with a new entry, not by rewriting an old one.
 - MUST NOT invent outcomes. Every journal Outcome traces to the run's `resolution.json` and the report verdicts.

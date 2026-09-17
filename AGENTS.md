@@ -19,7 +19,7 @@ Skill-authoring templates live in `skills/_meta/` (sibling of the skill) — aut
 
 ## Environment
 
-Node 24+ and pnpm 10+ (via Corepack); `pnpm install`. Skill scripts are zero-dependency CommonJS and run on plain `node` — they must keep working when vendored into a repo with no `node_modules`. `pnpm test` is the quality gate: it runs the suites under `scripts/tests/` and then `pnpm graph:check`. The commit/release tooling is the maintainer's job (see below).
+Node 24+ and pnpm 10+ (via Corepack); `pnpm install`. Skill scripts are zero-dependency CommonJS and run on plain `node` — they must keep working when vendored into a repo with no `node_modules`. `pnpm test` is the quality gate: it runs the suites under `scripts/tests/` and then `pnpm graph:check`. Publication follows the explicit authority contract below.
 
 ## Editing this skill
 
@@ -75,7 +75,7 @@ Retrospective runs read client repositories and produce client-derived output. N
 
 ## Downstream repos are read-mostly
 
-The skill's `promote` action edits a **local `ui-design-brain` working tree** and never edits `ai-orchestration` — findings for the pipeline are emitted as paste-ready drafts the maintainer carries over. By default it stops with verified local edits; when the current request explicitly authorizes `Publication: pull-request` (or the equivalent exact actions), it may commit, push, and create/verify the draft PR on the issue branch. It never merges, tags, releases, closes issues, or publishes Figma. Brain edits must satisfy that repo's catalog-integrity checklist (manifest + `index.md` + pattern file + README count + context-alias table); `references/brain-integrity-checklist.md` holds the ordered procedure.
+The skill's `promote` action edits a **local `ui-design-brain` working tree** and never edits `ai-orchestration` — findings for the pipeline are emitted as paste-ready drafts the maintainer carries over. By default it stops with verified local edits. `Publication: pull-request` (or equivalent exact authority) permits commit, push, and draft-PR verification; `Publication: merge` additionally permits readying and merging the green PR and verifying the resulting default-branch/linked-issue state. It never tags, manually releases, or publishes Figma without separate exact authority. Brain edits must satisfy that repo's catalog-integrity checklist (manifest + `index.md` + pattern file + README count + context-alias table); `references/brain-integrity-checklist.md` holds the ordered procedure.
 
 ## Branch off main before applying repo edits
 
@@ -87,21 +87,21 @@ Every repository the skill *writes* is edited on a working branch off that repo'
 
 Branch names in the shared catalog/library repos stay **client-agnostic** and issue-keyed: `feat/<issue-number>-catalog-promotion` and `feat/<issue-number>-library-capture`. A repo the action only *reads* stays on `main`: the brain during a capture preflight, and the analyzed project (always read-only).
 
-By default, still stop at handback with each working branch checked out and nothing committed. When the current request explicitly authorizes publication, apply `references/publication-handoff.md`: commit, push, and create/verify a draft PR only for each named action-owned repository and issue branch. Authority for one target does not extend to another.
+By default, still stop at handback with each working branch checked out and nothing committed. When the current request explicitly authorizes publication, apply `references/publication-handoff.md`: `pull-request` stops at the verified draft PR; `merge` carries the action-owned issue/run branch through green checks, ready state, merge, and post-merge verification. Authority for one target does not extend to another.
 
 ## File a tracking issue per repo at the end of a retro
 
 The skill automatically reconciles sanctioned labels, reuses or files one **[Feature]** GitHub issue per repo with deterministic pending work, links downstream tracking, and creates only the required local working branch. An explicit retrospective target is authorization for these operations; do not pause for issue approval. The executable spec is [`skills/project-retrospective/references/tracking-issues.md`](skills/project-retrospective/references/tracking-issues.md), backed by `tracking-targets.cjs`; keep the contract, script, and tests in sync.
 
-In short: the private **ui-design-evidence** repo gets a client-named hub issue for a validated evidence run; **ui-design-brain** gets a client-agnostic issue for pending proposals and a branch only for an approved non-empty promote write set; **ui-design-library** gets a client-agnostic issue only when capture preflight finds actionable work and a branch only for a non-empty capable write set. Deferred/blocked/skipped/landed items and evidence-only reconciliation create no library issue or branch. `ai-orchestration` gets neither.
+In short: the private **ui-design-evidence** repo gets a client-named hub issue for a validated evidence run; **ui-design-brain** gets a client-agnostic issue for pending proposals and a branch only for a validator-approved non-empty promote write set; **ui-design-library** gets a client-agnostic issue only when capture preflight finds actionable work and a branch only for a non-empty capable write set. Deferred/blocked/skipped/landed items and evidence-only reconciliation create no library issue or branch. `ai-orchestration` gets neither.
 
-Automatic issue/label/link/local-branch authority does not authorize commits, pushes, PRs, issue closure, Figma publication, merges, or releases. Authentication, label, issue, clean-main, alignment, or capability failures stop before branch creation without an approval prompt.
+Automatic issue/label/link/local-branch authority does not authorize publication. Publication authority is resolved separately: `pull-request` covers commit/push/draft PR, while `merge` also covers ready/merge and closure of issues linked with a closing keyword. Figma publication, manual tags/releases, and unrelated issue closure require separate exact authority. Authentication, label, issue, clean-main, alignment, or capability failures stop before branch creation without an approval prompt.
 
 ## Commits & release
 
-**Permission boundary:** edit files under `skills/`, `scripts/`, and `wiki/` freely without asking — that's the autonomous zone, and capturing a substantive change in `wiki/` is expected rather than optional. An agent may commit and push an issue branch only when the maintainer explicitly authorizes those actions.
+**Permission boundary:** edit files under `skills/`, `scripts/`, and `wiki/` freely without asking — that's the autonomous zone, and capturing a substantive change in `wiki/` is expected rather than optional. Publication requires exact maintainer authority resolved once from the current request.
 
-Without explicit maintainer authorization, make the requested edits and stop at handback. When commit and push are authorized, use `pnpm commit` (Conventional Commits, required scope) and push only the issue branch so repository automation can create the draft PR. **Do not merge, tag, release, or publish** — in this repo or in any repo the skill touches. `semantic-release` runs only on `main`.
+Without publication authority, make the requested edits and stop at handback. With `Publication: pull-request` or equivalent authority, use `pnpm commit` (Conventional Commits, required scope), push only the issue branch, and create/verify its draft PR. With `Publication: merge` or an unambiguous instruction to commit, push, and merge, also wait for required checks, fix in-scope failures, mark the PR ready, merge through the repository's allowed method without bypassing protection, and verify the default branch contains the result and linked closing issues resolved. Do not manually tag, release, publish Figma, force-merge, bypass required review, or write to the analyzed project unless separately and exactly authorized. `semantic-release` runs only on `main` and may publish automatically after an authorized merge.
 
 <!-- wiki-skill:start -->
 ## Context wiki navigation

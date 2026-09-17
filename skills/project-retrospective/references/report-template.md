@@ -134,7 +134,7 @@ What this run could not see. Script warnings verbatim, then anything the mode it
 
 Next action: <the one exact action now executable, naming its repository, branch or artifact path, and tracking issue>
 
-Human decision: <none, or the first exact content/publication decision that blocks continuation>
+Human decision: <none, or the first exact external decision/capability that blocks continuation>
 
 1. <First dependency with real count, exact paths, and destination. For a capture on a new canonical, name its prerequisite proposal first.>
 2. <Next non-empty destination in execution order.>
@@ -153,6 +153,6 @@ Human decision: <none, or the first exact content/publication decision that bloc
 - **`## Captures` is required at `full` scope even when nothing qualified.** Keep the heading and say so in a sentence, with no `### ` entries under it.
 - **`### Gotchas` / `### Tips` under `## Learnings` are optional.** Use them to separate a pitfall the next project should avoid from a practice it should adopt from the start; a finding that is neither, or both, stays a bare bullet under `## Learnings`. Never force the split. These H3s carry no `Verdict:` line and need no proposal or capture file — the downstream start pack surfaces them verbatim.
 - **`## Team retrospectives` is required when retrospective artifacts exist.** Keep source titles/content client-safe in the report; page ids and URLs stay in the private JSON/archive. A retrospectives-only run uses only Run, Summary, Team retrospectives, Gaps, and Next steps.
-- **`## Next steps` is run-specific.** Start with `Next action:` and `Human decision:`. Name exact artifact paths, target repository/branch, tracking issue, counts, and dependency order; omit empty destinations. Generic instructions such as "review the proposals" or "run the next step" are not a completed handoff.
+- **`## Next steps` is run-specific.** Start with `Next action:` and `Human decision:`. Name exact artifact paths, target repository/branch, tracking issue, counts, and dependency order; omit empty destinations. In `Publication: merge`, validator-passing Promote proposals and ready captures use `Human decision: none` and continue automatically. Generic instructions such as "review the proposals" or "run the next step" are not a completed handoff.
 - **No numeric scores** — evidence and a verdict, nothing in between.
 - Write for a reviewer who was not on the project: name paths, not impressions.

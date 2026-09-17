@@ -174,12 +174,12 @@ Wiki: wiki/journal/<date>-add-<slug>-component.md (per written component), wiki/
 (client-agnostic; skipped when <library path>/wiki/ is absent).
 Regenerated wiki/connections* and scripts/graph/data/graph.json via pnpm graph:build.
 
-Publication: <working-tree | committed and pushed>
-Pull request: <url, or exact authorization question>
-Next action: <human review/merge of the PR, or next dependent capture>
+Publication: <working-tree | pull-request | merged>
+Pull request: <url and state, or exact authorization question>
+Next action: <next lifecycle reconciliation, or complete>
 ```
 
-The Figma library stays unpublished under both publication modes.
+The Figma library stays unpublished under every Git publication mode.
 
 Commit subjects follow that repo's convention — the scope is the **component slug**, not `library`:
 

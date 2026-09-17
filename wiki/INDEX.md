@@ -24,7 +24,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- One line per topic page: [Title](topics/<slug>.md) — hook. Keep alphabetical by slug. -->
 
-- [Brain promotion](topics/brain-promotion.md) — how an approved proposal is applied to ui-design-brain and carried to an exact publication boundary.
+- [Brain promotion](topics/brain-promotion.md) — how a validated proposal is applied to ui-design-brain and carried through its authorized publication boundary.
 - [Knowledge graph & context wiki](topics/graph-wiki-subsystem.md) — the deterministic graph, its skill-contract integrity gate, the Sigma.js viewer, and the context wiki.
 - [Library capture](topics/library-capture.md) — how a run's component captures reach ui-design-library, pass the write-free gate, and continue to an exact publication boundary.
 - [Retrospective workflow](topics/retrospective-workflow.md) — the analyze path: inventory, resolution, triage, and the validator that gates the output.
@@ -34,7 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
-- 2026-09-17 — [Continue authorized retrospective publication](journal/2026-09-17-hands-off-publication-handoff.md) — explicit publication authority now continues through draft-PR verification, while run-specific next actions expose only genuine human decisions.
+- 2026-09-17 — [Continue authorized retrospective publication](journal/2026-09-17-hands-off-publication-handoff.md) — full merge mode now lands validated proposals and newly ready captures automatically, while next steps expose only genuine external blockers.
 - 2026-09-07 — [Make ready-for-development the capture terminal state](journal/2026-09-07-ready-for-development-capture-gate.md) — reviewed captures now require governed ready-for-dev status while native Dev Mode readiness and publication remain explicit maintainer actions.
 - 2026-09-07 — [Verify unversioned source without requiring pipeline artifacts](journal/2026-09-07-verified-unversioned-source-capture.md) — capture can use a current non-symlink source tree when Git identity is unavailable, while build packs and fingerprints remain optional corroboration.
 - 2026-09-06 — [Make the retrospective knowledge loop source-first](journal/2026-09-06-source-first-knowledge-loop.md) — ordinary repos feed deterministic discovery, analyze keeps capture intents light, and selected capture work re-verifies pinned source before governed downstream writes.
