@@ -29,6 +29,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-09-17 — feat(project-retrospective): Update retrospective publication defaults ([verndale/project-retrospective PR #97](https://github.com/verndale/project-retrospective/pull/97))
 - 2026-09-17 — Made scoped full merge the durable default for retrospective invocations, with `pull-request` and `working-tree` retained only as explicit stop-early overrides ([issue #96](https://github.com/verndale/project-retrospective/issues/96), [journal](../journal/2026-09-17-default-merge-publication.md)).
 - 2026-09-17 — Separated automatic tracking authority from publication authority, added a full merge mode, treated validated Promote/ready-capture artifacts as executable decisions, and made run-specific next actions expose only genuine external blockers ([issue #96](https://github.com/verndale/project-retrospective/issues/96), [journal](../journal/2026-09-17-hands-off-publication-handoff.md)).
 - 2026-09-07 — feat(capture): require reviewed ready-for-dev evidence ([verndale/project-retrospective PR #94](https://github.com/verndale/project-retrospective/pull/94))

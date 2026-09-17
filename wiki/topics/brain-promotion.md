@@ -16,6 +16,7 @@ How a validated proposal is applied to ui-design-brain and carried through its a
 
 ## Decisions
 
+- 2026-09-17 — feat(project-retrospective): Update retrospective publication defaults ([verndale/project-retrospective PR #97](https://github.com/verndale/project-retrospective/pull/97))
 - 2026-09-17 — Made Brain publication and dependent capture continuation automatic by default for retrospective-owned issue branches, while preserving explicit stop-early overrides ([issue #96](https://github.com/verndale/project-retrospective/issues/96), [journal](../journal/2026-09-17-default-merge-publication.md)).
 - 2026-09-17 — Made validator-passing Promote proposals executable in full merge mode and continued through green Brain merge and unlocked captures without a second approval prompt ([issue #96](https://github.com/verndale/project-retrospective/issues/96), [journal](../journal/2026-09-17-hands-off-publication-handoff.md)).
 - 2026-07-31 — feat(project-retrospective): Enhance proposal validation logic ([PR #21](https://github.com/verndale/project-retrospective/pull/21))
