@@ -29,6 +29,10 @@ const libraryChecklist = fs.readFileSync(
   path.join(SKILL_DIR, 'references', 'library-integrity-checklist.md'),
   'utf8',
 );
+const publicationHandoff = fs.readFileSync(
+  path.join(SKILL_DIR, 'references', 'publication-handoff.md'),
+  'utf8',
+);
 
 function parseFrontmatter(text) {
   const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -157,10 +161,26 @@ test('every script named in SKILL.md exists', () => {
   }
 });
 
-test('guardrails state the git prohibition and the no-guessing rule', () => {
+test('guardrails default retrospective publication to scoped merge and forbid guessing', () => {
   const guardrails = body.split('## Guardrails')[1] || '';
-  assert.match(guardrails, /MUST NOT run `git commit`/);
+  assert.match(guardrails, /retrospective actions default to `merge` only for their deterministic issue\/run branches/);
+  assert.match(guardrails, /MUST NOT force\/bypass protection, manually tag\/release/);
   assert.match(guardrails, /MUST NOT fuzzy-match/);
+});
+
+test('every action uses the exact publication handoff contract', () => {
+  assert.match(body, /references\/publication-handoff\.md/);
+  assert.match(body, /Continue or hand back/);
+  assert.match(publicationHandoff, /Human decision/);
+  assert.match(publicationHandoff, /draft pull request/);
+  assert.match(publicationHandoff, /Publication: merge/);
+  assert.match(publicationHandoff, /mark the PR ready/);
+  assert.match(publicationHandoff, /Verify the PR is merged/);
+  assert.match(publicationHandoff, /Every candidate carrying `Verdict: Promote`/);
+  assert.match(publicationHandoff, /Do not ask a person to approve it again/);
+  assert.match(publicationHandoff, /`Publication: merge` is the default for every retrospective invocation/);
+  assert.match(publicationHandoff, /Do not ask for routine publication authority/);
+  assert.match(publicationHandoff, /When the parameter is absent, resolve it to `merge`/);
 });
 
 test('capture completion requires governed unpublished Figma review and forbids Code Connect', () => {

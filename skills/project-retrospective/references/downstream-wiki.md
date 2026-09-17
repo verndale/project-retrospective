@@ -39,7 +39,7 @@ The target repo's `wiki/MECHANICS.md` is authoritative for the journal/topic tem
 2. Add exactly one `wiki/INDEX.md` **Journal** line, reverse-chronological at the top: `- <date> — [Title](journal/<file>.md) — <hook>.`
 3. Update the affected topic page's Decisions section where one applies (brain only — below).
 4. Rebuild the connections graph with the repo's own graph build, run from that repo's root — `pnpm graph:build`, or `node scripts/graph/build-graph.cjs` (the per-repo sections below give the exact command). Leave the regenerated `wiki/connections*` and `graph.json` in place; do not hand-edit them.
-5. Hand back the wiki paths touched. Do not commit.
+5. Hand the wiki paths touched to the action-level continuation. Do not commit during this step; publication follows only after the complete promote/capture action validates.
 
 **Append-only.** If `wiki/journal/<date>-<change-slug>.md` already exists, do not overwrite or duplicate it; if an INDEX line already names that file, do not add a second; if a Decisions bullet already links that journal file, leave it. The deterministic slug is what lets a re-run detect its own prior write.
 
@@ -73,4 +73,4 @@ The graph rebuild is **new work** here: capture verifies with `pnpm contracts` +
 - MUST skip the entry, with a stated message, when the checkout has no `wiki/`. Never create a `wiki/` tree the repo lacks.
 - MUST write a library entry only for a capture actually executed into `components/<slug>/`; skip deferred, blocked, and skipped captures.
 - MUST rebuild the connections graph with the repo's own graph build from its root — `pnpm graph:build` for the library, `node scripts/graph/build-graph.cjs` for the brain (the command its verify already runs) — and MUST NOT hand-edit the generated `wiki/connections*` pages.
-- MUST be append-only — one journal file per change, never overwritten — and MUST NOT `git commit`, `push`, `merge`, `tag`, or open a PR. The handback ends at the paths touched.
+- MUST be append-only — one journal file per change, never overwritten. This wiki step does not publish a partial state; `publication-handoff.md` may authorize a verified draft PR or a full green merge only for the complete action. Manual tags/releases, Figma publication, protection bypass, and unrelated issue closure remain prohibited.

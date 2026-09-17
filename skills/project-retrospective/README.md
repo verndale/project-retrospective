@@ -21,7 +21,7 @@ What the skill does, how to run it, and what it produces. The skill's own instru
 
 Reads a finished frontend project, works out what it built, checks those names against the [`ui-design-brain`](https://github.com/verndale/ui-design-brain) catalog, and turns what did not resolve into reviewable proposals. Analyze is source-first and lightweight: ordinary package/workspace structure works without pipeline artifacts, and library candidates are pending intents rather than speculative target designs. `Action: capture` reopens the pinned source, enriches selected intents to source-parity v2 plus an explicit server-first plan, then creates aligned code, Storybook, and unpublished reviewed Figma evidence. The skill can also ingest seeded team retrospectives and post-mortems into durable evidence.
 
-The division of labour matters: **scripts decide structure, the model exercises judgment.** Discovery, label resolution, and output validation are deterministic and zero-LLM. Deciding whether an unresolved label is real platform vocabulary is the part that needs a model — and it is advisory. Nothing reaches the catalog without a human commit.
+The division of labour matters: **scripts decide structure, the model exercises judgment.** Discovery, label resolution, and output validation are deterministic and zero-LLM. Deciding whether an unresolved label is real platform vocabulary is the part that needs a model. In full merge mode, the validated Promote/Watch/Reject verdict is executable: Promote continues automatically, while Watch and Reject do not write downstream.
 
 ## CMS identity contract
 
@@ -53,7 +53,7 @@ The scripts are zero-dependency CommonJS and run on the `node` already on your P
 
 ## End-to-end walkthrough
 
-A finished project on one end, components in `ui-design-library` on the other. Six steps. **The skill never commits anywhere** — every commit below is yours.
+A finished project on one end, components in `ui-design-library` on the other. Six steps. `Publication: merge` is the default: it runs checks, commits, pushes, readies and merges PRs, verifies linked issue closure, applies validator-approved catalog proposals, and continues into newly ready captures. `Publication: pull-request` and `Publication: working-tree` are explicit stop-early overrides. Manual releases/tags, protection bypass, unrelated issue closure, and Figma publication remain separate.
 
 Paths in these examples are placeholders. Substitute your own checkouts.
 
@@ -64,6 +64,7 @@ Paths in these examples are placeholders. Substitute your own checkouts.
 Project: /Users/you/Projects/some-client-site
 Brain: /Users/you/Projects/ui-design-brain
 Data: /Users/you/Projects/ui-design-evidence
+Publication: merge
 ```
 
 `Data` is what puts the run in the evidence repo. Without it, output lands in `~/project-retrospective/runs/` and the skill tells you so.
@@ -82,9 +83,9 @@ Open `report.md`. Three of its sections each pair with an artifact and a destina
 
 Check `## Gaps` first — it carries script warnings verbatim. Code plus colocated tests/stories/styles/consumers is one project implementation family, so it caps at Watch unless another project or genuinely independent evidence corroborates it.
 
-**This is the only content-approval gate.** Everything downstream applies what you approve here, so throw out what you disagree with now. (Steps 3 and 4 each stop at a handback for review before you commit, but neither re-litigates the decision made here.) **Done when:** you know which proposals and which captures you want.
+In `working-tree` or `pull-request` mode, the report is the optional content-review gate. In `merge` mode, the validated verdict is the decision: every validator-passing Promote proposal is applied automatically, exact prior-proposal collisions are reused, Watch/Reject create no writes, and every capture that later becomes `ready` executes automatically. **Done when:** `## Next steps` names the exact automatic chain or one genuine external blocker.
 
-### Step 3 — Promote approved catalog changes
+### Step 3 — Promote validated catalog changes
 
 One invocation per proposal:
 
@@ -93,15 +94,10 @@ One invocation per proposal:
 Action: promote
 Proposal: /Users/you/Projects/ui-design-evidence/runs/some-client-site/2026-06-14/proposals/stat.md
 Brain: /Users/you/Projects/ui-design-brain
+Publication: merge
 ```
 
-Edits the brain working tree, authors a client-agnostic context-wiki entry (a `wiki/journal/` entry, one `wiki/INDEX.md` line, and a `component-catalog` Decisions bullet — skipped when the checkout has no `wiki/`), verifies with that repo's own graph build, stops. Then you commit:
-
-```bash
-cd /Users/you/Projects/ui-design-brain && pnpm commit
-```
-
-PR and merge. **Done when:** the new canonical is on `main` in ui-design-brain.
+Edits the brain working tree, authors a client-agnostic context-wiki entry (a `wiki/journal/` entry, one `wiki/INDEX.md` line, and a `component-catalog` Decisions bullet — skipped when the checkout has no `wiki/`), and verifies with that repo's own graph build. `pull-request` stops at the verified draft PR; `merge` waits for green checks, merges it, verifies Brain `main`, and continues into dependent captures. **Done when:** the selected publication boundary is verified.
 
 ### Step 4 — Execute the captures
 
@@ -116,17 +112,12 @@ Captures: /Users/you/Projects/ui-design-evidence/runs/some-client-site/2026-06-1
 CaptureKeys: modal,notice-panel
 Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
+Publication: merge
 ```
 
 Before branching, the action confirms the supported `figma-use` writer and current `pnpm figma:live`, then resolves the source checkout from sibling `inventory.json` (or optional `Project` override). Selected intents enter `enrichment-pending`: tracking can prepare only the existing evidence run branch, never a library issue/branch. Enrichment preserves exactly one safe intent Source entry and proves sibling metadata, inventory, source-parity project/run/entry, inspected entry points, and hashed citation all join the same run and file. An entry with multiple inventory owners is ambiguous; sibling `resolution.json` must resolve the one owner to the capture canonical, so a valid but unrelated component cannot substitute. It adds source-parity v2, accessibility/state dispositions, runtime architecture, and realization. Missing source accessibility becomes a remediation gap. Schema-v6 preflight then makes `ready` actionable for the library; `figma-pending` is only a current unexpected mid-run loss; restored capability resumes the existing issue branch; `evidence-pending` reconciles private evidence; `skipped` is fully reconciled. Code Connect is not used.
 
-Then you commit, one per component:
-
-```bash
-cd /Users/you/Projects/ui-design-library && pnpm commit
-```
-
-**Done when:** `pnpm test` and `pnpm build` pass in the library; each new `components/<slug>/` has `index.ts`, a types module, at least two implementation TSX modules, stories (including `InteractionStates` when covered), and `component.json`; the export map is synced; the unpublished Figma master and state coverage (or explicit not-applicable result) are registered with passed post-remediation source-parity/adversarial/design evidence; `pnpm figma:coverage` and `pnpm figma:validate` pass; and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
+By default, the skill commits in the repository's required granularity, publishes the issue branch, merges the green PR, and verifies Library `main` plus evidence lifecycle reconciliation. Explicit `pull-request` and `working-tree` stop earlier. **Done when:** `pnpm test` and `pnpm build` pass in the library; each new `components/<slug>/` has `index.ts`, a types module, at least two implementation TSX modules, stories (including `InteractionStates` when covered), and `component.json`; the export map is synced; the unpublished Figma master and state coverage (or explicit not-applicable result) are registered with passed post-remediation source-parity/adversarial/design evidence; `pnpm figma:coverage` and `pnpm figma:validate` pass; and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
 
 ### Step 5 — Carry the orchestration drafts over
 
@@ -200,7 +191,8 @@ The action derives client, platform, and `prior_run` from the latest existing ev
 | `Retrospectives` | no | — | Comma-separated Confluence page and space URLs. Explicit pages are always audited; discovery stays inside the seeded spaces. |
 | `ProjectSlug` | for ingest-retrospectives | — | Existing evidence project whose latest metadata supplies client, platform, and prior run. |
 | `Action` | no | `analyze` | `analyze`, `ingest-retrospectives`, `promote`, or `capture`. |
-| `Proposal` | for promote | — | Path to the approved proposal file to apply. |
+| `Publication` | no | `merge` | `merge` commits, pushes, verifies/readies/merges PRs, resolves closing-keyword issues, and continues dependent actions. `working-tree` leaves verified local edits; `pull-request` stops at a verified draft PR. Manual release/tag, Figma publication, protection bypass, unrelated targets, and analyzed-project writes remain separate. |
+| `Proposal` | for promote | — | Path to the validator-approved proposal file. Hands-off `merge` continuation supplies Promote proposals automatically. |
 | `Captures` | for capture | — | Path to a run's `captures/` directory. Applied as a set — one invocation covers every capture in it. |
 | `CaptureKeys` | no | all pending | Comma-separated exact component keys to enrich/apply. |
 | `Library` | for capture | — | Absolute path to a local ui-design-library checkout. |
@@ -271,9 +263,10 @@ Review `proposals/`, then apply one:
 Action: promote
 Proposal: /Users/you/Projects/ui-design-evidence/runs/site-b/2026-06-14/proposals/promo-strip.md
 Brain: /Users/you/Projects/ui-design-brain
+Publication: merge
 ```
 
-This edits the brain **working tree** — manifest entry, pattern file, `index.md`, README count, as the proposal type requires — runs that repo's own `node scripts/graph/build-graph.cjs` from the brain root to verify, and stops with the edited-file list and a suggested commit. (This repository has a file at the same path; it validates this repository, not the catalog.) You commit (`pnpm commit` in the brain repo), PR, and merge. From there the existing daily catalog sync carries it into ai-orchestration and out to projects.
+This edits the brain **working tree** — manifest entry, pattern file, `index.md`, README count, as the proposal type requires — and runs that repo's own `node scripts/graph/build-graph.cjs` from the brain root to verify. (This repository has a file at the same path; it validates this repository, not the catalog.) `pull-request` stops at the verified draft PR; `merge` merges it and continues. A validator-passing Promote proposal needs no separate human approval in merge mode.
 
 It also authors a **client-agnostic** context-wiki entry in the brain — a `wiki/journal/<date>-<change-slug>.md`, one `wiki/INDEX.md` line, and a `wiki/topics/component-catalog.md` Decisions bullet — following that repo's `wiki/MECHANICS.md` and grounded in recurrence and the catalog delta, never the client name or run slug. It is skipped when the checkout has no `wiki/`. Verification also regenerates the brain's committed graph and its `wiki/connections*` files — expected, and that repo's pre-commit hook rebuilds them anyway.
 
@@ -287,13 +280,14 @@ Action: capture
 Captures: /Users/you/Projects/ui-design-evidence/runs/site-b/2026-06-14/captures
 Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
+Publication: merge
 ```
 
 **Batch input, serial execution.** `capture-preflight.cjs` checks every capture in one pass — exact structural key, source-parity v2 interaction states, catalog identity, runtime architecture, realization, Storybook/Figma/evidence state, and governed promotion surfaces. Its schema-v6 envelope writes nothing. Components resume at the first incomplete boundary and execute one at a time.
 
 Analyze-time files are intentionally not executable yet. The action gates current writer/live-registry capability before branching, verifies the sibling inventory and source, then enriches selected intents on the evidence branch before the schema-v6 gate. A recorded Git revision is preferred. When inventory explicitly says its snapshot is unavailable, only `legacy-untracked` parity is accepted: current non-symlink regular-file bytes, citation ranges, and every inspected path must verify, and the result retains a warning that no Git identity pins those bytes. Build packs, fingerprints, and orchestration artifacts remain optional corroboration in either path. Use `CaptureKeys` for a subset and `Project` only when the recorded checkout moved. Missing source accessibility is recorded as remediation work, not treated as proof or a reason to drop the intent.
 
-**Tracking is automatic and conditional.** `tracking-targets.cjs` routes exact work sets. Analyze creates the evidence hub and a brain issue only when proposals exist; it never creates shared branches. Capture may create/resume the evidence run branch for enrichment, then creates/reuses a client-agnostic library issue and issue-keyed branch only for capable `ready` work. A restored mid-run writer resumes that exact branch rather than creating it again. Label/issue/link/branch operations do not pause for approval; commits, pushes, PRs, closure, publication, merge, and release still require separate authority.
+**Tracking is automatic and conditional.** `tracking-targets.cjs` routes exact work sets. Analyze creates the evidence hub and a brain issue only when proposals exist; it never creates shared branches. Capture may create/resume the evidence run branch for enrichment, then creates/reuses a client-agnostic library issue and issue-keyed branch only for capable `ready` work. A restored mid-run writer resumes that exact branch rather than creating it again. Label/issue/link/branch operations do not pause for approval. `pull-request` adds verified draft PRs; `merge` adds ready/merge, closing-keyword issue resolution, and dependent-action continuation. Figma publication, manual tag/release, protection bypass, and unrelated issue closure remain separate.
 
 **Server first, not directive first.** Each architecture chooses `server`, `hybrid`, or `client` from concrete hydration needs. Server mode emits full HTML and has no client modules. Hybrid mode keeps a server facade plus a real server tree/branch/leaf implementation—the facade alone is not server output—and isolates state, handlers, effects, context, portals, timers, observers, browser APIs, or client-only dependencies in `.client.ts`/`.client.tsx` leaves. Client mode uses a client `index.ts` facade only when the public component itself cannot stay server-backed. Every `'use client'` file is at most 120 physical lines and remains SSR-safe; the directive does not disable React/Next server rendering.
 
@@ -303,7 +297,7 @@ Analyze-time files are intentionally not executable yet. The action gates curren
 
 **Each written component also gains review evidence.** Following the library's `wiki/MECHANICS.md`, its client-agnostic journal records the source-parity decision/state IDs, de-clienting, stable Figma master/state nodes, post-remediation source-parity plus adversarial/design findings, fixes, and final pass; `figma.review.evidence` points to that file. The graph is rebuilt with `pnpm graph:build`. A deferred, blocked, or skipped capture gets no entry.
 
-Then you commit in the library repo (`pnpm commit`), one per component, and PR.
+By default, the skill commits in the library's required granularity, merges the green PR, and verifies lifecycle reconciliation. Explicit `pull-request` stops at its verified draft PR; explicit `working-tree` stops after local verification.
 
 ## Across projects
 

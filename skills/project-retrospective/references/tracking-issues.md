@@ -1,6 +1,6 @@
 # Tracking issues and local branches
 
-GitHub tracking is deterministic and automatic. An explicit retrospective target authorizes sanctioned label reconciliation, exact open-issue reuse, issue creation, issue linking, and the required local `git switch -c`. Do not pause for approval. This authority does not include commits, pushes, PRs, issue closure, Figma publication, merges, or releases.
+GitHub tracking is deterministic and automatic. An explicit retrospective target authorizes sanctioned label reconciliation, exact open-issue reuse, issue creation, issue linking, and the required local `git switch -c`. Do not pause for approval. Tracking and publication remain separate contracts, but `publication-handoff.md` resolves retrospective publication to full `merge` by default unless the request explicitly selects `pull-request` or `working-tree`.
 
 Run `tracking-targets.cjs` before a write and again after issue/repository checks. It emits `skip`, `issue-pending`, or `write-ready` for every repository, with artifact IDs, an opaque `issueMatchKey`, `issueRequired`, labels, the exact open issue when supplied, blockers, and the required local branch. Scripts decide the work set; the model writes the five-section issue prose. Never file from `issue-pending` unless `issueRequired` is true; evidence prewrite failures use that state only to stop the branch.
 
@@ -11,6 +11,7 @@ Run `tracking-targets.cjs` before a write and again after issue/repository check
 - Issue content
 - Sanctioned labels
 - Evidence hub and downstream linking
+- Publication boundary
 - Failure behavior
 
 ## Target matrix
@@ -19,7 +20,7 @@ Run `tracking-targets.cjs` before a write and again after issue/repository check
 |---|---|---|---|
 | `verndale/project-retrospective` | an approved source-parity contract changes the skill/tooling | a non-empty contract write set exists | `Feature`, `area:tooling` |
 | `verndale/ui-design-evidence` | a validated run/ingestion exists, or capture enrichment/lifecycle evidence has a non-empty write set | before that evidence write | `Feature`, `area: retrospectives` |
-| `verndale/ui-design-brain` | at least one pending catalog proposal exists | promote has an approved proposal and a non-empty brain write set | `Feature`, `area: catalog` |
+| `verndale/ui-design-brain` | at least one pending catalog proposal exists | promote has a validator-approved proposal and a non-empty brain write set | `Feature`, `area: catalog` |
 | `verndale/ui-design-library` | capture preflight reports actionable library work | capture has a non-empty library write set and required capabilities | `Feature`, `area: components` |
 | `ai-orchestration` | never | never | none |
 
@@ -46,7 +47,7 @@ Run `tracking-targets.cjs` before a write and again after issue/repository check
    - Brain: `feat/<issue-number>-catalog-promotion`
    - Library: `feat/<issue-number>-library-capture`
    When the target emits `resumeExistingBranch`, switch to that exact existing branch; do not run `switch -c` again.
-6. Keep the branch local. Stop at handback with nothing committed or pushed.
+6. Finish the verified local write set, then apply `publication-handoff.md`. Default `merge` continues through green merge, linked-issue resolution, and the next dependent action. Explicit `pull-request` stops at the verified draft PR; explicit `working-tree` stops after local verification.
 
 Compute a branch from actual planned writes, never artifact presence alone. If the work set becomes empty after preflight, do not create the branch.
 
@@ -89,6 +90,12 @@ The evidence issue alone may name the client and run. Its five sections record:
 
 Deferred captures remain only in this hub. When a later capture preflight makes one actionable, create/reuse the library issue automatically and append its URL to the hub automatically. The shared issue must not link back to the private hub.
 
+## Publication boundary
+
+Issue/label/link/branch authority and publication mode are separate contracts. `Publication: merge` is the default for action-owned issue/run branches and includes commit, push, verified PR creation, ready/merge, closing-keyword issue resolution, and dependent-action continuation. `Publication: pull-request` and `Publication: working-tree` explicitly stop at the draft PR or local tree. Manual tag/release, Figma publication, protection bypass, unrelated issue closure, and the analyzed project remain out of scope.
+
+Do not pause for routine publication: complete the default merge sequence unless a stop-early mode was explicitly selected. Validated Promote proposals and ready captures are automatic work, not another approval queue. A stop-early handoff names the exact repository, branch, issue, and remaining continuation instead of saying only that work is ready.
+
 ## Failure behavior
 
-Authentication/issue failure, label failure, dirty or stale main, and missing required capability stop before branch creation. Diagnose the condition and return it; do not ask for approval and do not downgrade it to a successful no-op. Publication actions remain separately authorized.
+Authentication/issue failure, label failure, dirty or stale main, and missing required capability stop before branch creation. Diagnose the condition and return it; do not ask for approval and do not downgrade it to a successful no-op. After a branch exists, publication failures follow the exact-blocker handoff in `publication-handoff.md`.

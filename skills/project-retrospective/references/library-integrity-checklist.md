@@ -1,6 +1,6 @@
 # Library integrity checklist
 
-The ordered procedure for `Action: capture`. Applies a run's component captures to a **local ui-design-library working tree**, one component at a time, verifies each with that repo's own checks, and stops.
+The ordered procedure for `Action: capture`. Applies a run's component captures to a **local ui-design-library working tree**, one component at a time, verifies each with that repo's own checks, then follows the action's publication authority.
 
 Executing a capture is a rewrite, not a copy. A component lifted straight out of a client project carries CMS types, client token names, and client copy; none of that belongs in a repo other projects read. The capture tells you what to keep and what to strip — this checklist is the order that keeps the library valid at every step along the way.
 
@@ -153,7 +153,7 @@ pnpm build
 
 ## Handback
 
-Stop here. Report:
+Report the verified local result, then apply `publication-handoff.md`:
 
 ```
 Applied <N> capture(s) from <captures path> to <library path>.
@@ -174,13 +174,12 @@ Wiki: wiki/journal/<date>-add-<slug>-component.md (per written component), wiki/
 (client-agnostic; skipped when <library path>/wiki/ is absent).
 Regenerated wiki/connections* and scripts/graph/data/graph.json via pnpm graph:build.
 
-Suggested commits — run inside <library path>, one per component:
-  pnpm commit
-Or directly:
-  git commit -m "<suggested commit from the capture>"
-
-This skill does not commit, push, publish the Figma library, or open a PR.
+Publication: <working-tree | pull-request | merged>
+Pull request: <url and state, or exact authorization question>
+Next action: <next lifecycle reconciliation, or complete>
 ```
+
+The Figma library stays unpublished under every Git publication mode.
 
 Commit subjects follow that repo's convention — the scope is the **component slug**, not `library`:
 

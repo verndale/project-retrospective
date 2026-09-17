@@ -1,6 +1,6 @@
 # Brain integrity checklist
 
-The ordered procedure for `Action: promote`. Applies one approved proposal to a **local ui-design-brain working tree**, verifies it, and stops.
+The ordered procedure for `Action: promote`. Applies one validator-approved proposal to a **local ui-design-brain working tree**, verifies it, then follows the action's publication authority.
 
 That repo's catalog integrity is maintained by hand across five surfaces that drift easily. This checklist is what keeps a promoted change from breaking resolution for every downstream consumer.
 
@@ -98,7 +98,7 @@ Client-agnostic throughout — recurrence count and the catalog delta, never the
 
 ## Handback
 
-Stop here. Report:
+Report the verified local result, then apply `publication-handoff.md`:
 
 ```
 Applied <type> proposal <proposal path> to <brain path>.
@@ -112,12 +112,9 @@ Verification: node scripts/graph/build-graph.cjs (run in <brain path>) → exit 
 Wiki: wiki/journal/<date>-<change-slug>.md, wiki/INDEX.md[, wiki/topics/component-catalog.md]
 (client-agnostic; skipped when <brain path>/wiki/ is absent).
 
-Suggested commit — run inside <brain path>:
-  pnpm commit
-Or directly:
-  git commit -m "<suggested commit from the proposal>"
-
-This skill does not commit, push, or open a PR.
+Publication: <working-tree | pull-request | merged>
+Pull request: <url and state, or exact authorization question>
+Next action: <exact dependent capture, or complete>
 ```
 
 **Close the loop on the run.** When the promoted proposal lives in a retrospective run's `proposals/`, add an `## Applied` section to it (a dated line is enough) as part of the handback. The catalog now carries the canonical, so without the marker `validate-report` reports the run's own proposal as a `proposal-collision`; with it, the match is recorded as expected. This is the proposal analog of the deferred-capture loopback `Action: capture` closes — promote, then mark applied.
