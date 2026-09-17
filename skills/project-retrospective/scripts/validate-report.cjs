@@ -48,6 +48,7 @@ const {
 } = require('./lib/util.cjs');
 const { cmsForKey } = require('./lib/cms-taxonomy.cjs');
 const { validateSourceParityDirectory } = require('./source-parity.cjs');
+const { JSON_NAME: EXECUTION_JSON, MARKDOWN_NAME: EXECUTION_MARKDOWN, ledgerProblems, renderLedger } = require('./execution-ledger.cjs');
 
 const USAGE = [
   'Usage: node validate-report.cjs --output <dir> [--scope full|inventory|candidates|retrospectives] [--no-brain] [--manifest <file>] [--data <dir>] [--json]',
@@ -174,6 +175,48 @@ function checkResolution(dir, result) {
   if (!Array.isArray(res.unresolved)) result.fail('resolution-unresolved', 'resolution.json has no unresolved array');
   if (typeof res.manifest?.entries !== 'number') result.fail('resolution-manifest', 'resolution.json has no manifest.entries count');
   return res;
+}
+
+function checkExecutionLedger(dir, result) {
+  const jsonFile = path.join(dir, EXECUTION_JSON);
+  const markdownFile = path.join(dir, EXECUTION_MARKDOWN);
+  if (!isFile(jsonFile)) {
+    result.fail('execution-log-present', `${EXECUTION_JSON} is missing`);
+    return null;
+  }
+  const read = readJsonSafe(jsonFile);
+  if (!read.ok) {
+    result.fail('execution-log-parses', `${EXECUTION_JSON} could not be parsed: ${read.error}`);
+    return null;
+  }
+  const problems = ledgerProblems(read.value);
+  for (const problem of problems) result.fail('execution-log-schema', problem);
+  if (problems.length > 0) return null;
+
+  if (read.value.events.length === 0) {
+    result.fail('execution-log-events', `${EXECUTION_JSON} has no recorded events`);
+  }
+  if (path.basename(path.dirname(path.dirname(dir))) === 'runs') {
+    const expected = `${path.basename(path.dirname(dir))}/${path.basename(dir)}`;
+    if (read.value.run !== expected) {
+      result.fail('execution-log-run', `${EXECUTION_JSON} run "${read.value.run}" does not match the run directory "${expected}"`);
+    }
+  }
+
+  if (!isFile(markdownFile)) {
+    result.fail('execution-log-present', `${EXECUTION_MARKDOWN} is missing`);
+    return read.value;
+  }
+  const markdown = readTextSafe(markdownFile);
+  if (markdown === null) {
+    result.fail('execution-log-render', `${EXECUTION_MARKDOWN} is unreadable`);
+  } else if (markdown !== renderLedger(read.value)) {
+    result.fail(
+      'execution-log-render',
+      `${EXECUTION_MARKDOWN} does not exactly match the deterministic rendering of ${EXECUTION_JSON}; run execution-ledger.cjs render`,
+    );
+  }
+  return read.value;
 }
 
 function checkMeta(dir, scope, result, inventory = null) {
@@ -603,6 +646,19 @@ function checkReport(dir, scope, noBrain, result, meta = null) {
     const runRows = runSection.body.split('\n').map((line) => line.trim());
     if (!runRows.includes(expectedPlatformRow)) {
       result.fail('report-platform', `report.md Run table must contain: ${expectedPlatformRow}`);
+    }
+  }
+
+  const nextSteps = topLevel.find((section) => section.heading === 'Next steps');
+  if (nextSteps) {
+    const lines = nextSteps.body.split('\n').map((line) => line.trim());
+    for (const field of ['Next action:', 'Human decision:', 'Audit:']) {
+      if (!lines.some((line) => line.startsWith(field))) {
+        result.fail('report-next-steps', `report.md Next steps must include a "${field}" line`);
+      }
+    }
+    if (!lines.includes('Audit: `execution-log.md`')) {
+      result.fail('report-next-steps', 'report.md Next steps Audit must be exactly `execution-log.md`');
     }
   }
 
@@ -1253,6 +1309,10 @@ function main() {
   }
 
   const inventory = scope !== 'retrospectives' ? checkInventory(dir, result) : null;
+  // Every run carries the same append-only execution history. JSON is canonical;
+  // the Markdown twin must be the exact deterministic render so handoff readers
+  // never have to reconstruct analyze/publication/promotion/capture from terminals.
+  checkExecutionLedger(dir, result);
   if (!['inventory', 'retrospectives'].includes(scope) && !noBrain) checkResolution(dir, result);
   // Identity is required wherever the run has candidates (full and candidates
   // scopes); an inventory-only run has no client wiki to feed.

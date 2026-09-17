@@ -53,7 +53,7 @@ The scripts are zero-dependency CommonJS and run on the `node` already on your P
 
 ## End-to-end walkthrough
 
-A finished project on one end, components in `ui-design-library` on the other. Six steps. `Publication: merge` is the default: it runs checks, commits, pushes, readies and merges PRs, verifies linked issue closure, applies validator-approved catalog proposals, and continues into newly ready captures. `Publication: pull-request` and `Publication: working-tree` are explicit stop-early overrides. Manual releases/tags, protection bypass, unrelated issue closure, and Figma publication remain separate.
+A finished project on one end, components in `ui-design-library` on the other. Six steps. `Publication: merge` is the default: it runs checks, commits, pushes, readies and merges PRs, verifies linked issue closure, applies validator-approved catalog proposals, and continues into newly ready captures. Every repository with a validated non-empty write set gets its own tracking issue and exact branch; its PR must carry the closing issue link before it can be readied. Work proceeds Evidence → Brain → Library → final Evidence reconciliation. `Publication: pull-request` and `Publication: working-tree` are explicit stop-early overrides. Manual releases/tags, protection bypass, unrelated issue closure, and Figma publication remain separate.
 
 Paths in these examples are placeholders. Substitute your own checkouts.
 
@@ -69,7 +69,7 @@ Publication: merge
 
 `Data` is what puts the run in the evidence repo. Without it, output lands in `~/project-retrospective/runs/` and the skill tells you so.
 
-Output goes to `<Data>/runs/<project-slug>/<YYYY-MM-DD>/`. **Done when:** that directory holds `meta.json`, `report.md`, schema-v1 `inventory.json`, `resolution.json`, `memory-archive.json`, `orchestration-drafts.md`, plus `proposals/` and lightweight pending `captures/` intents when anything qualifies — the validator exits 0 — and the evidence wiki has been updated. Analyze does not emit `source-parity/`; capture enrichment adds it only for selected intents. Optional retrospective inputs add their private artifacts/register.
+Output goes to `<Data>/runs/<project-slug>/<YYYY-MM-DD>/`. **Done when:** that directory holds canonical `execution-log.json` plus its generated, simple-to-read `execution-log.md`, `meta.json`, `report.md`, schema-v1 `inventory.json`, `resolution.json`, `memory-archive.json`, `orchestration-drafts.md`, plus `proposals/` and lightweight pending `captures/` intents when anything qualifies — the validator exits 0 — and the evidence wiki has been updated. Analyze does not emit `source-parity/`; capture enrichment adds it only for selected intents. Optional retrospective inputs add their private artifacts/register.
 
 ### Step 2 — Read the report
 
@@ -112,12 +112,13 @@ Captures: /Users/you/Projects/ui-design-evidence/runs/some-client-site/2026-06-1
 CaptureKeys: modal,notice-panel
 Library: /Users/you/Projects/ui-design-library
 Brain: /Users/you/Projects/ui-design-brain
+StyleGuide: https://www.figma.com/design/<file-key>/<style-guide-name>
 Publication: merge
 ```
 
-Before branching, the action confirms the supported `figma-use` writer and current `pnpm figma:live`, then resolves the source checkout from sibling `inventory.json` (or optional `Project` override). Selected intents enter `enrichment-pending`: tracking can prepare only the existing evidence run branch, never a library issue/branch. Enrichment preserves exactly one safe intent Source entry and proves sibling metadata, inventory, source-parity project/run/entry, inspected entry points, and hashed citation all join the same run and file. An entry with multiple inventory owners is ambiguous; sibling `resolution.json` must resolve the one owner to the capture canonical, so a valid but unrelated component cannot substitute. It adds source-parity v2, accessibility/state dispositions, runtime architecture, and realization. Missing source accessibility becomes a remediation gap. Schema-v6 preflight then makes `ready` actionable for the library; `figma-pending` is only a current unexpected mid-run loss; restored capability resumes the existing issue branch; `evidence-pending` reconciles private evidence; `skipped` is fully reconciled. Code Connect is not used.
+Before branching, the action confirms the supported `figma-use` writer and current `pnpm figma:live`, inspects the governed component-library file plus `StyleGuide`, then resolves the source checkout from sibling `inventory.json` (or optional `Project` override). Selected intents enter `enrichment-pending`: tracking can prepare only the existing evidence run branch, never a library issue/branch. Enrichment preserves exactly one safe intent Source entry and proves sibling metadata, inventory, source-parity project/run/entry, inspected entry points, and hashed citation all join the same run and file. An entry with multiple inventory owners is ambiguous; sibling `resolution.json` must resolve the one owner to the capture canonical, so a valid but unrelated component cannot substitute. It adds source-parity v2, accessibility/state dispositions, runtime architecture, and realization. Missing source accessibility becomes a remediation gap. Schema-v6 preflight then makes `ready` actionable for the library; `figma-pending` is only a current unexpected mid-run loss; restored capability resumes the existing issue branch; `evidence-pending` reconciles private evidence; `skipped` is fully reconciled. Code Connect is not used.
 
-By default, the skill commits in the repository's required granularity, publishes the issue branch, merges the green PR, and verifies Library `main` plus evidence lifecycle reconciliation. Explicit `pull-request` and `working-tree` stop earlier. **Done when:** `pnpm test` and `pnpm build` pass in the library; each new `components/<slug>/` has `index.ts`, a types module, at least two implementation TSX modules, stories (including `InteractionStates` when covered), and `component.json`; the export map is synced; the unpublished Figma master and state coverage (or explicit not-applicable result) are registered with passed post-remediation source-parity/adversarial/design evidence; `pnpm figma:coverage` and `pnpm figma:validate` pass; and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
+By default, the skill commits in the repository's required granularity, publishes the issue branch, merges the green PR, and verifies Library `main` plus evidence lifecycle reconciliation. Explicit `pull-request` and `working-tree` stop earlier. **Done when:** `pnpm test` and `pnpm build` pass in the library; each new `components/<slug>/` has `index.ts`, a types module, at least two implementation TSX modules, stories (including `InteractionStates` when covered), and `component.json`; the export map is synced; the unpublished Figma master carries the complete current-library property/variant model and validated state coverage (or explicit not-applicable result); source-parity, adversarial, and UI design reviews pass after fixes; the style-guide audit passes and any missing reusable standard is added and visually verified; `pnpm figma:coverage` and `pnpm figma:validate` pass; and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
 
 ### Step 5 — Carry the orchestration drafts over
 
@@ -196,6 +197,7 @@ The action derives client, platform, and `prior_run` from the latest existing ev
 | `Captures` | for capture | — | Path to a run's `captures/` directory. Applied as a set — one invocation covers every capture in it. |
 | `CaptureKeys` | no | all pending | Comma-separated exact component keys to enrich/apply. |
 | `Library` | for capture | — | Absolute path to a local ui-design-library checkout. |
+| `StyleGuide` | capture when configured | library-owned configured guide | Figma design URL for the shared client-agnostic UI Design Library style guide. Capture audits it and adds genuinely missing standards grounded in reviewed current-library designs. |
 
 ## Outputs
 
@@ -203,6 +205,7 @@ Written to `Output`, never into this skill's repository:
 
 | File | Contents |
 |---|---|
+| `execution-log.json` / `execution-log.md` | Canonical deterministic event history plus its generated plain-language view: phase status, ordered outcomes, repository/PR/check/merge evidence, warnings/blockers, and remaining work. |
 | `meta.json` | Machine-readable run identity: client, project, exact canonical CMS key/label, date, scope, priorReports. Grounds the client wiki. |
 | `report.md` | The human-readable retrospective: summary, inventory, resolution, candidates with verdicts and evidence, learnings, gaps, next steps. |
 | `memory-archive.json` | Manifest proving the project's memory was preserved: `status` (`archived` / `skipped-no-data` / `no-memory`), the files archived, and `skippedEmpty` (empty placeholder shards dropped). Symlinked memory is warned and skipped because its target is outside pinned evidence. Written every run; the validator fails a run that had memory but no archive. |
@@ -235,6 +238,8 @@ node scripts/archive-memory.cjs --project <path> --out memory-archive.json --pre
 node scripts/normalize-retrospectives.cjs --raw retrospectives-raw.json --findings retrospective-findings.json --project-slug <slug> --out retrospectives.json --actions-out retrospective-actions.json --pretty
 node scripts/resolve.cjs --inventory inventory.json --brain <brain-path> --retrospectives retrospectives.json --out resolution.json --pretty
 node scripts/update-retrospective-register.cjs --actions retrospective-actions.json --register <Data>/wiki/actions/<client>/<project>.md
+node scripts/execution-ledger.cjs init --output <output-dir> --run <project-slug>/<date> --publication merge
+node scripts/execution-ledger.cjs record --output <output-dir> --id analyze.inventory --phase analyze --action inventory --status passed --summary "Inventory completed." --repository project --evidence '["inventory.json"]'
 node scripts/validate-report.cjs --output <output-dir> --scope full
 node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <library-path> --brain <brain-path> [--capture-keys <keys>] [--project <path>] --figma-writer figma-use --figma-live-validated --pretty
 ```
@@ -247,6 +252,7 @@ node scripts/capture-preflight.cjs --captures <output-dir>/captures --library <l
 | `resolve.cjs` | 0 · 1 · 2 · 3 inventory missing/unreadable/wrong schema · 4 manifest missing/unreadable/invalid |
 | `normalize-retrospectives.cjs` | 0 success (including recorded warnings) · 1 unexpected · 2 bad invocation · 3 named input missing/unreadable |
 | `update-retrospective-register.cjs` | 0 success · 1 unexpected · 2 bad invocation · 3 action pack missing/unreadable |
+| `execution-ledger.cjs` | 0 success/idempotent replay · 1 unexpected · 2 bad invocation · 3 output invalid · 4 ledger missing/malformed/conflicting mutation |
 | `validate-report.cjs` | 0 pass · 1 failures · 2 bad invocation · 3 `--output` is not a directory |
 | `capture-preflight.cjs` | Schema-v6 exact-identity/lifecycle/state-coverage plan; 0 ready, resumable, or reconciled · 1 blocked/unexpected · 2 bad invocation · 3 captures path invalid · 4 library invalid · 5 manifest invalid · 6 deferred pending canonical promotion |
 | `tracking-targets.cjs` | Deterministic `skip` / `issue-pending` / `write-ready` routing from an artifact/repository snapshot; 0 resolved · 1 unexpected · 2 bad invocation · 3 input invalid |
@@ -295,7 +301,7 @@ Analyze-time files are intentionally not executable yet. The action gates curren
 
 **Read `orphanedByRun` first.** Preflight reports any library component whose `provenance.run` names a run this capture set covers but which has no capture file behind it — a component that reached the library with no evidence. It is a detector, not a fix: decide what to do about each one before applying anything.
 
-**Each written component also gains review evidence.** Following the library's `wiki/MECHANICS.md`, its client-agnostic journal records the source-parity decision/state IDs, de-clienting, stable Figma master/state nodes, post-remediation source-parity plus adversarial/design findings, fixes, and final pass; `figma.review.evidence` points to that file. The graph is rebuilt with `pnpm graph:build`. A deferred, blocked, or skipped capture gets no entry.
+**Each written component also gains review evidence.** Following the library's `wiki/MECHANICS.md`, its client-agnostic journal records the source-parity decision/state IDs, de-clienting, stable Figma master/property/variant/state nodes, style-guide audit/update node IDs, post-remediation source-parity plus adversarial/UI-design findings, fixes, and final pass; `figma.review.evidence` points to that file. The graph is rebuilt with `pnpm graph:build`. A deferred, blocked, or skipped capture gets no entry.
 
 By default, the skill commits in the library's required granularity, merges the green PR, and verifies lifecycle reconciliation. Explicit `pull-request` stops at its verified draft PR; explicit `working-tree` stops after local verification.
 

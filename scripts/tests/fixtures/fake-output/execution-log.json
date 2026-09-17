@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "run": "fake-project/2026-01-01",
+  "publication": "merge",
+  "status": "running",
+  "summary": "Retrospective analysis is validated; publication and downstream work remain.",
+  "events": [
+    {
+      "sequence": 1,
+      "id": "analyze.inventory",
+      "phase": "analyze",
+      "action": "inventory",
+      "status": "passed",
+      "summary": "Inventoried four synthetic components.",
+      "repository": "project",
+      "evidence": [
+        "inventory.json"
+      ]
+    },
+    {
+      "sequence": 2,
+      "id": "analyze.resolve",
+      "phase": "analyze",
+      "action": "resolve",
+      "status": "passed",
+      "summary": "Resolved one of four labels against the synthetic catalog.",
+      "repository": "brain",
+      "evidence": [
+        "resolution.json"
+      ]
+    },
+    {
+      "sequence": 3,
+      "id": "analyze.validate",
+      "phase": "analyze",
+      "action": "validate",
+      "status": "passed",
+      "summary": "Validated the complete synthetic run output.",
+      "repository": "evidence",
+      "evidence": [
+        "report.md"
+      ]
+    }
+  ],
+  "remaining": [
+    "Publish the evidence run and continue validated promotion and capture work."
+  ]
+}
