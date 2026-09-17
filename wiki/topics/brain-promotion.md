@@ -8,7 +8,7 @@ How a validated proposal is applied to ui-design-brain and carried through its a
 
 ## Current state
 
-- Promote edits the issue-keyed `ui-design-brain` branch and never edits `ai-orchestration` — pipeline findings are paste-ready drafts the maintainer carries over. It stops with verified local edits by default; `pull-request` stops at a verified draft PR, while `merge` lands the green PR and continues into captures. A validator-passing Promote proposal needs no second human approval in merge mode.
+- Promote edits the issue-keyed `ui-design-brain` branch and never edits `ai-orchestration` — pipeline findings are paste-ready drafts the maintainer carries over. Default `merge` lands the green PR and continues into captures; `pull-request` and `working-tree` are explicit stop-early overrides. A validator-passing Promote proposal needs no second human approval.
 - The catalog's integrity is five things moving together: the manifest entry, `index.md`, the pattern file, the README pattern count at every occurrence, and the context-alias table. `references/brain-integrity-checklist.md` holds the ordered procedure per proposal type.
 - Verification runs the brain's own `scripts/graph/build-graph.cjs` from the brain root. That build fails on a dangling manifest-to-file edge, which makes it the catalog's sanctioned validator — the same idea this repo now applies to its own skill contract.
 - The handback is a fixed shape: exact next action, edited-file list, verification, issue, branch, publication state, and PR URL or one exact authorization question.
@@ -16,6 +16,7 @@ How a validated proposal is applied to ui-design-brain and carried through its a
 
 ## Decisions
 
+- 2026-09-17 — Made Brain publication and dependent capture continuation automatic by default for retrospective-owned issue branches, while preserving explicit stop-early overrides ([issue #96](https://github.com/verndale/project-retrospective/issues/96), [journal](../journal/2026-09-17-default-merge-publication.md)).
 - 2026-09-17 — Made validator-passing Promote proposals executable in full merge mode and continued through green Brain merge and unlocked captures without a second approval prompt ([issue #96](https://github.com/verndale/project-retrospective/issues/96), [journal](../journal/2026-09-17-hands-off-publication-handoff.md)).
 - 2026-07-31 — feat(project-retrospective): Enhance proposal validation logic ([PR #21](https://github.com/verndale/project-retrospective/pull/21))
 - 2026-07-30 — feat(project-retrospective): Update graph data and enhance documentation ([PR #19](https://github.com/verndale/project-retrospective/pull/19))

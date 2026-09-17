@@ -53,7 +53,7 @@ The scripts are zero-dependency CommonJS and run on the `node` already on your P
 
 ## End-to-end walkthrough
 
-A finished project on one end, components in `ui-design-library` on the other. Six steps. `Publication: pull-request` stops at verified draft PRs. `Publication: merge` is the hands-off path: it runs checks, commits, pushes, readies and merges PRs, verifies linked issue closure, applies validator-approved catalog proposals, and continues into newly ready captures. Without publication authority it asks one exact repository/branch question. Manual releases/tags, protection bypass, unrelated issue closure, and Figma publication remain separate.
+A finished project on one end, components in `ui-design-library` on the other. Six steps. `Publication: merge` is the default: it runs checks, commits, pushes, readies and merges PRs, verifies linked issue closure, applies validator-approved catalog proposals, and continues into newly ready captures. `Publication: pull-request` and `Publication: working-tree` are explicit stop-early overrides. Manual releases/tags, protection bypass, unrelated issue closure, and Figma publication remain separate.
 
 Paths in these examples are placeholders. Substitute your own checkouts.
 
@@ -117,7 +117,7 @@ Publication: merge
 
 Before branching, the action confirms the supported `figma-use` writer and current `pnpm figma:live`, then resolves the source checkout from sibling `inventory.json` (or optional `Project` override). Selected intents enter `enrichment-pending`: tracking can prepare only the existing evidence run branch, never a library issue/branch. Enrichment preserves exactly one safe intent Source entry and proves sibling metadata, inventory, source-parity project/run/entry, inspected entry points, and hashed citation all join the same run and file. An entry with multiple inventory owners is ambiguous; sibling `resolution.json` must resolve the one owner to the capture canonical, so a valid but unrelated component cannot substitute. It adds source-parity v2, accessibility/state dispositions, runtime architecture, and realization. Missing source accessibility becomes a remediation gap. Schema-v6 preflight then makes `ready` actionable for the library; `figma-pending` is only a current unexpected mid-run loss; restored capability resumes the existing issue branch; `evidence-pending` reconciles private evidence; `skipped` is fully reconciled. Code Connect is not used.
 
-When authorized, the skill commits in the repository's required granularity and publishes the issue branch. `pull-request` stops at the verified draft PR; `merge` merges it and verifies Library `main` plus evidence lifecycle reconciliation. **Done when:** `pnpm test` and `pnpm build` pass in the library; each new `components/<slug>/` has `index.ts`, a types module, at least two implementation TSX modules, stories (including `InteractionStates` when covered), and `component.json`; the export map is synced; the unpublished Figma master and state coverage (or explicit not-applicable result) are registered with passed post-remediation source-parity/adversarial/design evidence; `pnpm figma:coverage` and `pnpm figma:validate` pass; and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
+By default, the skill commits in the repository's required granularity, publishes the issue branch, merges the green PR, and verifies Library `main` plus evidence lifecycle reconciliation. Explicit `pull-request` and `working-tree` stop earlier. **Done when:** `pnpm test` and `pnpm build` pass in the library; each new `components/<slug>/` has `index.ts`, a types module, at least two implementation TSX modules, stories (including `InteractionStates` when covered), and `component.json`; the export map is synced; the unpublished Figma master and state coverage (or explicit not-applicable result) are registered with passed post-remediation source-parity/adversarial/design evidence; `pnpm figma:coverage` and `pnpm figma:validate` pass; and — when the library checkout has a `wiki/` — each written component gained a client-agnostic `wiki/journal/` entry with `wiki/connections*` rebuilt.
 
 ### Step 5 — Carry the orchestration drafts over
 
@@ -191,7 +191,7 @@ The action derives client, platform, and `prior_run` from the latest existing ev
 | `Retrospectives` | no | — | Comma-separated Confluence page and space URLs. Explicit pages are always audited; discovery stays inside the seeded spaces. |
 | `ProjectSlug` | for ingest-retrospectives | — | Existing evidence project whose latest metadata supplies client, platform, and prior run. |
 | `Action` | no | `analyze` | `analyze`, `ingest-retrospectives`, `promote`, or `capture`. |
-| `Publication` | no | explicit current-request authority, otherwise `working-tree` | `working-tree` leaves verified local edits; `pull-request` authorizes a verified draft PR; `merge` additionally authorizes ready/merge, closing-keyword issue resolution, and dependent-action continuation. Manual release/tag, Figma publication, protection bypass, and analyzed-project writes remain separate. |
+| `Publication` | no | `merge` | `merge` commits, pushes, verifies/readies/merges PRs, resolves closing-keyword issues, and continues dependent actions. `working-tree` leaves verified local edits; `pull-request` stops at a verified draft PR. Manual release/tag, Figma publication, protection bypass, unrelated targets, and analyzed-project writes remain separate. |
 | `Proposal` | for promote | — | Path to the validator-approved proposal file. Hands-off `merge` continuation supplies Promote proposals automatically. |
 | `Captures` | for capture | — | Path to a run's `captures/` directory. Applied as a set — one invocation covers every capture in it. |
 | `CaptureKeys` | no | all pending | Comma-separated exact component keys to enrich/apply. |
@@ -297,7 +297,7 @@ Analyze-time files are intentionally not executable yet. The action gates curren
 
 **Each written component also gains review evidence.** Following the library's `wiki/MECHANICS.md`, its client-agnostic journal records the source-parity decision/state IDs, de-clienting, stable Figma master/state nodes, post-remediation source-parity plus adversarial/design findings, fixes, and final pass; `figma.review.evidence` points to that file. The graph is rebuilt with `pnpm graph:build`. A deferred, blocked, or skipped capture gets no entry.
 
-With publication authority, the skill commits in the library's required granularity. `pull-request` stops at its verified draft PR; `merge` merges it and verifies lifecycle reconciliation. Without authority, the final `Next action:` asks for the exact operations on the issue branch.
+By default, the skill commits in the library's required granularity, merges the green PR, and verifies lifecycle reconciliation. Explicit `pull-request` stops at its verified draft PR; explicit `working-tree` stops after local verification.
 
 ## Across projects
 

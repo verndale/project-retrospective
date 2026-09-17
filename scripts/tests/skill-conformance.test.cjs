@@ -161,9 +161,9 @@ test('every script named in SKILL.md exists', () => {
   }
 });
 
-test('guardrails require matching publication authority, gate merge, and forbid guessing', () => {
+test('guardrails default retrospective publication to scoped merge and forbid guessing', () => {
   const guardrails = body.split('## Guardrails')[1] || '';
-  assert.match(guardrails, /MUST NOT run `git commit`, `push`, open a pull request, or merge without the matching explicit authority/);
+  assert.match(guardrails, /retrospective actions default to `merge` only for their deterministic issue\/run branches/);
   assert.match(guardrails, /MUST NOT force\/bypass protection, manually tag\/release/);
   assert.match(guardrails, /MUST NOT fuzzy-match/);
 });
@@ -178,7 +178,9 @@ test('every action uses the exact publication handoff contract', () => {
   assert.match(publicationHandoff, /Verify the PR is merged/);
   assert.match(publicationHandoff, /Every candidate carrying `Verdict: Promote`/);
   assert.match(publicationHandoff, /Do not ask a person to approve it again/);
-  assert.match(publicationHandoff, /Do not ask again for authority already present/);
+  assert.match(publicationHandoff, /`Publication: merge` is the default for every retrospective invocation/);
+  assert.match(publicationHandoff, /Do not ask for routine publication authority/);
+  assert.match(publicationHandoff, /When the parameter is absent, resolve it to `merge`/);
 });
 
 test('capture completion requires governed unpublished Figma review and forbids Code Connect', () => {

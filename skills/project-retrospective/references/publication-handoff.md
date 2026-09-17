@@ -2,13 +2,13 @@
 
 Use this after an action has completed its writes, tracking, and validation. It separates routine continuation from genuine external blockers and carries hands-off runs across repository boundaries.
 
-## Resolve authority once
+## Resolve publication mode once
 
-- `Publication: merge`, or an unambiguous current-request instruction to handle commit, push, pull request, and merge end to end, authorizes the full continuation contract for the repositories and issue branches named by the action.
-- `Publication: pull-request`, or an unambiguous current-request instruction to commit, push, and open a pull request, authorizes those operations but stops before ready/merge.
+- `Publication: merge` is the default for every retrospective invocation. It authorizes the full continuation contract for the repositories and issue branches deterministically named by the action.
+- `Publication: pull-request`, or an unambiguous current-request instruction to stop after opening a pull request, is an explicit override that stops before ready/merge.
 - `Publication: working-tree` explicitly requests a local-only handoff.
-- When the parameter is absent, use only explicit publication language in the current request. A general request to analyze, promote, capture, or "do it" is not commit/push authority.
-- Do not ask again for authority already present. Do not broaden authority from one target repository or branch to another.
+- When the parameter is absent, resolve it to `merge`; ordinary instructions such as analyze, promote, capture, continue, or "do it" need no separate publication confirmation.
+- Do not ask for routine publication authority. Do not broaden the standing default from deterministic action-owned targets to unrelated repositories or branches.
 - The analyzed `Project` remains read-only under every publication mode.
 
 `Publication: merge` includes closure of issues linked through the merged PR's closing keywords. Direct closure of unrelated issues, manual tags/releases, Figma publication, native Figma Dev Mode readiness, force-merge, and bypassing required protection remain outside this mode unless separately and exactly authorized. A repository's normal post-merge release automation may run.
@@ -55,10 +55,10 @@ After tracking adds issue URLs or changes the branch state, update `## Next step
 
 ## Stop only on a real boundary
 
-Without publication authority, do not end with a generic handoff. Ask one exact question:
+When a request explicitly selected a stop-early mode, do not end with a generic handoff. State the exact continuation that remains available:
 
 ```text
-Next action: authorize commit, push, draft PR, and merge for <repository> branch <branch> (tracking issue <url>)?
+Next action: rerun with Publication: merge to commit, push, ready, and merge <repository> branch <branch> (tracking issue <url>).
 ```
 
 For an ambiguity or blocker, state the known facts, the one missing decision/capability, and the exact continuation that answer unlocks. Authentication, dirty/stale main, merge conflict, missing write capability, failed validation after three attempts, and a repository-enforced review that automation cannot satisfy are real boundaries. Validated Promote/capture work, a routine next command, an already-authorized publication, a draft PR, or a check that is merely still running is not.

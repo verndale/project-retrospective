@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-09-17 — [Default retrospective publication to merge](journal/2026-09-17-default-merge-publication.md) — retrospective-owned branches now run hands off through green merge and dependent work unless an explicit stop-early mode is selected.
 - 2026-09-17 — [Continue authorized retrospective publication](journal/2026-09-17-hands-off-publication-handoff.md) — full merge mode now lands validated proposals and newly ready captures automatically, while next steps expose only genuine external blockers.
 - 2026-09-07 — [Make ready-for-development the capture terminal state](journal/2026-09-07-ready-for-development-capture-gate.md) — reviewed captures now require governed ready-for-dev status while native Dev Mode readiness and publication remain explicit maintainer actions.
 - 2026-09-07 — [Verify unversioned source without requiring pipeline artifacts](journal/2026-09-07-verified-unversioned-source-capture.md) — capture can use a current non-symlink source tree when Git identity is unavailable, while build packs and fingerprints remain optional corroboration.
