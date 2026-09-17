@@ -4,18 +4,19 @@ covers: [skills/project-retrospective/references/brain-integrity-checklist.md]
 ---
 # Brain promotion — Design History
 
-How an approved proposal is applied to a local ui-design-brain checkout, and why the skill stops before committing.
+How an approved proposal is applied to ui-design-brain and carried to an exact publication boundary.
 
 ## Current state
 
-- Promote edits a local `ui-design-brain` working tree and nothing else. It never commits, pushes, or opens a pull request there, and it never edits `ai-orchestration` — pipeline findings are paste-ready drafts the maintainer carries over.
+- Promote edits the issue-keyed `ui-design-brain` branch and never edits `ai-orchestration` — pipeline findings are paste-ready drafts the maintainer carries over. It stops with verified local edits by default; explicit publication authority continues through commit, push, and draft-PR verification, never merge or release.
 - The catalog's integrity is five things moving together: the manifest entry, `index.md`, the pattern file, the README pattern count at every occurrence, and the context-alias table. `references/brain-integrity-checklist.md` holds the ordered procedure per proposal type.
 - Verification runs the brain's own `scripts/graph/build-graph.cjs` from the brain root. That build fails on a dangling manifest-to-file edge, which makes it the catalog's sanctioned validator — the same idea this repo now applies to its own skill contract.
-- The handback is a fixed shape: the edited-file list, the verification result, and a suggested commit in the brain's own history style. The maintainer runs `pnpm commit` inside the brain.
+- The handback is a fixed shape: exact next action, edited-file list, verification, issue, branch, publication state, and PR URL or one exact authorization question.
 - Aliases require consumer evidence — a label an analyzed project actually used. Child-part names are never proposed as aliases or patterns, and context-scoped aliases never land without their counterpart.
 
 ## Decisions
 
+- 2026-09-17 — Kept proposal approval distinct from publication authority, but stopped re-prompting for authorized commit/push/draft-PR work after the catalog and wiki checks pass ([issue #96](https://github.com/verndale/project-retrospective/issues/96), [journal](../journal/2026-09-17-hands-off-publication-handoff.md)).
 - 2026-07-31 — feat(project-retrospective): Enhance proposal validation logic ([PR #21](https://github.com/verndale/project-retrospective/pull/21))
 - 2026-07-30 — feat(project-retrospective): Update graph data and enhance documentation ([PR #19](https://github.com/verndale/project-retrospective/pull/19))
 - 2026-07-30 — promote now authors a client-agnostic context-wiki entry in ui-design-brain (a `wiki/journal/` entry, one `wiki/INDEX.md` line, and a `component-catalog` Decisions bullet), following that repo's own `wiki/MECHANICS.md` and rebuilding `wiki/connections*` via its own `build-graph` — the same run the catalog verify already makes, re-run after the wiki edit. Client identity is barred by a positive allowlist, not a blocklist: the run slug can *be* the client (`runs/canadian-national/…`), so entries cite recurrence and the catalog delta, never the client ([journal](../journal/2026-07-30-downstream-wiki-feed.md)).

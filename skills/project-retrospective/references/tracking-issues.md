@@ -1,6 +1,6 @@
 # Tracking issues and local branches
 
-GitHub tracking is deterministic and automatic. An explicit retrospective target authorizes sanctioned label reconciliation, exact open-issue reuse, issue creation, issue linking, and the required local `git switch -c`. Do not pause for approval. This authority does not include commits, pushes, PRs, issue closure, Figma publication, merges, or releases.
+GitHub tracking is deterministic and automatic. An explicit retrospective target authorizes sanctioned label reconciliation, exact open-issue reuse, issue creation, issue linking, and the required local `git switch -c`. Do not pause for approval. Tracking authority alone does not include publication; the action resolves separate commit/push/draft-PR authority with `publication-handoff.md`.
 
 Run `tracking-targets.cjs` before a write and again after issue/repository checks. It emits `skip`, `issue-pending`, or `write-ready` for every repository, with artifact IDs, an opaque `issueMatchKey`, `issueRequired`, labels, the exact open issue when supplied, blockers, and the required local branch. Scripts decide the work set; the model writes the five-section issue prose. Never file from `issue-pending` unless `issueRequired` is true; evidence prewrite failures use that state only to stop the branch.
 
@@ -11,6 +11,7 @@ Run `tracking-targets.cjs` before a write and again after issue/repository check
 - Issue content
 - Sanctioned labels
 - Evidence hub and downstream linking
+- Publication boundary
 - Failure behavior
 
 ## Target matrix
@@ -46,7 +47,7 @@ Run `tracking-targets.cjs` before a write and again after issue/repository check
    - Brain: `feat/<issue-number>-catalog-promotion`
    - Library: `feat/<issue-number>-library-capture`
    When the target emits `resumeExistingBranch`, switch to that exact existing branch; do not run `switch -c` again.
-6. Keep the branch local. Stop at handback with nothing committed or pushed.
+6. Finish the verified local write set, then apply `publication-handoff.md`. Continue through commit, push, and draft-PR creation when that authority is already explicit; otherwise ask its one exact repository/branch publication question.
 
 Compute a branch from actual planned writes, never artifact presence alone. If the work set becomes empty after preflight, do not create the branch.
 
@@ -89,6 +90,12 @@ The evidence issue alone may name the client and run. Its five sections record:
 
 Deferred captures remain only in this hub. When a later capture preflight makes one actionable, create/reuse the library issue automatically and append its URL to the hub automatically. The shared issue must not link back to the private hub.
 
+## Publication boundary
+
+Issue/label/link/branch authority and publication authority are separate. `Publication: pull-request` or equivalent explicit current-request language authorizes only commit, push, and draft-PR creation for the action-owned issue/run branches. `Publication: working-tree` keeps them local. Merge, tag, release, issue closure, Figma publication, and the analyzed project remain out of scope.
+
+Do not pause twice: once publication authority is present, complete the target repository's pre-push gate and publication sequence. When it is absent, the handoff names the exact repository, branch, issue, and requested actions instead of saying only that work is ready.
+
 ## Failure behavior
 
-Authentication/issue failure, label failure, dirty or stale main, and missing required capability stop before branch creation. Diagnose the condition and return it; do not ask for approval and do not downgrade it to a successful no-op. Publication actions remain separately authorized.
+Authentication/issue failure, label failure, dirty or stale main, and missing required capability stop before branch creation. Diagnose the condition and return it; do not ask for approval and do not downgrade it to a successful no-op. After a branch exists, publication failures follow the exact-blocker handoff in `publication-handoff.md`.

@@ -29,6 +29,10 @@ const libraryChecklist = fs.readFileSync(
   path.join(SKILL_DIR, 'references', 'library-integrity-checklist.md'),
   'utf8',
 );
+const publicationHandoff = fs.readFileSync(
+  path.join(SKILL_DIR, 'references', 'publication-handoff.md'),
+  'utf8',
+);
 
 function parseFrontmatter(text) {
   const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -157,10 +161,19 @@ test('every script named in SKILL.md exists', () => {
   }
 });
 
-test('guardrails state the git prohibition and the no-guessing rule', () => {
+test('guardrails require explicit publication authority, prohibit merge, and forbid guessing', () => {
   const guardrails = body.split('## Guardrails')[1] || '';
-  assert.match(guardrails, /MUST NOT run `git commit`/);
+  assert.match(guardrails, /MUST NOT run `git commit`, `push`, or open a pull request without explicit authority/);
+  assert.match(guardrails, /MUST NOT merge, tag, release, close issues, publish Figma/);
   assert.match(guardrails, /MUST NOT fuzzy-match/);
+});
+
+test('every action uses the exact publication handoff contract', () => {
+  assert.match(body, /references\/publication-handoff\.md/);
+  assert.match(body, /Continue or hand back/);
+  assert.match(publicationHandoff, /Human decision/);
+  assert.match(publicationHandoff, /draft pull request/);
+  assert.match(publicationHandoff, /Do not ask again for authority already present/);
 });
 
 test('capture completion requires governed unpublished Figma review and forbids Code Connect', () => {

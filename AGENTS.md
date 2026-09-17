@@ -75,7 +75,7 @@ Retrospective runs read client repositories and produce client-derived output. N
 
 ## Downstream repos are read-mostly
 
-The skill's `promote` action edits a **local `ui-design-brain` working tree** and stops. It never commits, pushes, or opens a PR there, and it never edits `ai-orchestration` — findings for the pipeline are emitted as paste-ready drafts the maintainer carries over. Brain edits must satisfy that repo's catalog-integrity checklist (manifest + `index.md` + pattern file + README count + context-alias table); `references/brain-integrity-checklist.md` holds the ordered procedure.
+The skill's `promote` action edits a **local `ui-design-brain` working tree** and never edits `ai-orchestration` — findings for the pipeline are emitted as paste-ready drafts the maintainer carries over. By default it stops with verified local edits; when the current request explicitly authorizes `Publication: pull-request` (or the equivalent exact actions), it may commit, push, and create/verify the draft PR on the issue branch. It never merges, tags, releases, closes issues, or publishes Figma. Brain edits must satisfy that repo's catalog-integrity checklist (manifest + `index.md` + pattern file + README count + context-alias table); `references/brain-integrity-checklist.md` holds the ordered procedure.
 
 ## Branch off main before applying repo edits
 
@@ -87,7 +87,7 @@ Every repository the skill *writes* is edited on a working branch off that repo'
 
 Branch names in the shared catalog/library repos stay **client-agnostic** and issue-keyed: `feat/<issue-number>-catalog-promotion` and `feat/<issue-number>-library-capture`. A repo the action only *reads* stays on `main`: the brain during a capture preflight, and the analyzed project (always read-only).
 
-By default, still stop at handback with each working branch checked out and nothing committed. The explicit maintainer-authorization exception below applies only to the named repository and issue branch; it does not let a retrospective action commit or push other repositories it touches.
+By default, still stop at handback with each working branch checked out and nothing committed. When the current request explicitly authorizes publication, apply `references/publication-handoff.md`: commit, push, and create/verify a draft PR only for each named action-owned repository and issue branch. Authority for one target does not extend to another.
 
 ## File a tracking issue per repo at the end of a retro
 
