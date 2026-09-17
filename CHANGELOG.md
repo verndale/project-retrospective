@@ -1,3 +1,44 @@
+# v2.3.0 — 2026-09-17
+
+## Summary (AI, bounded)
+- Automated the validated merge chain in project retrospectives (commit e809aab)
+- Continued improvements in authorized publication for project retrospectives (commit 31cb371)
+- Updated default settings for retrospective publication (commit f41e258)
+- Reconciled documentation for the wiki with merged pull requests (commit 28467b3)
+- Included merges for enhanced publication workflows and wiki synchronization (commits 6e53201, 2d4e616)
+
+## Highlights
+- commit: Merge pull request #97 from verndale/codex/96-hands-off-publication (6e53201)
+- feat(project-retrospective): Update retrospective publication defaults (f41e258)
+- feat(project-retrospective): automate validated merge chain (e809aab)
+- feat(project-retrospective): continue authorized publication (31cb371)
+- commit: Merge pull request #95 from verndale/bot/wiki-sync/94 (2d4e616)
+- docs(wiki): reconcile merged PR #94 (28467b3)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): automate validated merge chain (e809aab)
+- feat(project-retrospective): continue authorized publication (31cb371)
+- feat(project-retrospective): Update retrospective publication defaults (f41e258)
+
+### Docs
+- docs(wiki): reconcile merged PR #94 (28467b3)
+
+### Other (unknown)
+- commit: Merge pull request #95 from verndale/bot/wiki-sync/94 (2d4e616)
+- commit: Merge pull request #97 from verndale/codex/96-hands-off-publication (6e53201)
+
+## Full commit list
+- 6e53201 commit: Merge pull request #97 from verndale/codex/96-hands-off-publication
+- f41e258 feat(project-retrospective): Update retrospective publication defaults
+- e809aab feat(project-retrospective): automate validated merge chain
+- 31cb371 feat(project-retrospective): continue authorized publication
+- 2d4e616 commit: Merge pull request #95 from verndale/bot/wiki-sync/94
+- 28467b3 docs(wiki): reconcile merged PR #94
+
 # v2.2.0 — 2026-09-07
 
 ## Summary (AI, bounded)
