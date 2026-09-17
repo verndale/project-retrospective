@@ -1,3 +1,41 @@
+# v2.4.0 — 2026-09-17
+
+## Summary (AI, bounded)
+- Updated the execution ledger and associated documentation in the project retrospective (commit e8f351e).
+- Reconciled wiki documentation for merged pull request #97 (commit a2efddf).
+- Merged pull request #100 to enhance the deterministic execution ledger feature (commit 234b218).
+- Synchronized updates with the main branch for the execution ledger work (commit 3d2bb60).
+- Merged pull request #98 to keep bot-related wiki changes in sync (commit 8fa0716).
+
+## Highlights
+- commit: Merge pull request #100 from verndale/codex/99-deterministic-execution-ledger (234b218)
+- commit: Merge remote-tracking branch 'origin/main' into codex/99-deterministic-execution-ledger (3d2bb60)
+- feat(project-retrospective): Update execution ledger and related documentation (e8f351e)
+- commit: Merge pull request #98 from verndale/bot/wiki-sync/97 (8fa0716)
+- docs(wiki): reconcile merged PR #97 (a2efddf)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Update execution ledger and related documentation (e8f351e)
+
+### Docs
+- docs(wiki): reconcile merged PR #97 (a2efddf)
+
+### Other (unknown)
+- commit: Merge pull request #100 from verndale/codex/99-deterministic-execution-ledger (234b218)
+- commit: Merge pull request #98 from verndale/bot/wiki-sync/97 (8fa0716)
+- commit: Merge remote-tracking branch 'origin/main' into codex/99-deterministic-execution-ledger (3d2bb60)
+
+## Full commit list
+- 234b218 commit: Merge pull request #100 from verndale/codex/99-deterministic-execution-ledger
+- 3d2bb60 commit: Merge remote-tracking branch 'origin/main' into codex/99-deterministic-execution-ledger
+- e8f351e feat(project-retrospective): Update execution ledger and related documentation
+- 8fa0716 commit: Merge pull request #98 from verndale/bot/wiki-sync/97
+- a2efddf docs(wiki): reconcile merged PR #97
+
 # v2.3.0 — 2026-09-17
 
 ## Summary (AI, bounded)
