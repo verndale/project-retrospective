@@ -4,7 +4,7 @@ topics: [retrospective-workflow, brain-promotion, library-capture]
 plan: none
 pr: https://github.com/verndale/project-retrospective/pull/97
 issue: https://github.com/verndale/project-retrospective/issues/96
-issues: [https://github.com/verndale/project-retrospective/issues/96]
+issues: ["https://github.com/verndale/project-retrospective/issues/96"]
 ---
 # Default retrospective publication to merge
 

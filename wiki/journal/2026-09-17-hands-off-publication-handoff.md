@@ -2,9 +2,9 @@
 date: 2026-09-17
 topics: [retrospective-workflow]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/97
 issue: https://github.com/verndale/project-retrospective/issues/96
-issues: [https://github.com/verndale/project-retrospective/issues/96]
+issues: ["https://github.com/verndale/project-retrospective/issues/96"]
 ---
 # Continue authorized retrospective publication
 
