@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { run, tempOutput, readFile, writeFile, fixture } = require('./helpers.cjs');
+const { renderLedger } = require('../../skills/project-retrospective/scripts/execution-ledger.cjs');
 
 /** A throwaway ui-design-evidence-shaped checkout with prior-run artifacts. */
 function tempData(runs) {
@@ -64,6 +65,46 @@ test('the golden output passes', () => {
   const result = validate(dir);
   assert.equal(result.status, 0, `expected pass, got:\n${result.stdout}`);
   assert.match(result.stdout, /^PASS /m);
+});
+
+test('a run missing the execution ledger fails', () => {
+  const dir = tempOutput();
+  fs.rmSync(path.join(dir, 'execution-log.json'));
+  fs.rmSync(path.join(dir, 'execution-log.md'));
+  assertFails(dir, 'execution-log-present');
+});
+
+test('execution Markdown must exactly render the canonical JSON ledger', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'execution-log.md', '# stale execution summary\n');
+  assertFails(dir, 'execution-log-render');
+});
+
+test('execution event ids and sequence are validated', () => {
+  const dir = tempOutput();
+  const ledger = JSON.parse(readFile(dir, 'execution-log.json'));
+  ledger.events[1].sequence = 9;
+  ledger.events[1].id = ledger.events[0].id;
+  writeFile(dir, 'execution-log.json', JSON.stringify(ledger, null, 2));
+  assertFails(dir, 'execution-log-schema');
+});
+
+test('Next steps must name the exact action, human decision, and execution audit', () => {
+  const dir = tempOutput();
+  writeFile(dir, 'report.md', readFile(dir, 'report.md').replace('Audit: `execution-log.md`', 'Review the terminal output.'));
+  assertFails(dir, 'report-next-steps');
+});
+
+test('a real run directory must agree with the ledger run identity', () => {
+  const source = tempOutput();
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-ledger-run-'));
+  const runDir = path.join(data, 'runs', 'fake-project', '2026-01-01');
+  fs.mkdirSync(path.dirname(runDir), { recursive: true });
+  fs.cpSync(source, runDir, { recursive: true });
+  const ledger = JSON.parse(fs.readFileSync(path.join(runDir, 'execution-log.json'), 'utf8'));
+  ledger.run = 'other-project/2026-01-01';
+  fs.writeFileSync(path.join(runDir, 'execution-log.json'), JSON.stringify(ledger, null, 2));
+  assertFails(runDir, 'execution-log-run');
 });
 
 test('the golden output passes catalog collision checks against a manifest', () => {
@@ -1295,6 +1336,28 @@ test('without --data the prior-art check does not run (backward compatible)', ()
 
 function tempRetrospectiveOutput() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-only-output-'));
+  const ledger = {
+    schemaVersion: 1,
+    run: 'sample-project/2026-08-09',
+    publication: 'merge',
+    status: 'running',
+    summary: 'Retrospective artifacts were normalized and validated.',
+    events: [
+      {
+        sequence: 1,
+        id: 'analyze.retrospectives',
+        phase: 'analyze',
+        action: 'retrospectives',
+        status: 'passed',
+        summary: 'Captured one synthetic retrospective page.',
+        repository: 'evidence',
+        evidence: ['retrospectives.json'],
+      },
+    ],
+    remaining: ['Publish the evidence run.'],
+  };
+  writeFile(dir, 'execution-log.json', `${JSON.stringify(ledger, null, 2)}\n`);
+  writeFile(dir, 'execution-log.md', renderLedger(ledger));
   writeFile(
     dir,
     'meta.json',
@@ -1344,7 +1407,7 @@ function tempRetrospectiveOutput() {
   writeFile(
     dir,
     'report.md',
-    '# Project retrospective — Sample\n\n## Run\n\n| Field | Value |\n|---|---|\n| Platform | unknown |\n\nRetrospectives-only backfill.\n\n## Summary\n\nOne page captured.\n\n## Team retrospectives\n\n- Build Retrospective\n\n## Gaps\n\n- None.\n\n## Next steps\n\n1. Assign the open action.\n',
+    '# Project retrospective — Sample\n\n## Run\n\n| Field | Value |\n|---|---|\n| Platform | unknown |\n\nRetrospectives-only backfill.\n\n## Summary\n\nOne page captured.\n\n## Team retrospectives\n\n- Build Retrospective\n\n## Gaps\n\n- None.\n\n## Next steps\n\nNext action: publish the evidence-only retrospective run.\n\nHuman decision: none\n\nAudit: `execution-log.md`\n',
   );
   return dir;
 }

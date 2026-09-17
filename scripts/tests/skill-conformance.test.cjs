@@ -33,6 +33,10 @@ const publicationHandoff = fs.readFileSync(
   path.join(SKILL_DIR, 'references', 'publication-handoff.md'),
   'utf8',
 );
+const executionLedger = fs.readFileSync(
+  path.join(SKILL_DIR, 'references', 'execution-ledger.md'),
+  'utf8',
+);
 
 function parseFrontmatter(text) {
   const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -181,6 +185,16 @@ test('every action uses the exact publication handoff contract', () => {
   assert.match(publicationHandoff, /`Publication: merge` is the default for every retrospective invocation/);
   assert.match(publicationHandoff, /Do not ask for routine publication authority/);
   assert.match(publicationHandoff, /When the parameter is absent, resolve it to `merge`/);
+  assert.match(publicationHandoff, /Evidence intake[\s\S]*Brain promotion[\s\S]*Library capture[\s\S]*Evidence reconciliation/);
+  assert.match(publicationHandoff, /PR body MUST connect the exact repository issue with a closing keyword/);
+});
+
+test('every run keeps one deterministic machine and human execution audit', () => {
+  assert.match(body, /execution-log\.json/);
+  assert.match(body, /execution-log\.md/);
+  assert.match(executionLedger, /Events are ordered by integer `sequence`, not time/);
+  assert.match(executionLedger, /Replaying identical content is a no-op/);
+  assert.match(executionLedger, /analyze\|publish-evidence\|promote\|capture\|reconcile/);
 });
 
 test('capture completion requires governed unpublished Figma review and forbids Code Connect', () => {
@@ -200,6 +214,9 @@ test('capture completion requires governed unpublished Figma review and forbids 
   assert.match(capture, /pnpm figma:coverage/);
   assert.match(capture, /pnpm figma:validate/);
   assert.match(capture, /REST token is read-only validation and does not satisfy this requirement/);
+  assert.match(capture, /complete governed property\/variant matrix/);
+  assert.match(capture, /StyleGuide/);
+  assert.match(capture, /reusable presentation, variant, state, responsive, token, or accessibility rule absent from `StyleGuide`/);
 });
 
 test('capture preserves the live Figma reference and section grammar', () => {

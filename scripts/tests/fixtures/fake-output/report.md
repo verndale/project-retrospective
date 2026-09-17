@@ -92,10 +92,12 @@ Pipeline-shaped findings that belong in ai-orchestration rather than the catalog
 
 ## Next steps
 
-1. Review the proposals in `proposals/`.
-2. Apply an approved one:
-   `/project-retrospective` with `Action: promote`, `Proposal: proposals/logo-ribbon.md`, `Brain: /tmp/fake-brain`
-3. Review the captures in `captures/`, then apply the set:
-   `/project-retrospective` with `Action: capture`, `Captures: captures/`, `Library: /tmp/fake-library`, `Brain: /tmp/fake-brain`
-4. Carry the drafts in `orchestration-drafts.md` into ai-orchestration through its own contribution flow.
-5. Keep this run under `Data`; the next project selects eligible recurrence automatically.
+Next action: publish this synthetic evidence run, then promote `proposals/logo-ribbon.md` on its tracked Brain issue branch.
+
+Human decision: none
+
+Audit: `execution-log.md`
+
+1. Merge the evidence run before applying the one pending proposal.
+2. Re-run capture preflight for `captures/modal.md` after the required canonical is present.
+3. Retain this run under Data for later recurrence.
