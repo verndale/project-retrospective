@@ -1,3 +1,33 @@
+# v2.5.0 — 2026-09-18
+
+## Summary (AI, bounded)
+- Updated Figma promotion checklist and library as part of the project-retrospective feature (commit c36889a).
+- Updated pull request references in project-retrospective documentation (commit ea11039).
+- Merged pull request #103 implementing deterministic Figma standard related changes (commit 6cddd02).
+
+## Highlights
+- commit: Merge pull request #103 from verndale/codex/102-deterministic-figma-standard (6cddd02)
+- chore(project-retrospective): Update pull request references in documentation (ea11039)
+- feat(project-retrospective): Update Figma promotion checklist and library (c36889a)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Update Figma promotion checklist and library (c36889a)
+
+### Chore
+- chore(project-retrospective): Update pull request references in documentation (ea11039)
+
+### Other (unknown)
+- commit: Merge pull request #103 from verndale/codex/102-deterministic-figma-standard (6cddd02)
+
+## Full commit list
+- 6cddd02 commit: Merge pull request #103 from verndale/codex/102-deterministic-figma-standard
+- ea11039 chore(project-retrospective): Update pull request references in documentation
+- c36889a feat(project-retrospective): Update Figma promotion checklist and library
+
 # v2.4.0 — 2026-09-17
 
 ## Summary (AI, bounded)
