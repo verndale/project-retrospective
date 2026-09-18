@@ -1,3 +1,28 @@
+# v2.6.0 — 2026-09-18
+
+## Summary (AI, bounded)
+- Enhanced validation for Applied Figma proof in the project retrospective feature (fb64c79).
+- Merged pull request improving validation processes related to Applied Figma (7633684).
+- No breaking changes introduced in this release.
+
+## Highlights
+- commit: Merge pull request #106 from verndale/codex/105-validate-applied-figma (7633684)
+- feat(project-retrospective): Enhance validation for Applied Figma proof (fb64c79)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Features
+- feat(project-retrospective): Enhance validation for Applied Figma proof (fb64c79)
+
+### Other (unknown)
+- commit: Merge pull request #106 from verndale/codex/105-validate-applied-figma (7633684)
+
+## Full commit list
+- 7633684 commit: Merge pull request #106 from verndale/codex/105-validate-applied-figma
+- fb64c79 feat(project-retrospective): Enhance validation for Applied Figma proof
+
 # v2.5.0 — 2026-09-18
 
 ## Summary (AI, bounded)
