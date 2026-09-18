@@ -69,6 +69,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Make the retrospective knowledge loop source-first](../../wiki/journal/2026-09-06-source-first-knowledge-loop.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Make ready-for-development the capture terminal state](../../wiki/journal/2026-09-07-ready-for-development-capture-gate.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Verify unversioned source without requiring pipeline artifacts](../../wiki/journal/2026-09-07-verified-unversioned-source-capture.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
+- [Align Applied Figma validation](../../wiki/journal/2026-09-17-align-applied-figma-validation.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Default retrospective publication to merge](../../wiki/journal/2026-09-17-default-merge-publication.md) → [Brain promotion — Design History](../../wiki/topics/brain-promotion.md)
 - [Default retrospective publication to merge](../../wiki/journal/2026-09-17-default-merge-publication.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Default retrospective publication to merge](../../wiki/journal/2026-09-17-default-merge-publication.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
