@@ -31,6 +31,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-09-18 — feat(project-retrospective): Enhance validation for Applied Figma proof ([verndale/project-retrospective PR #106](https://github.com/verndale/project-retrospective/pull/106))
 - 2026-09-17 — Made a private deterministic execution ledger mandatory across analyze/publication/promote/capture/reconcile, enforced exact next-action/audit handoffs, and fixed dependency-ordered issue/branch/PR/merge continuation as the hands-off operating model ([issue #99](https://github.com/verndale/project-retrospective/issues/99), [journal](../journal/2026-09-17-deterministic-execution-ledger.md)).
 - 2026-09-17 — feat(project-retrospective): Update retrospective publication defaults ([verndale/project-retrospective PR #97](https://github.com/verndale/project-retrospective/pull/97))
 - 2026-09-17 — Made scoped full merge the durable default for retrospective invocations, with `pull-request` and `working-tree` retained only as explicit stop-early overrides ([issue #96](https://github.com/verndale/project-retrospective/issues/96), [journal](../journal/2026-09-17-default-merge-publication.md)).
