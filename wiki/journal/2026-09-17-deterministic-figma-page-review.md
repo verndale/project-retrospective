@@ -2,7 +2,7 @@
 date: 2026-09-17
 topics: [library-capture]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/103
 ---
 # Make Figma page review executable
 
