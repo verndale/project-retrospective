@@ -1000,6 +1000,32 @@ function exactKeys(value, keys) {
   return actual.length === expected.length && actual.every((key, index) => key === expected[index]);
 }
 
+function validAppliedPresentationEvidence(evidence) {
+  if (!exactKeys(evidence, ['contractVersion', 'referencePageId', 'referencePageName', 'sections']) ||
+    evidence.contractVersion !== 1 || !/^\d+:\d+$/.test(evidence.referencePageId ?? '') ||
+    typeof evidence.referencePageName !== 'string' || !evidence.referencePageName.trim()) return false;
+  const orders = { documentation: 1, main: 2, interactionStates: 3, publishSource: null };
+  if (!exactKeys(evidence.sections, Object.keys(orders))) return false;
+  return Object.entries(orders).every(([role, order]) => {
+    const section = evidence.sections[role];
+    return exactKeys(section, ['nodeId', 'order']) && /^\d+:\d+$/.test(section.nodeId ?? '') &&
+      (section.order ?? null) === order;
+  });
+}
+
+function validAppliedTokenBindingAudit(audit, coverage) {
+  if (!exactKeys(audit, ['contractVersion', 'stateRequirements']) || audit.contractVersion !== 1 ||
+    !audit.stateRequirements || typeof audit.stateRequirements !== 'object' || Array.isArray(audit.stateRequirements)) {
+    return false;
+  }
+  const requirements = Object.entries(audit.stateRequirements);
+  if (coverage?.status === 'covered' && requirements.length === 0) return false;
+  const stateIds = new Set((coverage?.states ?? []).map((state) => state?.id));
+  return requirements.every(([stateId, tokens]) => stateIds.has(stateId) && Array.isArray(tokens) &&
+    tokens.length > 0 && new Set(tokens).size === tokens.length &&
+    tokens.every((token) => typeof token === 'string' && /^color\//.test(token)));
+}
+
 function checkAppliedFigma(file, text, artifact, result) {
   if (artifact?.schemaVersion !== 2) return;
   const appliedSection = sections(text, 2).find((section) => section.heading === 'Applied');
@@ -1015,11 +1041,20 @@ function checkAppliedFigma(file, text, artifact, result) {
     return;
   }
   const figma = applied.figma;
-  if (!exactKeys(figma, ['nodeId', 'nodeKey', 'publicationStatus', 'review', 'stateCoverage']) ||
+  if (!exactKeys(figma, [
+    'nodeId', 'nodeKey', 'presentationEvidence', 'publicationStatus', 'review', 'stateCoverage', 'status', 'tokenBindingAudit',
+  ]) ||
     typeof figma?.nodeId !== 'string' || !figma.nodeId.trim() ||
     typeof figma?.nodeKey !== 'string' || !figma.nodeKey.trim() ||
-    figma?.publicationStatus !== 'unpublished') {
-    result.fail('capture-applied-figma', `${name} Applied figma requires stable nodeId/nodeKey, unpublished status, review, and stateCoverage`);
+    figma?.status !== 'ready-for-dev' || figma?.publicationStatus !== 'unpublished') {
+    result.fail('capture-applied-figma', `${name} Applied figma requires the exact ready-for-dev, unpublished governed proof`);
+    return;
+  }
+  if (!validAppliedPresentationEvidence(figma.presentationEvidence)) {
+    result.fail('capture-applied-figma', `${name} Applied presentationEvidence must carry the exact live precedent and governed section identity`);
+  }
+  if (!validAppliedTokenBindingAudit(figma.tokenBindingAudit, figma.stateCoverage)) {
+    result.fail('capture-applied-figma', `${name} Applied tokenBindingAudit must map governed semantic tokens to known interaction states`);
     return;
   }
   const passes = figma.review?.passes;

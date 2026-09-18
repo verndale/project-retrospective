@@ -507,7 +507,25 @@ function appliedFigmaBlock(overrides = {}) {
     figma: {
       nodeId: '100:200',
       nodeKey: 'stable-modal-key',
+      status: 'ready-for-dev',
       publicationStatus: 'unpublished',
+      presentationEvidence: {
+        contractVersion: 1,
+        referencePageId: '11:5',
+        referencePageName: 'Button — Light',
+        sections: {
+          documentation: { nodeId: '100:210', order: 1 },
+          main: { nodeId: '100:220', order: 2 },
+          interactionStates: { nodeId: '100:230', order: 3 },
+          publishSource: { nodeId: '100:240', order: null },
+        },
+      },
+      tokenBindingAudit: {
+        contractVersion: 1,
+        stateRequirements: {
+          'dialog.open': ['color/surface/default'],
+        },
+      },
       review: { status: 'passed', passes: ['source-parity', 'adversarial', 'design'] },
       stateCoverage: {
         status: 'covered',
@@ -580,6 +598,24 @@ test('modern Applied cannot omit unpublished status or governed state coverage',
   });
   writeFile(dir, 'captures/modal.md', readFile(dir, 'captures/modal.md') + bad);
   assertFails(dir, 'capture-applied-figma');
+});
+
+test('modern Applied requires ready-for-dev structural and token proof', () => {
+  const cases = [
+    ['wrong governed status', '"status": "ready-for-dev"', '"status": "draft"'],
+    ['invalid presentation evidence', '"referencePageId": "11:5"', '"referencePageId": "Button"'],
+    ['unknown token state', '"dialog.open": [', '"dialog.unknown": ['],
+    ['ungoverned token name', '"color/surface/default"', '"space/200"'],
+    ['unexpected proof field', '"nodeId": "100:200"', '"extra": true,\n      "nodeId": "100:200"'],
+  ];
+  for (const [label, pattern, replacement] of cases) {
+    const dir = tempOutput();
+    const bad = appliedFigmaBlock().replace(pattern, replacement);
+    writeFile(dir, 'captures/modal.md', readFile(dir, 'captures/modal.md') + bad);
+    const result = validate(dir);
+    assert.notEqual(result.status, 0, `${label} unexpectedly passed`);
+    assert.match(result.stdout, /capture-applied-figma/, label);
+  }
 });
 
 test('a lightweight analyze capture intent passes without source parity', () => {
