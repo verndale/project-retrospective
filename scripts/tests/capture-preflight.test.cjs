@@ -11,6 +11,8 @@ const { runJson, tempFixture, readFile, writeFile, fixture } = require('./helper
 const BRAIN = fixture('fake-brain');
 const MANIFEST = fixture('fake-brain/skills/ui-design-brain/patterns-manifest.json');
 const SIBLING_LIBRARY = path.resolve(__dirname, '..', '..', '..', 'ui-design-library');
+const COMPONENT_PAGE = JSON.parse(readFile(fixture('fake-library'), 'figma/library.json'))
+  .library.promotionPattern.componentPage;
 
 /** A captures/ directory holding just the golden modal capture. */
 function tempCaptures() {
@@ -332,8 +334,10 @@ test('the envelope carries the documented key order', () => {
     codeContractsCommand: 'pnpm contracts:code',
     codeTestCommand: 'pnpm test:code',
     coverageCommand: 'pnpm figma:coverage',
+    liveSelfTestCommand: 'pnpm figma:live:selftest',
     liveValidationCommand: 'pnpm figma:live',
     validationCommand: 'pnpm figma:validate',
+    componentPageContract: COMPONENT_PAGE,
     writer: 'figma-use',
     liveValidated: true,
     issues: [],
@@ -397,11 +401,18 @@ test('the current library registry interaction-state schema satisfies preflight'
   assert.equal(result.json.figmaPromotion.contractReady, true, result.json.figmaPromotion.issues.join('; '));
 });
 
+test('the current library registry exposes the exact executable component-page contract', () => {
+  const result = preflight(tempCaptures(), fixture('fake-library'));
+  assert.deepEqual(result.json.figmaPromotion.componentPageContract, COMPONENT_PAGE);
+  assert.equal(result.json.figmaPromotion.contractReady, true, result.json.figmaPromotion.issues.join('; '));
+});
+
 test('the byte-current sibling library registry and checklist satisfy promotion preflight', {
   skip: !fs.existsSync(path.join(SIBLING_LIBRARY, 'figma/library.json')) ||
     !fs.existsSync(path.join(SIBLING_LIBRARY, 'figma/PROMOTION-CHECKLIST.md')) ||
     !fs.readFileSync(path.join(SIBLING_LIBRARY, 'figma/PROMOTION-CHECKLIST.md'), 'utf8').includes('figma.presentationEvidence') ||
-    !JSON.parse(fs.readFileSync(path.join(SIBLING_LIBRARY, 'figma/library.json'), 'utf8')).library?.tokenPolicy?.componentVariableIds,
+    !JSON.parse(fs.readFileSync(path.join(SIBLING_LIBRARY, 'figma/library.json'), 'utf8')).library?.tokenPolicy?.componentVariableIds ||
+    !JSON.parse(fs.readFileSync(path.join(SIBLING_LIBRARY, 'figma/library.json'), 'utf8')).library?.promotionPattern?.componentPage,
 }, () => {
   const result = preflight(tempCaptures(), SIBLING_LIBRARY);
   assert.equal(
@@ -422,6 +433,24 @@ test('current Figma registry acceptance still fails closed when a required field
   assert.ok(result.json.figmaPromotion.issues.includes(
     'figma/library.json does not expose the governed Interaction states presentation contract',
   ));
+});
+
+test('missing or drifted component-page contracts block capture', () => {
+  for (const mutate of [
+    (registry) => { delete registry.library.promotionPattern.componentPage; },
+    (registry) => { registry.library.promotionPattern.componentPage.presentation.masterGap = 16; },
+    (registry) => { registry.library.promotionPattern.componentPage.referenceSectionIds.main = '999:1'; },
+  ]) {
+    const library = tempFixture('fake-library');
+    const registry = JSON.parse(readFile(library, 'figma/library.json'));
+    mutate(registry);
+    writeFile(library, 'figma/library.json', `${JSON.stringify(registry, null, 2)}\n`);
+    const result = preflight(tempCaptures(), library);
+    assertBlocked(result, 'figma-promotion-unavailable');
+    assert.ok(result.json.figmaPromotion.issues.includes(
+      'figma/library.json does not expose the exact components-group-button-template-v1 page contract',
+    ));
+  }
 });
 
 test('CaptureKeys selects a deterministic subset without orphaning its siblings', () => {
@@ -701,6 +730,16 @@ test('missing Figma package scripts block capture', () => {
   const result = preflight(tempCaptures(), library);
   assertBlocked(result, 'figma-promotion-unavailable');
   assert.ok(result.json.figmaPromotion.issues.includes('package.json has no figma:coverage script'));
+});
+
+test('the live-audit fixture command is a required capture gate', () => {
+  const library = tempFixture('fake-library');
+  const packageJson = JSON.parse(readFile(library, 'package.json'));
+  delete packageJson.scripts['figma:live:selftest'];
+  writeFile(library, 'package.json', `${JSON.stringify(packageJson, null, 2)}\n`);
+  const result = preflight(tempCaptures(), library);
+  assertBlocked(result, 'figma-promotion-unavailable');
+  assert.ok(result.json.figmaPromotion.issues.includes('package.json has no figma:live:selftest script'));
 });
 
 test('placeholder Figma files and commands do not satisfy promotion preflight', () => {

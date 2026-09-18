@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 143,
-    "edges": 408,
+    "nodes": 144,
+    "edges": 411,
     "byType": {
       "root-doc": 4,
       "repo-script": 19,
@@ -13,18 +13,18 @@
       "skill-script": 15,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 39,
+      "wiki-journal": 40,
       "wiki-plan": 15,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 33,
       "covers": 40,
-      "links-to": 169,
+      "links-to": 171,
       "plan": 15,
       "requires": 64,
       "tests": 16,
-      "topic": 71
+      "topic": 72
     }
   },
   "nodes": [
@@ -220,7 +220,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 87280,
+      "bytes": 89477,
       "degree": 2
     },
     {
@@ -324,7 +324,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 10876,
+      "bytes": 11347,
       "degree": 3
     },
     {
@@ -584,7 +584,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 35538,
+      "bytes": 36072,
       "degree": 4
     },
     {
@@ -675,7 +675,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 26075,
+      "bytes": 27221,
       "degree": 3
     },
     {
@@ -909,7 +909,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 109936,
+      "bytes": 111845,
       "degree": 5
     },
     {
@@ -1078,7 +1078,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 53171,
+      "bytes": 54274,
       "degree": 59
     },
     {
@@ -1091,8 +1091,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 13176,
-      "degree": 48
+      "bytes": 13468,
+      "degree": 49
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -2147,6 +2147,30 @@
       "degree": 5
     },
     {
+      "id": "wiki/journal/2026-09-17-deterministic-figma-page-review.md",
+      "label": "Make Figma page review executable",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "library-capture"
+      ],
+      "aliases": [],
+      "prs": [
+        "103"
+      ],
+      "issues": [],
+      "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 103,
+          "url": "https://github.com/verndale/project-retrospective/pull/103"
+        }
+      ],
+      "bytes": 1831,
+      "degree": 3
+    },
+    {
       "id": "wiki/journal/2026-09-17-hands-off-publication-handoff.md",
       "label": "Continue authorized retrospective publication",
       "type": "wiki-journal",
@@ -2878,6 +2902,7 @@
       ],
       "prs": [],
       "issues": [
+        "102",
         "99",
         "96",
         "93",
@@ -2890,6 +2915,12 @@
         "60"
       ],
       "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 102,
+          "url": "https://github.com/verndale/project-retrospective/issues/102"
+        },
         {
           "kind": "issue",
           "repository": "verndale/project-retrospective",
@@ -2951,8 +2982,8 @@
           "url": "https://github.com/verndale/project-retrospective/issues/60"
         }
       ],
-      "bytes": 18529,
-      "degree": 52
+      "bytes": 19051,
+      "degree": 54
     },
     {
       "id": "wiki/topics/retrospective-workflow.md",
@@ -4204,6 +4235,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-09-17-deterministic-figma-page-review.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-09-17-hands-off-publication-handoff.md",
       "type": "links-to",
       "count": 1,
@@ -4583,6 +4621,13 @@
     {
       "source": "wiki/topics/library-capture.md",
       "target": "wiki/journal/2026-09-17-deterministic-execution-ledger.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/library-capture.md",
+      "target": "wiki/journal/2026-09-17-deterministic-figma-page-review.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -5548,6 +5593,11 @@
     {
       "source": "wiki/journal/2026-09-17-deterministic-execution-ledger.md",
       "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-09-17-deterministic-figma-page-review.md",
+      "target": "wiki/topics/library-capture.md",
       "type": "topic"
     },
     {

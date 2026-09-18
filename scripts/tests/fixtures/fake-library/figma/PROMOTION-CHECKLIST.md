@@ -1,6 +1,7 @@
 # Figma component promotion checklist
 
 Use the 528px documentation rail on the left and keep every other surface to its right.
+Treat `library.promotionPattern.componentPage` as the machine-readable page contract. Run `pnpm figma:live`; it must compare live reference fills and strokes, exact section geometry, and descendant containment before acceptance.
 Compare the result with Button, Section header, and Alert. Cover 1440, 1024, 768, and 390 widths.
 Keep candidates unpublished. Complete source-parity, adversarial, and design review passes before handback.
 Add an unpublished Interaction states presentation using connected instances, outside labels, and semantic variables; record frameNodeId, instanceNodeId, and componentNodeId in figma.stateCoverage.
