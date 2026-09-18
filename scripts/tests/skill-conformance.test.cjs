@@ -203,7 +203,11 @@ test('capture completion requires governed unpublished Figma review and forbids 
   assert.match(capture, /writeCapabilityRequired: true/);
   assert.match(capture, /codeTestCommand/);
   assert.match(capture, /pnpm test:code/);
+  assert.match(capture, /pnpm figma:live:selftest/);
   assert.match(capture, /pnpm figma:live/);
+  assert.match(capture, /componentPageContract/);
+  assert.match(capture, /Never synthesize page chrome from prose, screenshots, or memory/);
+  assert.match(capture, /screenshot or prose review cannot waive a failure/);
   assert.match(capture, /publicationStatus: "unpublished"/);
   assert.match(capture, /adversarial pass/);
   assert.match(capture, /design pass/);
@@ -229,6 +233,9 @@ test('capture preserves the live Figma reference and section grammar', () => {
     assert.match(source, /structural alternate/i);
     assert.match(source, /Interaction states[^.]*final numbered Ready for Dev section/);
     assert.match(source, /separate[^.]*unnumbered `Publish source/);
+    assert.match(source, /componentPageContract|promotionPattern\.componentPage/);
+    assert.match(source, /Components boundary|between[^.]*Components/i);
+    assert.match(source, /containment/i);
   }
 });
 

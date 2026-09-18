@@ -86,6 +86,56 @@ const USAGE = [
   '  --pretty    Indent the JSON output',
 ];
 const FIGMA_WRITER_CAPABILITIES = new Set(['figma-use']);
+const REQUIRED_COMPONENT_PAGE = {
+  version: 'components-group-button-template-v1',
+  referencePageId: '458:2',
+  referencePageName: 'Datepicker',
+  referenceSectionIds: {
+    documentation: '479:2',
+    main: '479:36',
+    interactionStates: '479:75',
+    publishSource: '479:113',
+  },
+  groupStartPageId: '31:3',
+  groupStartPageName: '❖ Components',
+  groupEndPageId: '31:5',
+  groupEndPageName: '---',
+  documentation: {
+    sectionX: 0,
+    sectionY: 0,
+    sectionWidth: 528,
+    frameX: 24,
+    frameY: 48,
+    frameWidth: 480,
+    requiredChildren: [
+      'Accent',
+      'Eyebrow',
+      'Title',
+      'Description',
+      'Public import',
+      'Properties heading',
+      'Properties',
+      'Guidance',
+      'Code only',
+    ],
+    propertyRows: 5,
+  },
+  presentation: {
+    mainX: 568,
+    mainY: 0,
+    minimumWidth: 1272,
+    frameX: 24,
+    frameY: 48,
+    frameHorizontalInset: 48,
+    interactionGap: 40,
+    publishGap: 40,
+    publishWidth: 1272,
+    masterX: 40,
+    masterY: 64,
+    masterGap: 24,
+    masterPadding: 24,
+  },
+};
 
 const MANIFEST_REL = 'skills/ui-design-brain/patterns-manifest.json';
 const CAPTURE_TYPE = 'component-capture';
@@ -1764,6 +1814,7 @@ function inspectFigmaPromotion(libraryDir, capability = {}) {
   const codeContractsCommand = 'pnpm contracts:code';
   const codeTestCommand = 'pnpm test:code';
   const coverageCommand = 'pnpm figma:coverage';
+  const liveSelfTestCommand = 'pnpm figma:live:selftest';
   const liveValidationCommand = 'pnpm figma:live';
   const validationCommand = 'pnpm figma:validate';
   const issues = [];
@@ -1848,6 +1899,9 @@ function inspectFigmaPromotion(libraryDir, capability = {}) {
         interactionStates.rasterScreenshots !== false) {
         issues.push(`${registry} does not expose the governed Interaction states presentation contract`);
       }
+      if (JSON.stringify(stableJson(pattern.componentPage)) !== JSON.stringify(stableJson(REQUIRED_COMPONENT_PAGE))) {
+        issues.push(`${registry} does not expose the exact components-group-button-template-v1 page contract`);
+      }
       const surfaces = findCodeConnectSurfaces(value);
       if (surfaces.length > 0) issues.push(`${registry} exposes Code Connect at ${surfaces.join(', ')}`);
       if ((value?.components ?? []).some((component) => component?.figma?.template !== undefined)) {
@@ -1866,6 +1920,9 @@ function inspectFigmaPromotion(libraryDir, capability = {}) {
       ['source-parity, adversarial, and design review passes', /source[- ]parity[\s\S]{0,160}adversarial[\s\S]{0,160}design review/i],
       ['a named live presentation precedent and structural evidence', /precedent[\s\S]{0,200}presentationEvidence/i],
       ['the authoritative code-parity token collection and token binding audit', /code-parity[\s\S]{0,200}tokenBindingAudit/i],
+      ['the executable component-page contract', /promotionPattern\.componentPage|componentPage[\s\S]{0,160}machine-readable/i],
+      ['live section appearance and descendant containment', /(?:appearance|fills?[^.]*strokes?)[\s\S]{0,240}containment|containment[\s\S]{0,240}(?:appearance|fills?[^.]*strokes?)/i],
+      ['the blocking live Figma audit', /pnpm figma:live/i],
     ];
     for (const [label, pattern] of requirements) {
       if (!pattern.test(source)) issues.push(`${checklist} does not require ${label}`);
@@ -1901,6 +1958,7 @@ function inspectFigmaPromotion(libraryDir, capability = {}) {
       'figma:coverage': 'node scripts/check-figma-coverage.cjs',
       'figma:contracts': 'node scripts/check-figma-contracts.cjs',
       'figma:live': 'node scripts/check-figma-live.cjs',
+      'figma:live:selftest': 'node scripts/check-figma-live.selftest.cjs',
       'figma:live:if-token': 'node scripts/check-figma-live.cjs --if-token',
       'figma:validate': 'pnpm figma:coverage && pnpm figma:contracts && pnpm figma:live:if-token',
     };
@@ -1943,8 +2001,10 @@ function inspectFigmaPromotion(libraryDir, capability = {}) {
     codeContractsCommand,
     codeTestCommand,
     coverageCommand,
+    liveSelfTestCommand,
     liveValidationCommand,
     validationCommand,
+    componentPageContract: JSON.parse(JSON.stringify(REQUIRED_COMPONENT_PAGE)),
     writer: FIGMA_WRITER_CAPABILITIES.has(writer) ? writer : null,
     liveValidated: capability.liveValidated === true,
     issues,

@@ -34,6 +34,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
+- 2026-09-17 — [Make Figma page review executable](journal/2026-09-17-deterministic-figma-page-review.md) — capture preflight now requires and emits the exact component-page contract, while live fixture and authenticated audits block placement, appearance, structure, and overflow drift.
 - 2026-09-17 — [Deterministic execution ledger and complete Figma capture](journal/2026-09-17-deterministic-execution-ledger.md) — every hands-off run now retains a simple validated audit, and Library capture includes complete variants/states, UI design review, and style-guide maintenance.
 - 2026-09-17 — [Default retrospective publication to merge](journal/2026-09-17-default-merge-publication.md) — retrospective-owned branches now run hands off through green merge and dependent work unless an explicit stop-early mode is selected.
 - 2026-09-17 — [Continue authorized retrospective publication](journal/2026-09-17-hands-off-publication-handoff.md) — full merge mode now lands validated proposals and newly ready captures automatically, while next steps expose only genuine external blockers.

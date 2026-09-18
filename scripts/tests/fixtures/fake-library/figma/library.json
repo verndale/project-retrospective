@@ -15,6 +15,56 @@
     "promotionPattern": {
       "handoffTarget": "direct-canonical-instance",
       "annotationPlacement": "outside-component-instance",
+      "componentPage": {
+        "version": "components-group-button-template-v1",
+        "referencePageId": "458:2",
+        "referencePageName": "Datepicker",
+        "referenceSectionIds": {
+          "documentation": "479:2",
+          "main": "479:36",
+          "interactionStates": "479:75",
+          "publishSource": "479:113"
+        },
+        "groupStartPageId": "31:3",
+        "groupStartPageName": "❖ Components",
+        "groupEndPageId": "31:5",
+        "groupEndPageName": "---",
+        "documentation": {
+          "sectionX": 0,
+          "sectionY": 0,
+          "sectionWidth": 528,
+          "frameX": 24,
+          "frameY": 48,
+          "frameWidth": 480,
+          "requiredChildren": [
+            "Accent",
+            "Eyebrow",
+            "Title",
+            "Description",
+            "Public import",
+            "Properties heading",
+            "Properties",
+            "Guidance",
+            "Code only"
+          ],
+          "propertyRows": 5
+        },
+        "presentation": {
+          "mainX": 568,
+          "mainY": 0,
+          "minimumWidth": 1272,
+          "frameX": 24,
+          "frameY": 48,
+          "frameHorizontalInset": 48,
+          "interactionGap": 40,
+          "publishGap": 40,
+          "publishWidth": 1272,
+          "masterX": 40,
+          "masterY": 64,
+          "masterGap": 24,
+          "masterPadding": 24
+        }
+      },
       "viewportWidths": {
         "desktop": 1440,
         "tabletLarge": 1024,
