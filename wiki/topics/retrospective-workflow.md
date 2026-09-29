@@ -31,6 +31,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-09-17 — feat(project-retrospective): add deterministic execution ledger ([verndale/project-retrospective PR #100](https://github.com/verndale/project-retrospective/pull/100))
 - 2026-09-29 — fix(git): reject hidden PR descriptions ([verndale/project-retrospective PR #115](https://github.com/verndale/project-retrospective/pull/115))
 - 2026-09-29 — chore(git): standardize repository delivery ([verndale/project-retrospective PR #109](https://github.com/verndale/project-retrospective/pull/109))
 - 2026-09-17 — Made a private deterministic execution ledger mandatory across analyze/publication/promote/capture/reconcile, enforced exact next-action/audit handoffs, and fixed dependency-ordered issue/branch/PR/merge continuation as the hands-off operating model ([issue #99](https://github.com/verndale/project-retrospective/issues/99), [journal](../journal/2026-09-17-deterministic-execution-ledger.md)).
