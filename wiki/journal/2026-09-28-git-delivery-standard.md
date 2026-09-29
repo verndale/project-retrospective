@@ -2,9 +2,9 @@
 date: 2026-09-28
 topics: [graph-wiki-subsystem]
 plan: plans/2026-09-29-standardize-git-delivery-in-project-retrospective--d184da65fe7f.md
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/109
 issue: https://github.com/verndale/project-retrospective/issues/108
-issues: [https://github.com/verndale/project-retrospective/issues/108]
+issues: ["https://github.com/verndale/project-retrospective/issues/108"]
 ---
 # Standard Git delivery for repository maintenance
 
