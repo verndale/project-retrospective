@@ -1,3 +1,34 @@
+# v2.6.1 — 2026-09-29
+
+## Highlights
+- fix(git): reject hidden PR descriptions (#115) (61ab256)
+- docs(wiki): reconcile merged PR #111 (bd9485e)
+- docs(wiki): reconcile merged PR #109 (0148ef3)
+- chore(ci): use existing fast tests in release workflow (007ed45)
+- chore(git): standardize repository delivery (9c70550)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Fixes
+- fix(git): reject hidden PR descriptions (#115) (61ab256)
+
+### Docs
+- docs(wiki): reconcile merged PR #109 (0148ef3)
+- docs(wiki): reconcile merged PR #111 (bd9485e)
+
+### Chore
+- chore(ci): use existing fast tests in release workflow (007ed45)
+- chore(git): standardize repository delivery (9c70550)
+
+## Full commit list
+- 61ab256 fix(git): reject hidden PR descriptions (#115)
+- bd9485e docs(wiki): reconcile merged PR #111
+- 0148ef3 docs(wiki): reconcile merged PR #109
+- 007ed45 chore(ci): use existing fast tests in release workflow
+- 9c70550 chore(git): standardize repository delivery
+
 # v2.6.0 — 2026-09-18
 
 ## Summary (AI, bounded)
