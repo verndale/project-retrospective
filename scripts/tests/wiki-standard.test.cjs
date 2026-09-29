@@ -344,20 +344,23 @@ test("writer workflows enforce manual replay, pagination, bot guards, and review
   assert.match(merge, /persist-credentials: false/);
   assert.match(merge, /gh auth setup-git/);
   assert.match(merge, /--force-with-lease/);
-  assert.match(merge, /gh pr reopen/);
+  assert.match(merge, /gh api -X PATCH "repos\/\$\{GITHUB_REPOSITORY\}\/pulls\/\$\{closed\}" -f state=open/);
   assert.match(merge, /git fetch origin "\+refs\/heads\/\$\{branch\}:refs\/remotes\/origin\/\$\{branch\}"/);
   assert.match(merge, /bot\/wiki-sync\/\$\{PR_NUMBER\}/);
   assert.doesNotMatch(merge, /bot\/wiki-sync\/pr-/);
   assert.match(collapsed, /--slurp \| jq -c 'map\(\.\[\] \| \{hash: \.sha, subject:/);
   assert.match(issue, /cron: "30 11 \* \* 1" # Mondays at 11:30 UTC/);
   assert.match(issue, /workflow_dispatch: \{\}/);
-  assert.match(issue, /gh pr reopen/);
+  assert.match(issue, /gh api -X PATCH "repos\/\$\{GITHUB_REPOSITORY\}\/pulls\/\$\{closed\}" -f state=open/);
   assert.match(issue, /git fetch origin "\+refs\/heads\/\$\{branch\}:refs\/remotes\/origin\/\$\{branch\}"/);
   assert.match(merge, /GRAPHIFY_SKIP_HOOK: "1"/);
   assert.match(issue, /GRAPHIFY_SKIP_HOOK: "1"/);
   for (const source of [merge, issue]) {
     assert.doesNotMatch(source, /contents: write|pull-requests: write/);
     assert.match(source, /GH_TOKEN: \$\{\{ secrets\.BOT_TOKEN \}\}/);
+    assert.match(source, /gh api -X GET "repos\/\$\{GITHUB_REPOSITORY\}\/pulls"/);
+    assert.match(source, /gh api -X PATCH "repos\/\$\{GITHUB_REPOSITORY\}\/pulls\/\$\{review\}"/);
+    assert.doesNotMatch(source, /gh pr list|gh pr edit|gh pr view/);
   }
 });
 
