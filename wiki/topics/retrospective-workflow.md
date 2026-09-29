@@ -31,6 +31,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-09-29 — fix(ci): preserve pending main Quality runs ([verndale/project-retrospective PR #124](https://github.com/verndale/project-retrospective/pull/124))
 - 2026-09-29 — fix(ci): preserve main Quality release handoff ([verndale/project-retrospective PR #121](https://github.com/verndale/project-retrospective/pull/121))
 - 2026-09-18 — feat(project-retrospective): Enhance validation for Applied Figma proof ([verndale/project-retrospective PR #106](https://github.com/verndale/project-retrospective/pull/106))
 - 2026-09-18 — feat(project-retrospective): Update Figma promotion checklist and librar ([verndale/project-retrospective PR #103](https://github.com/verndale/project-retrospective/pull/103))
