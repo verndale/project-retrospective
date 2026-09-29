@@ -79,6 +79,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Make Figma page review executable](../../wiki/journal/2026-09-17-deterministic-figma-page-review.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Continue authorized retrospective publication](../../wiki/journal/2026-09-17-hands-off-publication-handoff.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Standard Git delivery for repository maintenance](../../wiki/journal/2026-09-28-git-delivery-standard.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
+- [Reject hidden PR descriptions](../../wiki/journal/2026-09-29-pr-body-validation.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Brain promotion — Design History](../../wiki/topics/brain-promotion.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)

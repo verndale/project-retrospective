@@ -22,6 +22,7 @@ The deterministic graph, its skill-contract integrity gate, the vendored Sigma.j
 - `requires` is the module graph: an indexed `.cjs` to each `.cjs` it requires by relative path. It exists so navigation reaches the tooling — without it 18 of 55 nodes were isolated and `pnpm graph:navigate` returned no route for any script.
 
 ## Decisions
+- 2026-09-29 — PR validation recognizes only visible headings outside comments and code fences, because hidden descriptions had passed the canonical gate ([issue #114](https://github.com/verndale/project-retrospective/issues/114), [journal](../journal/2026-09-29-pr-body-validation.md)).
 
 - 2026-09-29 — chore(git): standardize repository delivery ([verndale/project-retrospective PR #109](https://github.com/verndale/project-retrospective/pull/109))
 - 2026-09-29 — Wiki issue-state reconciliation now runs Mondays at 11:30 UTC with manual replay retained ([journal](../journal/2026-09-28-git-delivery-standard.md)).

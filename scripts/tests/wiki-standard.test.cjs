@@ -18,6 +18,7 @@ const { refresh } = require("../wiki/refresh-issue-state.cjs");
 const { build } = require("../graph/build-graph.cjs");
 const { formatRoute, policyProblems, route } = require("../graph/routing.cjs");
 const { isGraphInput, normalize } = require("../graph/pre-commit.cjs");
+const { REQUIRED_CHECKS, REQUIRED_SECTIONS, validatePullRequestBody } = require("../validate_pr_body.cjs");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const read = (relative) => fs.readFileSync(path.join(ROOT, relative), "utf8");
@@ -366,15 +367,96 @@ test("automation uses the pinned runtime and standalone Commitlint", () => {
   for (const source of workflows) {
     assert.match(source, /node-version: ["']24\.14\.0["']/);
     assert.match(source, /corepack (?:prepare pnpm@10\.33\.0 --activate|enable && corepack install)/);
+    assert.doesNotMatch(source, /PR_BOT_TOKEN|ai-commit|ai-pr/);
   }
   const commitlint = workflows[1];
   assert.equal((commitlint.match(/pnpm run lint:commit/g) || []).length, 2);
   assert.match(commitlint, /pnpm run lint:pr/);
   const pkg = JSON.parse(read("package.json"));
   assert.equal(pkg.devDependencies["@commitlint/cli"], "20.5.3");
+  assert.equal(pkg.devDependencies["@verndale/ai-commit"], undefined);
+  assert.equal(pkg.packageManager, "pnpm@10.33.0");
   assert.match(read("commitlint.config.cjs"), /@commitlint\/config-conventional/);
   assert.equal(read(".husky/commit-msg"), '#!/usr/bin/env sh\npnpm run lint:commit --edit "$1"\n');
   assert.equal(pkg.scripts["wiki:check"], "node --test scripts/tests/wiki-standard.test.cjs && pnpm run graph:check");
+});
+
+const filledPrBody = [
+  "## Summary",
+  "This change makes the PR validation deterministic.",
+  "## Linked issue",
+  "Closes #1",
+  "## Changes",
+  "Updated the validator and its focused regression tests.",
+  "## Verification",
+  "Ran the local checks successfully.",
+  "## Risk and rollback",
+  "- Risk: Low, limited to PR body validation.",
+  "- Rollback: Revert the validator change.",
+  "## Checklist",
+  ...REQUIRED_CHECKS.map((item) => `- [x] ${item}`),
+].join("\n");
+
+test("PR body validation matches the template and rejects incomplete bodies", () => {
+  const template = read(".github/pull_request_template.md");
+  assert.deepEqual([...template.matchAll(/^## (.+)$/gm)].map((match) => match[1]), REQUIRED_SECTIONS);
+  assert.deepEqual([...template.matchAll(/^- \[ \] (.+)$/gm)].map((match) => match[1]), REQUIRED_CHECKS);
+
+  const unfilledErrors = validatePullRequestBody(template);
+  for (const section of ["Summary", "Changes", "Verification", "Linked issue"]) {
+    assert.ok(unfilledErrors.some((error) => error.startsWith(section)), section);
+  }
+  for (const entry of ["Risk:", "Rollback:"]) {
+    assert.ok(unfilledErrors.some((error) => error.includes(entry)), entry);
+  }
+  for (const item of REQUIRED_CHECKS) {
+    assert.ok(unfilledErrors.includes(`Complete required checklist item: ${item}`), item);
+  }
+
+  assert.deepEqual(validatePullRequestBody(filledPrBody), []);
+  assert.ok(validatePullRequestBody(filledPrBody.replace("## Summary", "## Changes")
+    .replace("## Changes\nUpdated", "## Summary\nUpdated"))
+    .some((error) => error.startsWith("Use these level-two headings")));
+  assert.ok(validatePullRequestBody(filledPrBody.replace("## Changes", "## Summary\n## Changes"))
+    .some((error) => error.startsWith("Use these level-two headings")));
+  assert.ok(validatePullRequestBody(filledPrBody.replace("Closes #1", "Related #1"))
+    .some((error) => error.startsWith("Linked issue")));
+});
+
+test("PR body headings must be visible and on one line", () => {
+  assert.deepEqual(validatePullRequestBody(filledPrBody.replace(/\n/g, "\r\n")), []);
+  for (const wrapped of [
+    `<!--\n${filledPrBody}\n-->`,
+    `<!--\n${filledPrBody}`,
+    `\`\`\`md\n${filledPrBody}\n\`\`\``,
+    `~~~md\n${filledPrBody}\n~~~`,
+  ]) {
+    assert.ok(validatePullRequestBody(wrapped).some((error) => error.startsWith("Use these level-two headings")));
+  }
+  for (const example of [
+    "<!--\n## Example heading\n-->",
+    "```text\n## Example heading\n```",
+    "~~~text\n## Example heading\n~~~",
+  ]) {
+    const withExample = filledPrBody.replace("Ran the local checks successfully.",
+      `Ran the local checks successfully.\n\n${example}`);
+    assert.deepEqual(validatePullRequestBody(withExample), []);
+  }
+  assert.ok(validatePullRequestBody(filledPrBody.replace(/^## /gm, "##\n"))
+    .some((error) => error.startsWith("Use these level-two headings")));
+});
+
+test("PR body comments do not consume fenced verification evidence", () => {
+  for (const delimiter of ["```", "~~~"]) {
+    for (const newline of ["\n", "\r\n"]) {
+      const body = filledPrBody
+        .replace("Ran the local checks successfully.",
+          `${delimiter}text\nInput tested: <!--\nAll checks passed.\n${delimiter}`)
+        .replace("- Risk:", "<!-- Document the risk below. -->\n- Risk:")
+        .replace(/\n/g, newline);
+      assert.deepEqual(validatePullRequestBody(body), [], `${delimiter} with ${JSON.stringify(newline)}`);
+    }
+  }
 });
 
 test("large multi-page file and commit fixtures flatten to one valid JSON value", () => {
