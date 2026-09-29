@@ -2,8 +2,9 @@
 date: 2026-09-29
 topics: [graph-wiki-subsystem]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/118
 issue: https://github.com/verndale/project-retrospective/issues/117
+issues: ["https://github.com/verndale/project-retrospective/issues/117"]
 ---
 # Focus wiki Quality and restore bot replay
 

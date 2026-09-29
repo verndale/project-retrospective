@@ -2341,11 +2341,19 @@
         "graph-wiki-subsystem"
       ],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "118"
+      ],
       "issues": [
         "117"
       ],
       "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 118,
+          "url": "https://github.com/verndale/project-retrospective/pull/118"
+        },
         {
           "kind": "issue",
           "repository": "verndale/project-retrospective",
@@ -2353,7 +2361,7 @@
           "url": "https://github.com/verndale/project-retrospective/issues/117"
         }
       ],
-      "bytes": 1297,
+      "bytes": 1421,
       "degree": 3
     },
     {
@@ -3008,6 +3016,7 @@
         "manual PR replay"
       ],
       "prs": [
+        "118",
         "109",
         "84",
         "80",
@@ -3022,6 +3031,12 @@
         "79"
       ],
       "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 118,
+          "url": "https://github.com/verndale/project-retrospective/pull/118"
+        },
         {
           "kind": "issue",
           "repository": "verndale/project-retrospective",
@@ -3083,7 +3098,7 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 9001,
+      "bytes": 9167,
       "degree": 38
     },
     {
@@ -3218,6 +3233,7 @@
         "retrospective audit log"
       ],
       "prs": [
+        "118",
         "100",
         "115",
         "109",
@@ -3264,6 +3280,12 @@
         "57"
       ],
       "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 118,
+          "url": "https://github.com/verndale/project-retrospective/pull/118"
+        },
         {
           "kind": "pull-request",
           "repository": "verndale/project-retrospective",
@@ -3517,7 +3539,7 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 21010,
+      "bytes": 21176,
       "degree": 76
     },
     {

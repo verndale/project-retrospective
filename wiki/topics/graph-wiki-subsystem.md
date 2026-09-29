@@ -22,6 +22,7 @@ The deterministic graph, its skill-contract integrity gate, the vendored Sigma.j
 - `requires` is the module graph: an indexed `.cjs` to each `.cjs` it requires by relative path. It exists so navigation reaches the tooling — without it 18 of 55 nodes were isolated and `pnpm graph:navigate` returned no route for any script.
 
 ## Decisions
+- 2026-09-29 — ci(wiki): scope quality and repair bot replay ([verndale/project-retrospective PR #118](https://github.com/verndale/project-retrospective/pull/118))
 - 2026-09-29 — Keep the full Quality suite for code and unknown ranges while using focused checks for wiki-only changes; existing bot PR replay uses repository REST endpoints that work with BOT_TOKEN ([journal](../journal/2026-09-29-wiki-quality-and-bot-replay.md)).
 - 2026-09-29 — PR validation recognizes only visible headings outside comments and code fences, because hidden descriptions had passed the canonical gate ([issue #114](https://github.com/verndale/project-retrospective/issues/114), [journal](../journal/2026-09-29-pr-body-validation.md)).
 
