@@ -2,9 +2,9 @@
 date: 2026-09-29
 topics: []
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/111
 issue: https://github.com/verndale/project-retrospective/issues/110
-issues: [https://github.com/verndale/project-retrospective/issues/110]
+issues: ["https://github.com/verndale/project-retrospective/issues/110"]
 ---
 # Use the existing fast test suite in Release
 

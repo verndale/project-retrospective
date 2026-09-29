@@ -2261,11 +2261,19 @@
       "dir": "wiki/journal",
       "topics": [],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "111"
+      ],
       "issues": [
         "110"
       ],
       "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 111,
+          "url": "https://github.com/verndale/project-retrospective/pull/111"
+        },
         {
           "kind": "issue",
           "repository": "verndale/project-retrospective",
@@ -2273,7 +2281,7 @@
           "url": "https://github.com/verndale/project-retrospective/issues/110"
         }
       ],
-      "bytes": 731,
+      "bytes": 784,
       "degree": 1
     },
     {
