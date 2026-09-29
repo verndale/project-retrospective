@@ -1,3 +1,45 @@
+# v2.6.2 — 2026-09-29
+
+## Highlights
+- commit: Merge pull request #121 from verndale/codex/120-preserve-release-handoff (a3fb133)
+- fix(ci): preserve main Quality release handoff (2e4e6b5)
+- docs(wiki): reconcile merged PR #106 (#107) (8f500bb)
+- docs(wiki): reconcile merged PR #103 (#104) (1c0b497)
+- docs(wiki): reconcile merged PR #118 (#119) (c535d1c)
+- docs(wiki): reconcile merged PR #100 (#101) (0fec1f8)
+- ci(wiki): scope quality and repair bot replay (#118) (bf995e7)
+- docs(wiki): reconcile merged PR #115 (#116) (688b180)
+
+## Breaking changes
+- None
+
+## Changes by type
+### Fixes
+- fix(ci): preserve main Quality release handoff (2e4e6b5)
+
+### Docs
+- docs(wiki): reconcile merged PR #100 (#101) (0fec1f8)
+- docs(wiki): reconcile merged PR #103 (#104) (1c0b497)
+- docs(wiki): reconcile merged PR #106 (#107) (8f500bb)
+- docs(wiki): reconcile merged PR #115 (#116) (688b180)
+- docs(wiki): reconcile merged PR #118 (#119) (c535d1c)
+
+### CI
+- ci(wiki): scope quality and repair bot replay (#118) (bf995e7)
+
+### Other (unknown)
+- commit: Merge pull request #121 from verndale/codex/120-preserve-release-handoff (a3fb133)
+
+## Full commit list
+- a3fb133 commit: Merge pull request #121 from verndale/codex/120-preserve-release-handoff
+- 2e4e6b5 fix(ci): preserve main Quality release handoff
+- 8f500bb docs(wiki): reconcile merged PR #106 (#107)
+- 1c0b497 docs(wiki): reconcile merged PR #103 (#104)
+- c535d1c docs(wiki): reconcile merged PR #118 (#119)
+- 0fec1f8 docs(wiki): reconcile merged PR #100 (#101)
+- bf995e7 ci(wiki): scope quality and repair bot replay (#118)
+- 688b180 docs(wiki): reconcile merged PR #115 (#116)
+
 # v2.6.1 — 2026-09-29
 
 ## Highlights
