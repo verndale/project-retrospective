@@ -31,6 +31,7 @@ The analyze path: what a completed project is read for, how its labels are resol
 
 ## Decisions
 
+- 2026-09-18 — feat(project-retrospective): Enhance validation for Applied Figma proof ([verndale/project-retrospective PR #106](https://github.com/verndale/project-retrospective/pull/106))
 - 2026-09-18 — feat(project-retrospective): Update Figma promotion checklist and librar ([verndale/project-retrospective PR #103](https://github.com/verndale/project-retrospective/pull/103))
 - 2026-09-29 — ci(wiki): scope quality and repair bot replay ([verndale/project-retrospective PR #118](https://github.com/verndale/project-retrospective/pull/118))
 - 2026-09-17 — feat(project-retrospective): add deterministic execution ledger ([verndale/project-retrospective PR #100](https://github.com/verndale/project-retrospective/pull/100))
