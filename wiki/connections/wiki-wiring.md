@@ -80,6 +80,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Continue authorized retrospective publication](../../wiki/journal/2026-09-17-hands-off-publication-handoff.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Standard Git delivery for repository maintenance](../../wiki/journal/2026-09-28-git-delivery-standard.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Reject hidden PR descriptions](../../wiki/journal/2026-09-29-pr-body-validation.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
+- [Preserve pending main Quality runs](../../wiki/journal/2026-09-29-preserve-pending-quality.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Preserve tested main release handoff](../../wiki/journal/2026-09-29-preserve-release-handoff.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Focus wiki Quality and restore bot replay](../../wiki/journal/2026-09-29-wiki-quality-and-bot-replay.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)

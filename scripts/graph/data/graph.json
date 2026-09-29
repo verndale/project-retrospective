@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 152,
-    "edges": 433,
+    "nodes": 153,
+    "edges": 436,
     "byType": {
       "root-doc": 4,
       "repo-script": 20,
@@ -13,18 +13,18 @@
       "skill-script": 15,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 46,
+      "wiki-journal": 47,
       "wiki-plan": 16,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 33,
       "covers": 40,
-      "links-to": 185,
+      "links-to": 187,
       "plan": 16,
       "requires": 65,
       "tests": 16,
-      "topic": 78
+      "topic": 79
     }
   },
   "nodes": [
@@ -389,7 +389,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 29973,
+      "bytes": 30084,
       "degree": 7
     },
     {
@@ -1104,8 +1104,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 14633,
-      "degree": 55
+      "bytes": 14823,
+      "degree": 56
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -2328,6 +2328,30 @@
       "degree": 3
     },
     {
+      "id": "wiki/journal/2026-09-29-preserve-pending-quality.md",
+      "label": "Preserve pending main Quality runs",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "123"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 123,
+          "url": "https://github.com/verndale/project-retrospective/issues/123"
+        }
+      ],
+      "bytes": 1112,
+      "degree": 3
+    },
+    {
       "id": "wiki/journal/2026-09-29-preserve-release-handoff.md",
       "label": "Preserve tested main release handoff",
       "type": "wiki-journal",
@@ -2340,7 +2364,8 @@
         "121"
       ],
       "issues": [
-        "120"
+        "120",
+        "123"
       ],
       "githubRefs": [
         {
@@ -2354,9 +2379,15 @@
           "repository": "verndale/project-retrospective",
           "number": 120,
           "url": "https://github.com/verndale/project-retrospective/issues/120"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 123,
+          "url": "https://github.com/verndale/project-retrospective/issues/123"
         }
       ],
-      "bytes": 902,
+      "bytes": 1078,
       "degree": 3
     },
     {
@@ -3082,6 +3113,7 @@
         "1"
       ],
       "issues": [
+        "123",
         "120",
         "114",
         "108",
@@ -3094,6 +3126,12 @@
           "repository": "verndale/project-retrospective",
           "number": 118,
           "url": "https://github.com/verndale/project-retrospective/pull/118"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 123,
+          "url": "https://github.com/verndale/project-retrospective/issues/123"
         },
         {
           "kind": "issue",
@@ -3162,8 +3200,8 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 9499,
-      "degree": 40
+      "bytes": 9848,
+      "degree": 42
     },
     {
       "id": "wiki/topics/library-capture.md",
@@ -4618,6 +4656,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-09-29-preserve-pending-quality.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-09-29-preserve-release-handoff.md",
       "type": "links-to",
       "count": 1,
@@ -4899,6 +4944,13 @@
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/journal/2026-09-29-pr-body-validation.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/journal/2026-09-29-preserve-pending-quality.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -6066,6 +6118,11 @@
     },
     {
       "source": "wiki/journal/2026-09-29-pr-body-validation.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-09-29-preserve-pending-quality.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
     },

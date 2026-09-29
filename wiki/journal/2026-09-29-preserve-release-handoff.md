@@ -14,7 +14,7 @@ A wiki-only main push could cancel the full Quality run for an earlier substanti
 
 ## What changed
 
-Quality now cancels superseded pull-request runs while allowing every main push run to finish. The retrospective skill's action-owned Evidence → Brain → Library publication sequence is unchanged.
+Quality now cancels superseded pull-request runs without canceling an in-progress main push. A later main push could still replace a pending one in the shared group; [issue #123](https://github.com/verndale/project-retrospective/issues/123) addresses that remaining gap. The retrospective skill's action-owned Evidence → Brain → Library publication sequence is unchanged.
 
 ## Files
 
