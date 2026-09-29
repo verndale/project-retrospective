@@ -2,7 +2,7 @@
 date: 2026-09-29
 topics: [graph-wiki-subsystem]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/121
 issue: https://github.com/verndale/project-retrospective/issues/120
 issues: ["https://github.com/verndale/project-retrospective/issues/120"]
 ---
