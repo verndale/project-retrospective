@@ -1,10 +1,10 @@
 {
   "counts": {
-    "nodes": 145,
-    "edges": 414,
+    "nodes": 148,
+    "edges": 422,
     "byType": {
       "root-doc": 4,
-      "repo-script": 19,
+      "repo-script": 20,
       "tooling-doc": 1,
       "test": 17,
       "authoring-spec": 1,
@@ -13,18 +13,18 @@
       "skill-script": 15,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 41,
-      "wiki-plan": 15,
+      "wiki-journal": 42,
+      "wiki-plan": 16,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 33,
       "covers": 40,
-      "links-to": 173,
-      "plan": 15,
+      "links-to": 178,
+      "plan": 16,
       "requires": 64,
       "tests": 16,
-      "topic": 73
+      "topic": 75
     }
   },
   "nodes": [
@@ -38,7 +38,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 14854,
+      "bytes": 15032,
       "degree": 6
     },
     {
@@ -64,7 +64,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 8713,
+      "bytes": 8062,
       "degree": 6
     },
     {
@@ -77,8 +77,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 13140,
-      "degree": 8
+      "bytes": 12952,
+      "degree": 9
     },
     {
       "id": "scripts/commit-pr/semantic-release-structured-notes.cjs",
@@ -389,8 +389,21 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 26038,
+      "bytes": 25739,
       "degree": 6
+    },
+    {
+      "id": "scripts/validate_pr_body.cjs",
+      "label": "validate_pr_body.cjs",
+      "type": "repo-script",
+      "dir": "scripts",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "githubRefs": [],
+      "bytes": 3352,
+      "degree": 1
     },
     {
       "id": "scripts/wiki/archive-plan.cjs",
@@ -753,7 +766,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 9117,
+      "bytes": 8950,
       "degree": 3
     },
     {
@@ -1091,8 +1104,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 13673,
-      "degree": 50
+      "bytes": 13882,
+      "degree": 51
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -2218,6 +2231,30 @@
       "degree": 5
     },
     {
+      "id": "wiki/journal/2026-09-28-git-delivery-standard.md",
+      "label": "Standard Git delivery for repository maintenance",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "108"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 108,
+          "url": "https://github.com/verndale/project-retrospective/issues/108"
+        }
+      ],
+      "bytes": 1234,
+      "degree": 4
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -2227,7 +2264,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 9357,
+      "bytes": 9375,
       "degree": 7
     },
     {
@@ -2620,6 +2657,21 @@
       "degree": 6
     },
     {
+      "id": "wiki/plans/2026-09-29-standardize-git-delivery-in-project-retrospective--d184da65fe7f.md",
+      "label": "Standardize Git delivery in project-retrospective",
+      "type": "wiki-plan",
+      "dir": "wiki/plans",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [],
+      "githubRefs": [],
+      "bytes": 756,
+      "degree": 4
+    },
+    {
       "id": "wiki/plans/INDEX.md",
       "label": "Plan Audit",
       "type": "wiki-index",
@@ -2758,8 +2810,8 @@
           "url": "https://github.com/verndale/project-retrospective/pull/80"
         }
       ],
-      "bytes": 5621,
-      "degree": 17
+      "bytes": 5819,
+      "degree": 18
     },
     {
       "id": "wiki/topics/brain-promotion.md",
@@ -2845,10 +2897,17 @@
         "1"
       ],
       "issues": [
+        "108",
         "83",
         "79"
       ],
       "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 108,
+          "url": "https://github.com/verndale/project-retrospective/issues/108"
+        },
         {
           "kind": "pull-request",
           "repository": "verndale/project-retrospective",
@@ -2892,8 +2951,8 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 7521,
-      "degree": 30
+      "bytes": 8113,
+      "degree": 34
     },
     {
       "id": "wiki/topics/library-capture.md",
@@ -3774,6 +3833,13 @@
     },
     {
       "source": "README.md",
+      "target": "scripts/validate_pr_body.cjs",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "README.md",
       "target": "skills/_meta/_sections.md",
       "type": "links-to",
       "count": 1,
@@ -4278,6 +4344,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-09-28-git-delivery-standard.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -4452,6 +4525,13 @@
       "anchors": []
     },
     {
+      "source": "wiki/plans/INDEX.md",
+      "target": "wiki/plans/2026-09-29-standardize-git-delivery-in-project-retrospective--d184da65fe7f.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
       "source": "wiki/topics/brain-promotion.md",
       "target": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
       "type": "links-to",
@@ -4523,6 +4603,13 @@
     },
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/journal/2026-09-28-git-delivery-standard.md",
+      "type": "links-to",
+      "count": 2,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "type": "links-to",
       "count": 2,
@@ -4545,6 +4632,13 @@
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/plans/2026-09-29-standardize-git-delivery-in-project-retrospective--d184da65fe7f.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -4979,6 +5073,11 @@
     {
       "source": "wiki/journal/2026-09-06-source-first-knowledge-loop.md",
       "target": "wiki/plans/2026-09-06-source-first-knowledge-loop.md",
+      "type": "plan"
+    },
+    {
+      "source": "wiki/journal/2026-09-28-git-delivery-standard.md",
+      "target": "wiki/plans/2026-09-29-standardize-git-delivery-in-project-retrospective--d184da65fe7f.md",
       "type": "plan"
     },
     {
@@ -5647,6 +5746,11 @@
       "type": "topic"
     },
     {
+      "source": "wiki/journal/2026-09-28-git-delivery-standard.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
       "source": "wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
@@ -5744,6 +5848,11 @@
     {
       "source": "wiki/plans/2026-09-06-source-first-knowledge-loop.md",
       "target": "wiki/topics/retrospective-workflow.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/plans/2026-09-29-standardize-git-delivery-in-project-retrospective--d184da65fe7f.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
     }
   ]

@@ -30,9 +30,9 @@ For each action-owned repository, in dependency order:
 
 1. Confirm the current branch is the exact issue/run branch emitted by tracking and the action-owned diff contains no unrelated changes.
 2. Run the target repository's documented pre-push gate. Prefer `pnpm verify:push`; otherwise run the verification commands already required by the action. Fix in-scope failures under the normal three-attempt cap.
-3. Stage only the action-owned write set and use the repository's commit helper (`pnpm commit`) when present. Read the resulting message and correct malformed issue references or a misleading subject before push.
+3. Stage only the action-owned write set and use the repository's Commitlint policy with `git commit`. Read the resulting message and correct malformed issue references or a misleading subject before push.
 4. Push only the exact current issue/run branch.
-5. Let repository automation create or update its draft pull request. If none appears, use the repository's `pnpm pr:create`; when that helper cannot consume otherwise-valid GitHub authentication, use the authenticated GitHub CLI directly. The PR body MUST connect the exact repository issue with a closing keyword; if automation omitted it, update the PR before readying it.
+5. Use the authenticated GitHub CLI to create or update the draft pull request. The PR body MUST connect the exact repository issue with a closing keyword; if automation omitted it, update the PR before readying it.
 6. Read the saved pull request back. Verify its canonical URL, conventional title, base/head branches, draft state, issue closing link, body summary, and current checks. Confirm the issue also shows the PR connection. Do not claim green checks while any are pending or failing.
 7. Under `pull-request`, return the verified draft PR and stop before ready/merge.
 8. Under `merge`, wait for every required check, fix in-scope failures under the normal three-attempt cap, mark the PR ready, and use the repository's allowed merge method without bypassing protection. Prefer auto-merge when required review/checks are still pending and the repository supports it; otherwise wait for the terminal state and merge directly.

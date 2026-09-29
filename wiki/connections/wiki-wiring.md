@@ -21,6 +21,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Standardize wiki actions and evidence routing](../../wiki/journal/2026-08-23-wiki-actions-evidence-routing.md) → [Standardize wiki actions and offline GitHub evidence routing](../../wiki/plans/2026-08-23-standardize-wiki-actions-and-evidence-routing.md)
 - [Make agent wiki guidance deterministic](../../wiki/journal/2026-08-24-deterministic-agent-wiki-guidance.md) → [Deterministic, Route-First Wiki Guidance and PR 127 Recovery](../../wiki/plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md)
 - [Make the retrospective knowledge loop source-first](../../wiki/journal/2026-09-06-source-first-knowledge-loop.md) → [Source-first retrospective knowledge loop](../../wiki/plans/2026-09-06-source-first-knowledge-loop.md)
+- [Standard Git delivery for repository maintenance](../../wiki/journal/2026-09-28-git-delivery-standard.md) → [Standardize Git delivery in project-retrospective](../../wiki/plans/2026-09-29-standardize-git-delivery-in-project-retrospective--d184da65fe7f.md)
 
 ## Page → topic
 
@@ -77,6 +78,7 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Deterministic execution ledger and complete Figma capture](../../wiki/journal/2026-09-17-deterministic-execution-ledger.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
 - [Make Figma page review executable](../../wiki/journal/2026-09-17-deterministic-figma-page-review.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Continue authorized retrospective publication](../../wiki/journal/2026-09-17-hands-off-publication-handoff.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
+- [Standard Git delivery for repository maintenance](../../wiki/journal/2026-09-28-git-delivery-standard.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Port the knowledge-graph + context-wiki subsystem into project-retrospective](../../wiki/plans/2026-07-26-port-the-knowledge-graph-context-wiki-subsystem-into-project.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Brain promotion — Design History](../../wiki/topics/brain-promotion.md)
 - [project-retrospective — critique + build plan](../../wiki/plans/2026-07-26-project-retrospective-critique-build-plan.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
@@ -97,3 +99,4 @@ Part of the [connections map](../connections.md), generated from the knowledge g
 - [Deterministic, Route-First Wiki Guidance and PR 127 Recovery](../../wiki/plans/2026-08-24-deterministic-route-first-wiki-guidance-and-pr-127-recovery.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)
 - [Source-first retrospective knowledge loop](../../wiki/plans/2026-09-06-source-first-knowledge-loop.md) → [Library capture — Design History](../../wiki/topics/library-capture.md)
 - [Source-first retrospective knowledge loop](../../wiki/plans/2026-09-06-source-first-knowledge-loop.md) → [Retrospective workflow — Design History](../../wiki/topics/retrospective-workflow.md)
+- [Standardize Git delivery in project-retrospective](../../wiki/plans/2026-09-29-standardize-git-delivery-in-project-retrospective--d184da65fe7f.md) → [Knowledge graph & context wiki — Design History](../../wiki/topics/graph-wiki-subsystem.md)

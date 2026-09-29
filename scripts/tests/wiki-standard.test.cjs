@@ -333,7 +333,6 @@ test("the five workflow identities and focused check commands stay stable", () =
 test("writer workflows enforce manual replay, pagination, bot guards, and review branches", () => {
   const merge = read(".github/workflows/wiki-sync.yml");
   const issue = read(".github/workflows/wiki-issue-sync.yml");
-  const pr = read(".github/workflows/pr.yml");
   const collapsed = merge.replace(/\s*\\\n\s*/g, " ");
   assert.equal((merge.match(/--paginate --slurp/g) || []).length, 2);
   assert.doesNotMatch(merge, /--slurp --jq/);
@@ -349,35 +348,32 @@ test("writer workflows enforce manual replay, pagination, bot guards, and review
   assert.match(merge, /bot\/wiki-sync\/\$\{PR_NUMBER\}/);
   assert.doesNotMatch(merge, /bot\/wiki-sync\/pr-/);
   assert.match(collapsed, /--slurp \| jq -c 'map\(\.\[\] \| \{hash: \.sha, subject:/);
-  assert.match(issue, /cron: "30 11 \* \* \*" # Daily at 11:30 UTC/);
+  assert.match(issue, /cron: "30 11 \* \* 1" # Mondays at 11:30 UTC/);
   assert.match(issue, /workflow_dispatch: \{\}/);
   assert.match(issue, /gh pr reopen/);
   assert.match(issue, /git fetch origin "\+refs\/heads\/\$\{branch\}:refs\/remotes\/origin\/\$\{branch\}"/);
   assert.match(merge, /GRAPHIFY_SKIP_HOOK: "1"/);
   assert.match(issue, /GRAPHIFY_SKIP_HOOK: "1"/);
-  assert.match(pr, /"bot\/wiki-\*\*"/);
-  assert.match(pr, /!startsWith\(github\.ref_name, 'bot\/wiki-'\)/);
   for (const source of [merge, issue]) {
     assert.doesNotMatch(source, /contents: write|pull-requests: write/);
-    assert.match(source, /GH_TOKEN: \$\{\{ secrets\.PR_BOT_TOKEN \}\}/);
+    assert.match(source, /GH_TOKEN: \$\{\{ secrets\.BOT_TOKEN \}\}/);
   }
 });
 
-test("all automation uses the pinned runtime and ai-commit is the sole direct provider", () => {
-  const workflows = ["quality", "commitlint", "wiki-check", "wiki-sync", "wiki-issue-sync", "pr"]
-    .map((name) => read(`.github/workflows/${name}.yml`));
+test("automation uses the pinned runtime and standalone Commitlint", () => {
+  const names = ["quality", "commitlint", "wiki-check", "wiki-sync", "wiki-issue-sync"];
+  const workflows = names.map((name) => read(`.github/workflows/${name}.yml`));
   for (const source of workflows) {
-    assert.match(source, /node-version: "24\.14\.0"/);
-    assert.match(source, /corepack prepare pnpm@10\.33\.0 --activate/);
+    assert.match(source, /node-version: ["']24\.14\.0["']/);
+    assert.match(source, /corepack (?:prepare pnpm@10\.33\.0 --activate|enable && corepack install)/);
   }
   const commitlint = workflows[1];
-  assert.equal((commitlint.match(/pnpm exec commitlint --config commitlint\.config\.cjs/g) || []).length, 2);
+  assert.equal((commitlint.match(/pnpm run lint:commit/g) || []).length, 2);
+  assert.match(commitlint, /pnpm run lint:pr/);
   const pkg = JSON.parse(read("package.json"));
-  assert.equal(pkg.devDependencies["@verndale/ai-commit"], "2.7.0");
-  assert.equal(pkg.devDependencies["@commitlint/cli"], undefined);
-  assert.equal(read("commitlint.config.cjs"), 'module.exports = require("@verndale/ai-commit");\n');
-  assert.equal(read("pnpm-workspace.yaml"), 'publicHoistPattern:\n  - "@commitlint/cli"\n');
-  assert.equal(read(".husky/commit-msg"), '#!/usr/bin/env sh\npnpm exec ai-commit lint --edit "$1"\n');
+  assert.equal(pkg.devDependencies["@commitlint/cli"], "20.5.3");
+  assert.match(read("commitlint.config.cjs"), /@commitlint\/config-conventional/);
+  assert.equal(read(".husky/commit-msg"), '#!/usr/bin/env sh\npnpm run lint:commit --edit "$1"\n');
   assert.equal(pkg.scripts["wiki:check"], "node --test scripts/tests/wiki-standard.test.cjs && pnpm run graph:check");
 });
 
