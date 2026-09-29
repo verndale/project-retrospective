@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 148,
-    "edges": 422,
+    "nodes": 149,
+    "edges": 423,
     "byType": {
       "root-doc": 4,
       "repo-script": 20,
@@ -13,14 +13,14 @@
       "skill-script": 15,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 42,
+      "wiki-journal": 43,
       "wiki-plan": 16,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 33,
       "covers": 40,
-      "links-to": 178,
+      "links-to": 179,
       "plan": 16,
       "requires": 64,
       "tests": 16,
@@ -1104,8 +1104,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 13882,
-      "degree": 51
+      "bytes": 14088,
+      "degree": 52
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -2253,6 +2253,28 @@
       ],
       "bytes": 1234,
       "degree": 4
+    },
+    {
+      "id": "wiki/journal/2026-09-29-release-fast-test.md",
+      "label": "Use the existing fast test suite in Release",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "110"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 110,
+          "url": "https://github.com/verndale/project-retrospective/issues/110"
+        }
+      ],
+      "bytes": 731,
+      "degree": 1
     },
     {
       "id": "wiki/MECHANICS.md",
@@ -4345,6 +4367,13 @@
     {
       "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-09-28-git-delivery-standard.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-09-29-release-fast-test.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
