@@ -2,9 +2,9 @@
 date: 2026-09-17
 topics: [retrospective-workflow, library-capture]
 plan: none
-pr: pending
+pr: https://github.com/verndale/project-retrospective/pull/100
 issue: https://github.com/verndale/project-retrospective/issues/99
-issues: [https://github.com/verndale/project-retrospective/issues/99]
+issues: ["https://github.com/verndale/project-retrospective/issues/99"]
 ---
 # Deterministic execution ledger and complete Figma capture
 
