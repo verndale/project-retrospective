@@ -24,6 +24,7 @@ The deterministic graph, its skill-contract integrity gate, the vendored Sigma.j
 ## Decisions
 - 2026-09-29 — ci(wiki): scope quality and repair bot replay ([verndale/project-retrospective PR #118](https://github.com/verndale/project-retrospective/pull/118))
 - 2026-09-29 — Keep the full Quality suite for code and unknown ranges while using focused checks for wiki-only changes; existing bot PR replay uses repository REST endpoints that work with BOT_TOKEN ([journal](../journal/2026-09-29-wiki-quality-and-bot-replay.md)).
+- 2026-09-29 — Allow every main push Quality run to finish so a later wiki-only merge cannot cancel the successful full check Release needs. Pull-request runs still cancel obsolete attempts ([issue #120](https://github.com/verndale/project-retrospective/issues/120), [journal](../journal/2026-09-29-preserve-release-handoff.md)).
 - 2026-09-29 — PR validation recognizes only visible headings outside comments and code fences, because hidden descriptions had passed the canonical gate ([issue #114](https://github.com/verndale/project-retrospective/issues/114), [journal](../journal/2026-09-29-pr-body-validation.md)).
 
 - 2026-09-29 — chore(git): standardize repository delivery ([verndale/project-retrospective PR #109](https://github.com/verndale/project-retrospective/pull/109))
