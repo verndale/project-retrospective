@@ -323,6 +323,7 @@ test("the five workflow identities and focused check commands stay stable", () =
   assert.match(issueSync, /^name: Sync wiki issue state$/m);
   assert.match(issueSync, /^ {2}sync:$/m);
   assert.match(quality, /pnpm run verify:ci/);
+  assert.match(quality, /group: quality-\$\{\{ github\.event\.pull_request\.number \|\| github\.run_id \}\}/);
   assert.match(quality, /cancel-in-progress: \$\{\{ github\.event_name == 'pull_request' \}\}/);
   assert.doesNotMatch(quality, /ci-journal-warn/);
   assert.equal((wikiCheck.match(/pnpm run wiki:check/g) || []).length, 1);
