@@ -32,6 +32,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 ## Journal
 
+- 2026-09-29 — [Reject hidden PR descriptions](journal/2026-09-29-pr-body-validation.md) — keep canonical PR headings visible and guard the validator contract.
 - 2026-09-29 — [Use the existing fast test suite in Release](journal/2026-09-29-release-fast-test.md) — correct the hosted Release test command after the first main-branch run exposed a missing script.
 - 2026-09-28 — [Standard Git delivery for repository maintenance](journal/2026-09-28-git-delivery-standard.md) — issue-linked maintenance PRs, standalone Commitlint, BOT_TOKEN, and release after Quality.
 
