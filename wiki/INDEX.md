@@ -32,6 +32,7 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 ## Journal
 
+- 2026-09-29 — [Preserve tested main release handoff](journal/2026-09-29-preserve-release-handoff.md) — wiki merges no longer cancel substantive Quality runs.
 - 2026-09-29 — [Focus wiki Quality and restore bot replay](journal/2026-09-29-wiki-quality-and-bot-replay.md) — retain full checks for substantive changes and use repository PR endpoints for existing bot branches.
 - 2026-09-29 — [Reject hidden PR descriptions](journal/2026-09-29-pr-body-validation.md) — keep canonical PR headings visible and guard the validator contract.
 - 2026-09-29 — [Use the existing fast test suite in Release](journal/2026-09-29-release-fast-test.md) — correct the hosted Release test command after the first main-branch run exposed a missing script.

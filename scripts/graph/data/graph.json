@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 151,
-    "edges": 430,
+    "nodes": 152,
+    "edges": 433,
     "byType": {
       "root-doc": 4,
       "repo-script": 20,
@@ -13,18 +13,18 @@
       "skill-script": 15,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 45,
+      "wiki-journal": 46,
       "wiki-plan": 16,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 33,
       "covers": 40,
-      "links-to": 183,
+      "links-to": 185,
       "plan": 16,
       "requires": 65,
       "tests": 16,
-      "topic": 77
+      "topic": 78
     }
   },
   "nodes": [
@@ -389,7 +389,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 29876,
+      "bytes": 29973,
       "degree": 7
     },
     {
@@ -1104,8 +1104,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 14470,
-      "degree": 54
+      "bytes": 14633,
+      "degree": 55
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -2328,6 +2328,30 @@
       "degree": 3
     },
     {
+      "id": "wiki/journal/2026-09-29-preserve-release-handoff.md",
+      "label": "Preserve tested main release handoff",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "120"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 120,
+          "url": "https://github.com/verndale/project-retrospective/issues/120"
+        }
+      ],
+      "bytes": 851,
+      "degree": 3
+    },
+    {
       "id": "wiki/journal/2026-09-29-release-fast-test.md",
       "label": "Use the existing fast test suite in Release",
       "type": "wiki-journal",
@@ -3050,6 +3074,7 @@
         "1"
       ],
       "issues": [
+        "120",
         "114",
         "108",
         "83",
@@ -3061,6 +3086,12 @@
           "repository": "verndale/project-retrospective",
           "number": 118,
           "url": "https://github.com/verndale/project-retrospective/pull/118"
+        },
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 120,
+          "url": "https://github.com/verndale/project-retrospective/issues/120"
         },
         {
           "kind": "issue",
@@ -3123,8 +3154,8 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 9167,
-      "degree": 38
+      "bytes": 9499,
+      "degree": 40
     },
     {
       "id": "wiki/topics/library-capture.md",
@@ -4572,6 +4603,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-09-29-preserve-release-handoff.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/journal/2026-09-29-release-fast-test.md",
       "type": "links-to",
       "count": 1,
@@ -4846,6 +4884,13 @@
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/journal/2026-09-29-pr-body-validation.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/journal/2026-09-29-preserve-release-handoff.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -6006,6 +6051,11 @@
     },
     {
       "source": "wiki/journal/2026-09-29-pr-body-validation.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-09-29-preserve-release-handoff.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
     },
