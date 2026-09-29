@@ -124,14 +124,13 @@ Output per analyze run: `report.md`, schema-v1 source-first `inventory.json`, `r
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| [`commitlint.yml`](.github/workflows/commitlint.yml) | PRs to `main` (including title edits) | Blocking Commitlint check on the immutable PR title + base/head commit range via the public `@verndale/ai-commit` preset. |
-| [`pr.yml`](.github/workflows/pr.yml) | Pushes to non-`main`, `workflow_dispatch` | Creates/updates a draft PR by running `pnpm run pr:create` (`@verndale/ai-pr`). |
+| [`commitlint.yml`](.github/workflows/commitlint.yml) | PRs to `main` (including title edits) | Blocking Commitlint check on the immutable PR title + base/head commit range via the standalone conventional preset. |
 | [`quality.yml`](.github/workflows/quality.yml) | PRs to `main`, `workflow_dispatch` | Required `Quality / quality` check: full-repository ESLint, the Node suite, and check-only graph validation. |
 | [`release.yml`](.github/workflows/release.yml) | Pushes to `main` | Runs `semantic-release` to version, tag, write `CHANGELOG.md`, and cut a GitHub Release. |
 | [`wiki-sync.yml`](.github/workflows/wiki-sync.yml) | PR merged | Fills a journal entry's pending PR link, drafts a stub for an uncaptured substantive PR, and opens a `bot/wiki-sync/<pr>` PR. Never pushes to `main`. |
 | [`wiki-issue-sync.yml`](.github/workflows/wiki-issue-sync.yml) | Nightly, `workflow_dispatch` | Marks issues cited under a topic's Open threads as closed once they close. |
 
-Locally, the same commit standard is enforced by Husky hooks (`commit-msg`, `prepare-commit-msg`) installed via the `prepare` script. `pre-commit` first auto-fixes staged JavaScript with lint-staged and blocks on remaining lint errors, then emits the advisory journal reminder, and finally rebuilds + stages the knowledge graph when no unstaged graph input is present; graph build/write failures remain advisory because CI validates freshness check-only. `pre-push` blocks on the stable Node suite. Add repository secret `PR_BOT_TOKEN` (classic PAT with `repo`) for `pr.yml` and the two wiki workflows; `pr.yml` falls back to the built-in `GITHUB_TOKEN` when unset.
+Locally, the same commit standard is enforced by Husky hooks (`commit-msg`) installed via the `prepare` script. `pre-commit` first auto-fixes staged JavaScript with lint-staged and blocks on remaining lint errors, then emits the advisory journal reminder, and finally rebuilds + stages the knowledge graph when no unstaged graph input is present; graph build/write failures remain advisory because CI validates freshness check-only. `pre-push` blocks on the stable Node suite. The two wiki workflows use repository secret `BOT_TOKEN`.
 
 ### Knowledge graph & context wiki
 
@@ -181,4 +180,4 @@ The skill's own scripts are zero-dependency CommonJS: they run under plain `node
 
 ## Contributing
 
-Commit standards are enforced via `@verndale/ai-commit` (commitlint) and Husky hooks. Use `pnpm commit`. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Commit standards are enforced via standalone Commitlint and Husky. Use scoped Conventional Commits with `git commit`. Issue-linked PR bodies are checked by [`scripts/validate_pr_body.cjs`](scripts/validate_pr_body.cjs). See [CONTRIBUTING.md](CONTRIBUTING.md).

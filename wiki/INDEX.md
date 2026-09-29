@@ -32,6 +32,8 @@ Why this repo is the way it is: executed plans, decisions, and change history. R
 
 ## Journal
 
+- 2026-09-28 — [Standard Git delivery for repository maintenance](journal/2026-09-28-git-delivery-standard.md) — issue-linked maintenance PRs, standalone Commitlint, BOT_TOKEN, and release after Quality.
+
 <!-- Reverse-chronological, one line per entry: YYYY-MM-DD — [Title](journal/<file>.md) — hook. -->
 
 - 2026-09-17 — [Align Applied Figma validation](journal/2026-09-17-align-applied-figma-validation.md) — final report validation now accepts and checks the exact modern Figma proof required by capture.

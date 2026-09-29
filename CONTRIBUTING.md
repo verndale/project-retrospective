@@ -9,7 +9,7 @@ This repository is the single source of truth for the `project-retrospective` ag
     # edit files under skills/project-retrospective/
     pnpm verify:ci
     git add -A
-    pnpm commit
+    git commit -m "chore(scope): Describe the change"
     git push
 
 ## What lives here
@@ -58,7 +58,7 @@ Retrospective runs read client repositories. Their output never lands here.
 
 ## Commit Messages (Required)
 
-We enforce **Conventional Commits** through **`@verndale/ai-commit`** (commitlint preset). Types: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, `test`.
+We enforce **Conventional Commits** through standalone **Commitlint**. Types: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, `test`.
 
 Format (scope is **required**):
 
@@ -72,7 +72,7 @@ Examples:
 
 The first line is validated by **commitlint** via the `commit-msg` hook and in CI. Scope is required and lowercase; the subject is required, cannot end in a period, and is limited to 50 characters. The full header is limited to 120 characters and body/footer lines to 72. Subject casing is intentionally unrestricted. Conventional breaking-change/revert parsing and Commitlint's upstream default ignores are preserved; there is no repository-specific scope allowlist or ignore callback.
 
-The root [`commitlint.config.cjs`](commitlint.config.cjs) consumes the public `@verndale/ai-commit` export. The blocking local hook, the squash-merge PR title, and every commit in the immutable PR base/head range all use that same config. `pnpm lint:commits:last` is only a local one-commit convenience; CI always checks the full PR range. With the pinned pnpm 10, pass flags directly (`pnpm run lint:commit --edit …`): inserting a standalone `--` forwards it to Commitlint and causes following flags to be treated as positional input. Use `pnpm commit` (runs `ai-commit run`) for AI-assisted authoring; `OPENAI_API_KEY` in `.env` is optional. The direct `commitlint` hook remains authoritative.
+The root [`commitlint.config.cjs`](commitlint.config.cjs) uses the standalone conventional preset. The local `commit-msg` hook, PR title, and every commit in the immutable PR range use the same policy. Open issue-linked PRs with the deterministic template; see `AGENTS.md`.
 
 ## Quality gates
 
@@ -92,10 +92,9 @@ The root [`commitlint.config.cjs`](commitlint.config.cjs) consumes the public `@
 | --- | --- | --- |
 | [`.github/workflows/commitlint.yml`](.github/workflows/commitlint.yml) | PRs to `main`, including title edits | `Commit message lint / commitlint`: same-config checks for PR title + immutable base/head range |
 | [`.github/workflows/quality.yml`](.github/workflows/quality.yml) | PRs to `main`, `workflow_dispatch` | `Quality / quality`: lint + Node tests + check-only graph validation |
-| [`.github/workflows/pr.yml`](.github/workflows/pr.yml) | Pushes to non-`main`, `workflow_dispatch` | Dogfood: install deps, run **`pnpm run pr:create`** |
 | [`.github/workflows/release.yml`](.github/workflows/release.yml) | Pushes to `main` | `semantic-release`: version bump, `CHANGELOG.md`, Git tag + GitHub Release |
 
-Add repository secret **`PR_BOT_TOKEN`** (classic PAT with **`repo`**) for **`pr.yml`**; it falls back to the built-in `GITHUB_TOKEN` when unset.
+Bot wiki workflows use repository secret **`BOT_TOKEN`**.
 
 Releases are driven by [`semantic-release`](.releaserc.cjs) on every push to `main` — Conventional Commit types decide the bump (`feat` → minor, `fix` → patch, `BREAKING` → major). Release notes are deterministic and structured via the local plugin [`scripts/commit-pr/semantic-release-structured-notes.cjs`](scripts/commit-pr/semantic-release-structured-notes.cjs); an optional bounded AI summary runs only when `RELEASE_NOTES_AI=true` and an endpoint/model/API key are configured. Preview locally with `pnpm release:dry`.
 

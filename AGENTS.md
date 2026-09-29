@@ -101,7 +101,9 @@ Issue/label/link/local-branch authority and publication mode remain separate con
 
 **Permission boundary:** edit files under `skills/`, `scripts/`, and `wiki/` freely without asking — that's the autonomous zone, and capturing a substantive change in `wiki/` is expected rather than optional. A retrospective invocation is standing maintainer authority for `Publication: merge` on its deterministic action-owned repositories and issue/run branches unless the request explicitly chooses `pull-request` or `working-tree`.
 
-Use `pnpm commit` (Conventional Commits, required scope), push only the issue branch, create/verify its PR, wait for required checks, fix in-scope failures, mark the PR ready, merge through the repository's allowed method without bypassing protection, and verify the default branch contains the result and linked closing issues resolved. Honor an explicit `Publication: pull-request` or `Publication: working-tree` by stopping at that boundary. Do not manually tag, release, publish Figma, force-merge, bypass required review, or write to the analyzed project unless separately and exactly authorized. `semantic-release` runs only on `main` and may publish automatically after an authorized merge.
+For maintenance of this repository, create a labeled GitHub issue with the `github-issue-creator` skill, update local `main` from `origin/main`, and create an issue-keyed working branch from that commit. Make scoped Conventional Commits with `git commit`; standalone Commitlint validates the message locally and the PR title plus commit range in CI. Draft the six-section PR body from `.github/pull_request_template.md`, include `Closes #<issue-number>`, and run `pnpm run lint:pr`. Push the branch, open the PR against `main`, verify the saved title/body/issue link and required checks, and leave it open for review. Do not merge the PR. Releases run only after Quality succeeds for a main push.
+
+The retrospective skill's action-owned publication modes and repository dependency order are documented in its own references. They do not authorize merging this maintenance PR.
 
 <!-- wiki-skill:start -->
 ## Context wiki navigation
