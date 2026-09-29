@@ -1,7 +1,7 @@
 {
   "counts": {
-    "nodes": 150,
-    "edges": 427,
+    "nodes": 151,
+    "edges": 430,
     "byType": {
       "root-doc": 4,
       "repo-script": 20,
@@ -13,18 +13,18 @@
       "skill-script": 15,
       "skill": 1,
       "wiki-index": 3,
-      "wiki-journal": 44,
+      "wiki-journal": 45,
       "wiki-plan": 16,
       "wiki-topic": 5
     },
     "byEdgeType": {
       "contracts": 33,
       "covers": 40,
-      "links-to": 181,
+      "links-to": 183,
       "plan": 16,
       "requires": 65,
       "tests": 16,
-      "topic": 76
+      "topic": 77
     }
   },
   "nodes": [
@@ -389,7 +389,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 29483,
+      "bytes": 29876,
       "degree": 7
     },
     {
@@ -1104,8 +1104,8 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 14252,
-      "degree": 53
+      "bytes": 14470,
+      "degree": 54
     },
     {
       "id": "wiki/journal/2026-07-26-build-project-retrospective-skill.md",
@@ -2325,6 +2325,30 @@
       "degree": 1
     },
     {
+      "id": "wiki/journal/2026-09-29-wiki-quality-and-bot-replay.md",
+      "label": "Focus wiki Quality and restore bot replay",
+      "type": "wiki-journal",
+      "dir": "wiki/journal",
+      "topics": [
+        "graph-wiki-subsystem"
+      ],
+      "aliases": [],
+      "prs": [],
+      "issues": [
+        "117"
+      ],
+      "githubRefs": [
+        {
+          "kind": "issue",
+          "repository": "verndale/project-retrospective",
+          "number": 117,
+          "url": "https://github.com/verndale/project-retrospective/issues/117"
+        }
+      ],
+      "bytes": 1297,
+      "degree": 3
+    },
+    {
       "id": "wiki/MECHANICS.md",
       "label": "Wiki Mechanics",
       "type": "wiki-index",
@@ -2334,7 +2358,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 9375,
+      "bytes": 9712,
       "degree": 7
     },
     {
@@ -3051,8 +3075,8 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 8567,
-      "degree": 36
+      "bytes": 9001,
+      "degree": 38
     },
     {
       "id": "wiki/topics/library-capture.md",
@@ -4479,6 +4503,13 @@
     },
     {
       "source": "wiki/INDEX.md",
+      "target": "wiki/journal/2026-09-29-wiki-quality-and-bot-replay.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/INDEX.md",
       "target": "wiki/plans/INDEX.md",
       "type": "links-to",
       "count": 2,
@@ -4739,6 +4770,13 @@
     {
       "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/journal/2026-09-29-pr-body-validation.md",
+      "type": "links-to",
+      "count": 1,
+      "anchors": []
+    },
+    {
+      "source": "wiki/topics/graph-wiki-subsystem.md",
+      "target": "wiki/journal/2026-09-29-wiki-quality-and-bot-replay.md",
       "type": "links-to",
       "count": 1,
       "anchors": []
@@ -5892,6 +5930,11 @@
     },
     {
       "source": "wiki/journal/2026-09-29-pr-body-validation.md",
+      "target": "wiki/topics/graph-wiki-subsystem.md",
+      "type": "topic"
+    },
+    {
+      "source": "wiki/journal/2026-09-29-wiki-quality-and-bot-replay.md",
       "target": "wiki/topics/graph-wiki-subsystem.md",
       "type": "topic"
     },

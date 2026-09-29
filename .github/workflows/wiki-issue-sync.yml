@@ -92,16 +92,16 @@ jobs:
         run: |
           title="docs(wiki): refresh cited issue state"
           body="Automated, reviewable refresh of cited GitHub issue state."
-          open="$(gh pr list --base "$BASE_BRANCH" --head "$BOT_BRANCH" --state open --limit 100 --json number --jq 'sort_by(.number) | last | .number // empty')"
-          closed="$(gh pr list --base "$BASE_BRANCH" --head "$BOT_BRANCH" --state closed --limit 100 --json number,mergedAt --jq 'map(select(.mergedAt == null)) | sort_by(.number) | last | .number // empty')"
+          open="$(gh api -X GET "repos/${GITHUB_REPOSITORY}/pulls" -f state=open -f base="$BASE_BRANCH" -f head="${GITHUB_REPOSITORY%%/*}:${BOT_BRANCH}" --paginate | jq -s -r '[.[][] | .number] | max // empty')"
+          closed="$(gh api -X GET "repos/${GITHUB_REPOSITORY}/pulls" -f state=closed -f base="$BASE_BRANCH" -f head="${GITHUB_REPOSITORY%%/*}:${BOT_BRANCH}" --paginate | jq -s -r '[.[][] | select(.merged_at == null) | .number] | max // empty')"
           if [ -n "$open" ]; then
             review="$open"
           elif [ -n "$closed" ]; then
-            gh pr reopen "$closed"
+            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/pulls/${closed}" -f state=open --jq '.html_url'
             review="$closed"
           else
             gh pr create --base "$BASE_BRANCH" --head "$BOT_BRANCH" --title "$title" --body "$body"
             exit 0
           fi
-          gh pr edit "$review" --title "$title" --body "$body"
-          if [ "$(gh pr view "$review" --json isDraft --jq '.isDraft')" = "true" ]; then gh pr ready "$review"; fi
+          gh api -X PATCH "repos/${GITHUB_REPOSITORY}/pulls/${review}" -f title="$title" -f body="$body" --jq '.html_url'
+          if [ "$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${review}" --jq '.draft')" = "true" ]; then gh pr ready "$review"; fi
