@@ -4,6 +4,7 @@ executed: 2026-09-29
 date: 2026-09-29
 evidence:
   - "issue #108"
+  - "verndale/project-retrospective PR #109 https://github.com/verndale/project-retrospective/pull/109 (merged 2026-09-29)"
 source_tool: codex
 source: "/private/tmp/project-retrospective-git-delivery-plan.md"
 topics: [graph-wiki-subsystem]
