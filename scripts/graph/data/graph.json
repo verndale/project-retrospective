@@ -389,7 +389,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 25738,
+      "bytes": 25739,
       "degree": 6
     },
     {
@@ -2251,7 +2251,7 @@
           "url": "https://github.com/verndale/project-retrospective/issues/108"
         }
       ],
-      "bytes": 1136,
+      "bytes": 1234,
       "degree": 4
     },
     {
@@ -2264,7 +2264,7 @@
       "prs": [],
       "issues": [],
       "githubRefs": [],
-      "bytes": 9357,
+      "bytes": 9375,
       "degree": 7
     },
     {
@@ -2951,7 +2951,7 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 7945,
+      "bytes": 8113,
       "degree": 34
     },
     {
@@ -4605,7 +4605,7 @@
       "source": "wiki/topics/graph-wiki-subsystem.md",
       "target": "wiki/journal/2026-09-28-git-delivery-standard.md",
       "type": "links-to",
-      "count": 1,
+      "count": 2,
       "anchors": []
     },
     {

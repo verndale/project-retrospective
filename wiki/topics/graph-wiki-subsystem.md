@@ -23,6 +23,7 @@ The deterministic graph, its skill-contract integrity gate, the vendored Sigma.j
 
 ## Decisions
 
+- 2026-09-29 — Wiki issue-state reconciliation now runs Mondays at 11:30 UTC with manual replay retained ([journal](../journal/2026-09-28-git-delivery-standard.md)).
 - 2026-09-28 — Maintenance delivery uses labeled issues, updated-main branches, standalone Commitlint, deterministic PR bodies, and open PR review; direct wiki bot writers use `BOT_TOKEN` ([issue #108](https://github.com/verndale/project-retrospective/issues/108), [plan](../plans/2026-09-29-standardize-git-delivery-in-project-retrospective--d184da65fe7f.md), [journal](../journal/2026-09-28-git-delivery-standard.md)).
 
 - 2026-08-24 — fix(project-retrospective): Update wiki guidance and graph data ([verndale/project-retrospective PR #84](https://github.com/verndale/project-retrospective/pull/84))

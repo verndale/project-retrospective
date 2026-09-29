@@ -17,6 +17,7 @@ issues: [https://github.com/verndale/project-retrospective/issues/108]
 - Wiki bot writers retain direct GitHub CLI PR handling with `BOT_TOKEN`.
 - Release waits for successful Quality on a main push and skips wiki-only revisions.
 - The retrospective skill's domain-specific publication modes remain separate from this maintenance delivery.
+- Wiki issue-state reconciliation now runs Mondays at 11:30 UTC, matching agent-review-workflows.
 
 ## Files
 - `AGENTS.md`, `.github/workflows/`, `commitlint.config.cjs`, `package.json`, `CONTRIBUTING.md`, `README.md`, `skills/project-retrospective/references/publication-handoff.md`
