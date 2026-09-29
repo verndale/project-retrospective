@@ -2336,11 +2336,19 @@
         "graph-wiki-subsystem"
       ],
       "aliases": [],
-      "prs": [],
+      "prs": [
+        "121"
+      ],
       "issues": [
         "120"
       ],
       "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 121,
+          "url": "https://github.com/verndale/project-retrospective/pull/121"
+        },
         {
           "kind": "issue",
           "repository": "verndale/project-retrospective",
@@ -2348,7 +2356,7 @@
           "url": "https://github.com/verndale/project-retrospective/issues/120"
         }
       ],
-      "bytes": 851,
+      "bytes": 902,
       "degree": 3
     },
     {
@@ -3289,6 +3297,7 @@
         "retrospective audit log"
       ],
       "prs": [
+        "121",
         "106",
         "103",
         "118",
@@ -3338,6 +3347,12 @@
         "57"
       ],
       "githubRefs": [
+        {
+          "kind": "pull-request",
+          "repository": "verndale/project-retrospective",
+          "number": 121,
+          "url": "https://github.com/verndale/project-retrospective/pull/121"
+        },
         {
           "kind": "pull-request",
           "repository": "verndale/project-retrospective",
@@ -3609,7 +3624,7 @@
           "url": "https://github.com/verndale/project-retrospective/pull/1"
         }
       ],
-      "bytes": 21561,
+      "bytes": 21728,
       "degree": 76
     },
     {
